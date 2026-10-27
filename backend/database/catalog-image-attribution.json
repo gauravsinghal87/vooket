@@ -1,0 +1,645 @@
+{
+    "category-atta": {
+        "author": "Veganbaking.net from USA",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:All-Purpose_Flour_(4107895947).jpg",
+        "file": "category-images/grocery/atta.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "reused_from": "product-atta",
+        "subject": "category-atta"
+    },
+    "category-atta-rice-dal": {
+        "composed_from": [
+            "product-rice",
+            "product-atta",
+            "category-pulses-dal"
+        ],
+        "file": "category-images/grocery/atta-rice-dal.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Khyma_and_Basmati_rice.jpg",
+            "https://commons.wikimedia.org/wiki/File:All-Purpose_Flour_(4107895947).jpg",
+            "https://commons.wikimedia.org/wiki/File:Split_Red_Lentil.jpg"
+        ],
+        "subject": "category-atta-rice-dal"
+    },
+    "category-baby-care": {
+        "author": "Kyle Flood from Victoria, British Columbia, Canada",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Baby_diaper.jpg",
+        "commons_title": "File:Baby diaper.jpg",
+        "file": "category-images/grocery/baby-care.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "subject": "category-baby-care",
+        "wikipedia_article": "Diaper"
+    },
+    "category-bakery-biscuits": {
+        "composed_from": [
+            "product-bread",
+            "category-biscuits-cookies",
+            "category-cakes"
+        ],
+        "file": "category-images/grocery/bakery-biscuits.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Breadindia.jpg",
+            "https://commons.wikimedia.org/wiki/File:3_Biscuit_rose_de_Reims.jpg",
+            "https://commons.wikimedia.org/wiki/File:Chocolate_Sour_Cream_Bundt_Cake,_March_2008.jpg"
+        ],
+        "subject": "category-bakery-biscuits"
+    },
+    "category-bath-body": {
+        "author": "DimiTalen",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Bars_of_pure_Marseille_and_Aleppo_soap,_2024.jpg",
+        "commons_title": "File:Bars of pure Marseille and Aleppo soap, 2024.jpg",
+        "file": "category-images/grocery/bath-body.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "subject": "category-bath-body",
+        "wikipedia_article": "Soap"
+    },
+    "category-biscuits-cookies": {
+        "author": "Cherry",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:3_Biscuit_rose_de_Reims.jpg",
+        "commons_title": "File:3 Biscuit rose de Reims.jpg",
+        "file": "category-images/grocery/biscuits-cookies.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "category-biscuits-cookies",
+        "wikipedia_article": "Biscuit"
+    },
+    "category-breads": {
+        "author": "kspoddar",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Breadindia.jpg",
+        "file": "category-images/grocery/breads.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "reused_from": "product-bread",
+        "subject": "category-breads"
+    },
+    "category-buns-rolls": {
+        "author": "jeffreyw",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Sesame_seed_hamburger_buns.jpg",
+        "commons_title": "File:Sesame seed hamburger buns.jpg",
+        "file": "category-images/grocery/buns-rolls.jpg",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "pixels": "675x675",
+        "subject": "category-buns-rolls",
+        "wikipedia_article": "Bun"
+    },
+    "category-butter": {
+        "author": "Photo courtesy photos-public-domain.com",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Stick-of-butter-salted.jpg",
+        "file": "category-images/grocery/butter.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "reused_from": "product-butter",
+        "subject": "category-butter"
+    },
+    "category-cakes": {
+        "author": "Kimberly Vardeman",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Chocolate_Sour_Cream_Bundt_Cake,_March_2008.jpg",
+        "commons_title": "File:Chocolate Sour Cream Bundt Cake, March 2008.jpg",
+        "file": "category-images/grocery/cakes.jpg",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "pixels": "675x675",
+        "subject": "category-cakes",
+        "wikipedia_article": "Cake"
+    },
+    "category-chips-namkeen": {
+        "author": "Billjones94",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Crispy_and_spicy_potato_chips_in_West_Bengal,_India,_photo_taken_by_Yogabrata_Chakraborty_on_July_1,_2023.jpg",
+        "file": "category-images/grocery/chips-namkeen.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "reused_from": "product-chips",
+        "subject": "category-chips-namkeen"
+    },
+    "category-chocolates": {
+        "author": "Wikimedia Commons contributor",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Chocolate02.jpg",
+        "commons_title": "File:Chocolate02.jpg",
+        "file": "category-images/grocery/chocolates.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "pixels": "675x675",
+        "subject": "category-chocolates",
+        "wikipedia_article": "Chocolate"
+    },
+    "category-cleaning-supplies": {
+        "author": "Rwebogora",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Cleaning_facilities.jpg",
+        "commons_title": "File:Cleaning facilities.jpg",
+        "file": "category-images/grocery/cleaning-supplies.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "category-cleaning-supplies",
+        "wikipedia_article": "Household cleaning"
+    },
+    "category-coriander-greens": {
+        "author": "Thamizhpparithi Maari",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:A_scene_of_Coriander_leaves.JPG",
+        "commons_title": "File:A scene of Coriander leaves.JPG",
+        "file": "category-images/grocery/coriander-greens.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "category-coriander-greens",
+        "wikipedia_article": "Coriander"
+    },
+    "category-dairy-bread-eggs": {
+        "composed_from": [
+            "product-milk",
+            "product-eggs",
+            "product-bread"
+        ],
+        "file": "category-images/grocery/dairy-bread-eggs.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Glass_milk_bottles.jpg",
+            "https://commons.wikimedia.org/wiki/File:6-Pack-Chicken-Eggs.jpg",
+            "https://commons.wikimedia.org/wiki/File:Breadindia.jpg"
+        ],
+        "subject": "category-dairy-bread-eggs"
+    },
+    "category-detergents": {
+        "author": "ajcespedes",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Laundry_detergent_pods.jpg",
+        "file": "category-images/grocery/detergents.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "reused_from": "product-detergent",
+        "subject": "category-detergents"
+    },
+    "category-disposables": {
+        "author": "Carlos Delgado",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:4_Bic_Cristal_pens_and_caps.jpg",
+        "commons_title": "File:4 Bic Cristal pens and caps.jpg",
+        "file": "category-images/grocery/disposables.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "category-disposables",
+        "wikipedia_article": "Disposable product"
+    },
+    "category-drinks-beverages": {
+        "composed_from": [
+            "product-cola",
+            "category-tea-coffee",
+            "category-packaged-water"
+        ],
+        "file": "category-images/grocery/drinks-beverages.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Soft_drink_shelf_2.jpg",
+            "https://commons.wikimedia.org/wiki/File:Nice_Cup_of_Tea.jpg",
+            "https://commons.wikimedia.org/wiki/File:HK_Yau_Ma_Tei_Nathan_Road_AS_Watsons_distilled_water_green_plastic_bottles_Logistics_morning_Feb-2014.JPG"
+        ],
+        "subject": "category-drinks-beverages"
+    },
+    "category-eggs": {
+        "author": "Evan-Amos",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:6-Pack-Chicken-Eggs.jpg",
+        "file": "category-images/grocery/eggs.jpg",
+        "license": "Public domain",
+        "license_url": "",
+        "pixels": "675x675",
+        "reused_from": "product-eggs",
+        "subject": "category-eggs"
+    },
+    "category-fresh-fruits": {
+        "author": "\u0631\u0648\u062a\u0627\u0646\u0627",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Fruit_Platter-_Seasonal_Fruits.jpg",
+        "commons_title": "File:Fruit Platter- Seasonal Fruits.jpg",
+        "file": "category-images/grocery/fresh-fruits.jpg",
+        "license": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0",
+        "pixels": "675x675",
+        "subject": "category-fresh-fruits",
+        "wikipedia_article": "Fruit"
+    },
+    "category-fresh-vegetables": {
+        "author": "Jasper Greek Golangco",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Marketvegetables.jpg",
+        "commons_title": "File:Marketvegetables.jpg",
+        "file": "category-images/grocery/fresh-vegetables.jpg",
+        "license": "Copyrighted free use",
+        "license_url": "",
+        "pixels": "675x675",
+        "subject": "category-fresh-vegetables",
+        "wikipedia_article": "Vegetable"
+    },
+    "category-frozen-food": {
+        "author": "Eli Duke",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Antarctica_Frozen_Food_Warehouse.jpg",
+        "commons_title": "File:Antarctica Frozen Food Warehouse.jpg",
+        "file": "category-images/grocery/frozen-food.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "subject": "category-frozen-food",
+        "wikipedia_article": "Frozen food"
+    },
+    "category-ghee": {
+        "author": "TabassumJawed",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Cream_to_get_clarified_butter_home_made.Ghee.jpg",
+        "commons_title": "File:Cream to get clarified butter home made.Ghee.jpg",
+        "file": "category-images/grocery/ghee.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "category-ghee",
+        "wikipedia_article": "Ghee"
+    },
+    "category-hair-care": {
+        "author": "thejbird",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Hair_wash_with_shampoo.jpg",
+        "commons_title": "File:Hair wash with shampoo.jpg",
+        "file": "category-images/grocery/hair-care.jpg",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "pixels": "675x675",
+        "subject": "category-hair-care",
+        "wikipedia_article": "Shampoo"
+    },
+    "category-home-cleaning": {
+        "composed_from": [
+            "product-detergent",
+            "category-cleaning-supplies",
+            "category-disposables"
+        ],
+        "file": "category-images/grocery/home-cleaning.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Laundry_detergent_pods.jpg",
+            "https://commons.wikimedia.org/wiki/File:Cleaning_facilities.jpg",
+            "https://commons.wikimedia.org/wiki/File:4_Bic_Cristal_pens_and_caps.jpg"
+        ],
+        "subject": "category-home-cleaning"
+    },
+    "category-milk": {
+        "author": "en:User:Clawed",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Glass_milk_bottles.jpg",
+        "file": "category-images/grocery/milk.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "pixels": "675x675",
+        "reused_from": "product-milk",
+        "subject": "category-milk"
+    },
+    "category-noodles-instant": {
+        "author": "\u7dad\u57fa\u5c0f\u9738\u738b",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Instant_noodles_on_a_shelf_01.jpg",
+        "file": "category-images/grocery/noodles-instant.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "reused_from": "product-noodles",
+        "subject": "category-noodles-instant"
+    },
+    "category-nuts-dry-fruits": {
+        "author": "Ivar Leidus",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Almonds_-_in_shell,_shell_cracked_open,_shelled,_blanched.jpg",
+        "commons_title": "File:Almonds - in shell, shell cracked open, shelled, blanched.jpg",
+        "file": "category-images/grocery/nuts-dry-fruits.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "category-nuts-dry-fruits",
+        "wikipedia_article": "Almond"
+    },
+    "category-oils-ghee": {
+        "composed_from": [
+            "product-oil",
+            "category-ghee"
+        ],
+        "file": "category-images/grocery/oils-ghee.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Peanut_oil_bottle.jpg",
+            "https://commons.wikimedia.org/wiki/File:Cream_to_get_clarified_butter_home_made.Ghee.jpg"
+        ],
+        "subject": "category-oils-ghee"
+    },
+    "category-oils-ghee-masala": {
+        "composed_from": [
+            "product-oil",
+            "category-ghee",
+            "category-spices"
+        ],
+        "file": "category-images/grocery/oils-ghee-masala.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Peanut_oil_bottle.jpg",
+            "https://commons.wikimedia.org/wiki/File:Cream_to_get_clarified_butter_home_made.Ghee.jpg",
+            "https://commons.wikimedia.org/wiki/File:Indian_spices_with_labels_(garam_masala_components)_(49684333301).jpg"
+        ],
+        "subject": "category-oils-ghee-masala"
+    },
+    "category-oral-care": {
+        "author": "Thegreenj",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Toothpasteonbrush.jpg",
+        "file": "category-images/grocery/oral-care.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "pixels": "675x675",
+        "reused_from": "product-toothpaste",
+        "subject": "category-oral-care"
+    },
+    "category-packaged-water": {
+        "author": "Leideomangeos",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:HK_Yau_Ma_Tei_Nathan_Road_AS_Watsons_distilled_water_green_plastic_bottles_Logistics_morning_Feb-2014.JPG",
+        "commons_title": "File:HK Yau Ma Tei Nathan Road AS Watsons distilled water green plastic bottles Logistics morning Feb-2014.JPG",
+        "file": "category-images/grocery/packaged-water.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "category-packaged-water",
+        "wikipedia_article": "Bottled water"
+    },
+    "category-personal-care": {
+        "composed_from": [
+            "product-toothpaste",
+            "category-bath-body",
+            "category-hair-care"
+        ],
+        "file": "category-images/grocery/personal-care.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Toothpasteonbrush.jpg",
+            "https://commons.wikimedia.org/wiki/File:Bars_of_pure_Marseille_and_Aleppo_soap,_2024.jpg",
+            "https://commons.wikimedia.org/wiki/File:Hair_wash_with_shampoo.jpg"
+        ],
+        "subject": "category-personal-care"
+    },
+    "category-pulses-dal": {
+        "author": "Sanjay Acharya",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Split_Red_Lentil.jpg",
+        "commons_title": "File:Split Red Lentil.jpg",
+        "file": "category-images/grocery/pulses-dal.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "category-pulses-dal",
+        "wikipedia_article": "Lentil"
+    },
+    "category-rice": {
+        "author": "nagualdesign",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Khyma_and_Basmati_rice.jpg",
+        "file": "category-images/grocery/rice.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "reused_from": "product-rice",
+        "subject": "category-rice"
+    },
+    "category-skincare": {
+        "author": "ArionStar",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Skin_care_cosmetics.jpg",
+        "commons_title": "File:Skin care cosmetics.jpg",
+        "file": "category-images/grocery/skincare.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "subject": "category-skincare",
+        "wikipedia_article": "Skin care"
+    },
+    "category-snacks-instant": {
+        "composed_from": [
+            "product-chips",
+            "product-noodles",
+            "category-chocolates"
+        ],
+        "file": "category-images/grocery/snacks-instant.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Crispy_and_spicy_potato_chips_in_West_Bengal,_India,_photo_taken_by_Yogabrata_Chakraborty_on_July_1,_2023.jpg",
+            "https://commons.wikimedia.org/wiki/File:Instant_noodles_on_a_shelf_01.jpg",
+            "https://commons.wikimedia.org/wiki/File:Chocolate02.jpg"
+        ],
+        "subject": "category-snacks-instant"
+    },
+    "category-soft-drinks": {
+        "author": "Wilfredor",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Soft_drink_shelf_2.jpg",
+        "file": "category-images/grocery/soft-drinks.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "reused_from": "product-cola",
+        "subject": "category-soft-drinks"
+    },
+    "category-spices": {
+        "author": "spurekar",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Indian_spices_with_labels_(garam_masala_components)_(49684333301).jpg",
+        "commons_title": "File:Indian spices with labels (garam masala components) (49684333301).jpg",
+        "file": "category-images/grocery/spices.jpg",
+        "license": "CC BY 2.0",
+        "license_url": "https://creativecommons.org/licenses/by/2.0",
+        "pixels": "675x675",
+        "subject": "category-spices",
+        "wikipedia_article": "Spice"
+    },
+    "category-tea-coffee": {
+        "author": "Vanderdecken",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Nice_Cup_of_Tea.jpg",
+        "commons_title": "File:Nice Cup of Tea.jpg",
+        "file": "category-images/grocery/tea-coffee.jpg",
+        "license": "Public domain",
+        "license_url": "",
+        "pixels": "675x675",
+        "subject": "category-tea-coffee",
+        "wikipedia_article": "Tea"
+    },
+    "category-vegetables-fruits": {
+        "composed_from": [
+            "category-fresh-vegetables",
+            "category-fresh-fruits",
+            "category-coriander-greens"
+        ],
+        "file": "category-images/grocery/vegetables-fruits.jpg",
+        "pixels": "900x900",
+        "sources": [
+            "https://commons.wikimedia.org/wiki/File:Marketvegetables.jpg",
+            "https://commons.wikimedia.org/wiki/File:Fruit_Platter-_Seasonal_Fruits.jpg",
+            "https://commons.wikimedia.org/wiki/File:A_scene_of_Coriander_leaves.JPG"
+        ],
+        "subject": "category-vegetables-fruits"
+    },
+    "category-yogurt-curd": {
+        "author": "Blueconcorde",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Bags_of_Vietnamese-style_yogurt.jpg",
+        "commons_title": "File:Bags of Vietnamese-style yogurt.jpg",
+        "file": "category-images/grocery/yogurt-curd.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "subject": "category-yogurt-curd",
+        "wikipedia_article": "Yogurt"
+    },
+    "product-atta": {
+        "author": "Veganbaking.net from USA",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:All-Purpose_Flour_(4107895947).jpg",
+        "commons_title": "File:All-Purpose Flour (4107895947).jpg",
+        "file": "products/grocery/atta-flour.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "subject": "product-atta",
+        "wikipedia_article": "Flour"
+    },
+    "product-banana": {
+        "author": "Evan-Amos",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Banana-Single.jpg",
+        "commons_title": "File:Banana-Single.jpg",
+        "file": "products/grocery/banana.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "product-banana",
+        "wikipedia_article": "Banana"
+    },
+    "product-bread": {
+        "author": "kspoddar",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Breadindia.jpg",
+        "commons_title": "File:Breadindia.jpg",
+        "file": "products/grocery/bread.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "subject": "product-bread",
+        "wikipedia_article": "Bread"
+    },
+    "product-butter": {
+        "author": "Photo courtesy photos-public-domain.com",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Stick-of-butter-salted.jpg",
+        "commons_title": "File:Stick-of-butter-salted.jpg",
+        "file": "products/grocery/butter.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "subject": "product-butter",
+        "wikipedia_article": "Butter"
+    },
+    "product-chips": {
+        "author": "Billjones94",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Crispy_and_spicy_potato_chips_in_West_Bengal,_India,_photo_taken_by_Yogabrata_Chakraborty_on_July_1,_2023.jpg",
+        "commons_title": "File:Crispy and spicy potato chips in West Bengal, India, photo taken by Yogabrata Chakraborty on July 1, 2023.jpg",
+        "file": "products/grocery/chips.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "product-chips",
+        "wikipedia_article": "Potato crisps"
+    },
+    "product-cola": {
+        "author": "Wilfredor",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Soft_drink_shelf_2.jpg",
+        "commons_title": "File:Soft drink shelf 2.jpg",
+        "file": "products/grocery/soft-drink.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "product-cola",
+        "wikipedia_article": "Soft drink"
+    },
+    "product-detergent": {
+        "author": "ajcespedes",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Laundry_detergent_pods.jpg",
+        "commons_title": "File:Laundry detergent pods.jpg",
+        "file": "products/grocery/detergent.jpg",
+        "license": "CC0",
+        "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "pixels": "675x675",
+        "subject": "product-detergent",
+        "wikipedia_article": "Detergent"
+    },
+    "product-eggs": {
+        "author": "Evan-Amos",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:6-Pack-Chicken-Eggs.jpg",
+        "commons_title": "File:6-Pack-Chicken-Eggs.jpg",
+        "file": "products/grocery/eggs.jpg",
+        "license": "Public domain",
+        "license_url": "",
+        "pixels": "675x675",
+        "subject": "product-eggs",
+        "wikipedia_article": "Egg as food"
+    },
+    "product-milk": {
+        "author": "en:User:Clawed",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Glass_milk_bottles.jpg",
+        "commons_title": "File:Glass milk bottles.jpg",
+        "file": "products/grocery/milk.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "pixels": "675x675",
+        "subject": "product-milk",
+        "wikipedia_article": "Milk"
+    },
+    "product-noodles": {
+        "author": "\u7dad\u57fa\u5c0f\u9738\u738b",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Instant_noodles_on_a_shelf_01.jpg",
+        "commons_title": "File:Instant noodles on a shelf 01.jpg",
+        "file": "products/grocery/instant-noodles.jpg",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+        "pixels": "675x675",
+        "subject": "product-noodles",
+        "wikipedia_article": "Instant noodles"
+    },
+    "product-oil": {
+        "author": "Adam Engelhart",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Peanut_oil_bottle.jpg",
+        "commons_title": "File:Peanut oil bottle.jpg",
+        "file": "products/grocery/cooking-oil.jpg",
+        "license": "CC BY-SA 2.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+        "pixels": "675x675",
+        "subject": "product-oil",
+        "wikipedia_article": "Vegetable oil"
+    },
+    "product-rice": {
+        "author": "nagualdesign",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Khyma_and_Basmati_rice.jpg",
+        "commons_title": "File:Khyma and Basmati rice.jpg",
+        "file": "products/grocery/rice.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "product-rice",
+        "wikipedia_article": "Basmati rice"
+    },
+    "product-tomato": {
+        "author": "Dennis Brown",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Germinating_tomatoes.jpg",
+        "commons_title": "File:Germinating tomatoes.jpg",
+        "file": "products/grocery/tomato.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+        "pixels": "675x675",
+        "subject": "product-tomato",
+        "wikipedia_article": "Tomato"
+    },
+    "product-toothpaste": {
+        "author": "Thegreenj",
+        "commons_page": "https://commons.wikimedia.org/wiki/File:Toothpasteonbrush.jpg",
+        "commons_title": "File:Toothpasteonbrush.jpg",
+        "file": "products/grocery/toothpaste.jpg",
+        "license": "CC BY-SA 3.0",
+        "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "pixels": "675x675",
+        "subject": "product-toothpaste",
+        "wikipedia_article": "Toothpaste"
+    }
+}

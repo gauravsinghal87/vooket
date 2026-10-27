@@ -1,0 +1,821 @@
+[
+    {
+        "src": "http://localhost:8000/storage/category-images/u9O61xdAmixSFNMEtfbxZ7Kl80gZjSHIdWl8DUzR.webp",
+        "rel": "category-images/u9O61xdAmixSFNMEtfbxZ7Kl80gZjSHIdWl8DUzR.webp",
+        "keyword": "Starters",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/gv4o3X1LeeJvrYIZzoTglhtTNNDSML20EtRJXVTL.webp",
+        "rel": "category-images/gv4o3X1LeeJvrYIZzoTglhtTNNDSML20EtRJXVTL.webp",
+        "keyword": "Main Course",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#5"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/U5CmhEQOvuZ7OLMz5dv7kq94CEgQOQiGg3V4oE5Y.png",
+        "rel": "category-images/U5CmhEQOvuZ7OLMz5dv7kq94CEgQOQiGg3V4oE5Y.png",
+        "keyword": "Biryani",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#9"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/0of4IpMI7CxrGYqtNXG21Ah4Tt8vg7omm5xjWxtB.webp",
+        "rel": "category-images/0of4IpMI7CxrGYqtNXG21Ah4Tt8vg7omm5xjWxtB.webp",
+        "keyword": "Breads",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#13"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/Q5IxGyGYKmhUuTMnsh2GBzqMh8DCQcptGc0sn3W2.png",
+        "rel": "category-images/Q5IxGyGYKmhUuTMnsh2GBzqMh8DCQcptGc0sn3W2.png",
+        "keyword": "Desserts",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#16"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/16ZYfhqqZkF85ozsjITXYeCazU8JO5vY7aFPygyF.png",
+        "rel": "category-images/16ZYfhqqZkF85ozsjITXYeCazU8JO5vY7aFPygyF.png",
+        "keyword": "Beverages",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#20"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/1g3DKkYftxJpG5XAXjV4mbN9sXJpG6xogdmCKR4j.png",
+        "rel": "category-images/1g3DKkYftxJpG5XAXjV4mbN9sXJpG6xogdmCKR4j.png",
+        "keyword": "Pizza",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#24"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/XMuvNBAjeXeosqYfsMZPMwYbVP8vEBEf9ca6EvJc.png",
+        "rel": "category-images/XMuvNBAjeXeosqYfsMZPMwYbVP8vEBEf9ca6EvJc.png",
+        "keyword": "Burgers",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#25"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/sp4w07cTLsLO6iVPHmRdiLpKtwYJmLzbd6YFxinT.png",
+        "rel": "category-images/sp4w07cTLsLO6iVPHmRdiLpKtwYJmLzbd6YFxinT.png",
+        "keyword": "South Indian",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#26"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/9Yl8TSPNS7d5DsEcImtCtKarf81kbyNLJsA9oNmg.png",
+        "rel": "category-images/9Yl8TSPNS7d5DsEcImtCtKarf81kbyNLJsA9oNmg.png",
+        "keyword": "Chinese",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#27"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/3eVj61vO92t2IIGQyBzfMKAbqNy5jQOXgad6z8Aw.png",
+        "rel": "category-images/3eVj61vO92t2IIGQyBzfMKAbqNy5jQOXgad6z8Aw.png",
+        "keyword": "Vegetables & Fruits",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#92"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/3a6NgFOTtHp8IgNhiS7siHeBwaFXDLX2EcwreLIa.png",
+        "rel": "category-images/3a6NgFOTtHp8IgNhiS7siHeBwaFXDLX2EcwreLIa.png",
+        "keyword": "Atta, Rice & Dal",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#93"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/X9OenGrKjRwgWo1Mq6W9C6wBAOqritbceEjsFKNA.webp",
+        "rel": "category-images/X9OenGrKjRwgWo1Mq6W9C6wBAOqritbceEjsFKNA.webp",
+        "keyword": "Oil, Ghee & Masala",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#94"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/G6FxQ92sk0MyJoriJ9MICJZeZ4quHRD7uA7SlwPu.png",
+        "rel": "category-images/G6FxQ92sk0MyJoriJ9MICJZeZ4quHRD7uA7SlwPu.png",
+        "keyword": "Dairy, Bread & Eggs",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#95"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/PNAqtfBHSdMi2uUtmWreycvkGbF0yjcUqSyKtwy8.png",
+        "rel": "category-images/PNAqtfBHSdMi2uUtmWreycvkGbF0yjcUqSyKtwy8.png",
+        "keyword": "Bakery & Biscuits",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#96"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/w8ek4CbRjBVVpjGp9ldXGvuO6NzM02EaCtLXJSb2.webp",
+        "rel": "category-images/w8ek4CbRjBVVpjGp9ldXGvuO6NzM02EaCtLXJSb2.webp",
+        "keyword": "Dry Fruits & Cereals",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#97"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/O6k9aifGtii13rfXUckwX9Uis9m30vI6mc1OimDN.jpg",
+        "rel": "category-images/O6k9aifGtii13rfXUckwX9Uis9m30vI6mc1OimDN.jpg",
+        "keyword": "Chicken, Meat & Fish",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#98"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/i0VXHo2mKe1mQcPb6JE6JHC0LoaNQdGvvdBk9mIa.png",
+        "rel": "category-images/i0VXHo2mKe1mQcPb6JE6JHC0LoaNQdGvvdBk9mIa.png",
+        "keyword": "Kitchenware & Appliances",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#99"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/gQZVeH9bnUai0PhbPRMGJgTbdGuhWmR2wO2uOOCq.png",
+        "rel": "category-images/gQZVeH9bnUai0PhbPRMGJgTbdGuhWmR2wO2uOOCq.png",
+        "keyword": "Chips & Namkeen",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#101"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/Ctl03k1IRznUihMDcXXAaBy9GOpOYrbdeCmw1sO8.png",
+        "rel": "category-images/Ctl03k1IRznUihMDcXXAaBy9GOpOYrbdeCmw1sO8.png",
+        "keyword": "Sweets & Chocolates",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#102"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/PiEZ0TvlyEuUPZjfN6xfjf6u4kHUVzYyEGdfYiJm.png",
+        "rel": "category-images/PiEZ0TvlyEuUPZjfN6xfjf6u4kHUVzYyEGdfYiJm.png",
+        "keyword": "Drinks & Juices",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#103"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/WNGnOEtJfCkXK0XPN18NgkQRMSu6I1nj4BLgzmPO.png",
+        "rel": "category-images/WNGnOEtJfCkXK0XPN18NgkQRMSu6I1nj4BLgzmPO.png",
+        "keyword": "Tea, Coffee & Milk Drinks",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#104"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/DmGB9K4465CKAZSOT5zoktC07SoEHnKOmwUYMhWq.webp",
+        "rel": "category-images/DmGB9K4465CKAZSOT5zoktC07SoEHnKOmwUYMhWq.webp",
+        "keyword": "Instant Food",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#105"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/PvWuww8vsHNjpaLsREok4MBWlHjcz5wlGl1DGnb5.webp",
+        "rel": "category-images/PvWuww8vsHNjpaLsREok4MBWlHjcz5wlGl1DGnb5.webp",
+        "keyword": "Sauces & Spreads",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#106"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/q4olOglOYxzLnN1b8IUOPcBK6970v0bphy4Ig8Np.webp",
+        "rel": "category-images/q4olOglOYxzLnN1b8IUOPcBK6970v0bphy4Ig8Np.webp",
+        "keyword": "Paan Corner",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#107"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/PznJpqwyRW6UMUlQMxcE1PVHxiFY9m1Y9DcQWZTh.png",
+        "rel": "category-images/PznJpqwyRW6UMUlQMxcE1PVHxiFY9m1Y9DcQWZTh.png",
+        "keyword": "Ice Creams & More",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#108"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/AtZRE8oZi3VSpswC0z5HyuDa6ZHxE7b3WVolEvOs.webp",
+        "rel": "category-images/AtZRE8oZi3VSpswC0z5HyuDa6ZHxE7b3WVolEvOs.webp",
+        "keyword": "Bath & Body",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#110"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/7FZp0gGLXsGS1VbtzWv7SEpioFm7YAc57WN2Irm1.png",
+        "rel": "category-images/7FZp0gGLXsGS1VbtzWv7SEpioFm7YAc57WN2Irm1.png",
+        "keyword": "Hair",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#111"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/fQeMs4ebf5p2HGoRHCUzwc9JlSVbtGuAb6o3QTtA.png",
+        "rel": "category-images/fQeMs4ebf5p2HGoRHCUzwc9JlSVbtGuAb6o3QTtA.png",
+        "keyword": "Skin & Face",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#112"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/R1moE5WnMUVMbdEF191CBGPo7k0OJm2djJuIe91u.png",
+        "rel": "category-images/R1moE5WnMUVMbdEF191CBGPo7k0OJm2djJuIe91u.png",
+        "keyword": "Beauty & Cosmetics",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#113"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/mD6AxIRrtJOJWuKPKG9Y9uQBmOyat0joDbIBdPkC.png",
+        "rel": "category-images/mD6AxIRrtJOJWuKPKG9Y9uQBmOyat0joDbIBdPkC.png",
+        "keyword": "Fresh Vegetables",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#114"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/4a9OfWZoeP07Jqz2wBJhPkBny2NHUkuOi8Aiqf5d.png",
+        "rel": "category-images/4a9OfWZoeP07Jqz2wBJhPkBny2NHUkuOi8Aiqf5d.png",
+        "keyword": "Fresh Fruits",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#115"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/orWEMHnItcnJl1hBd4s9stfoCSYIY6EaR3SzLk9h.webp",
+        "rel": "category-images/orWEMHnItcnJl1hBd4s9stfoCSYIY6EaR3SzLk9h.webp",
+        "keyword": "Atta",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#116"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/EzD9lboZHSGWo63vVuHykVXngMApoPmMwS1mX2a7.png",
+        "rel": "category-images/EzD9lboZHSGWo63vVuHykVXngMApoPmMwS1mX2a7.png",
+        "keyword": "Rice",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#117"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/QNZv5bmLb783rGFIE02XiidgXOT4Cjj9JetZFGom.png",
+        "rel": "category-images/QNZv5bmLb783rGFIE02XiidgXOT4Cjj9JetZFGom.png",
+        "keyword": "Dal",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#118"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/gCFM2MlgWDYhpHeFUG271xNlRtmf2S2frinQ6ZcE.png",
+        "rel": "category-images/gCFM2MlgWDYhpHeFUG271xNlRtmf2S2frinQ6ZcE.png",
+        "keyword": "Oil",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#119"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/aDrbXRccxc8aLHaJqpHegJ7tzZMwdmzYUUCbSHmR.webp",
+        "rel": "category-images/aDrbXRccxc8aLHaJqpHegJ7tzZMwdmzYUUCbSHmR.webp",
+        "keyword": "Ghee",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#120"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/yD7i9CXtYqcVIZRUVz55b1CX9zthGWh8ssXlofjC.png",
+        "rel": "category-images/yD7i9CXtYqcVIZRUVz55b1CX9zthGWh8ssXlofjC.png",
+        "keyword": "Milk",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#121"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/HEqE61JZ1BZlCJKxAjj7rFLqHnUjACEPJISIZ2LV.jpg",
+        "rel": "category-images/HEqE61JZ1BZlCJKxAjj7rFLqHnUjACEPJISIZ2LV.jpg",
+        "keyword": "Bread",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#122"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/RixPGXSwVvAho4IleFmiie7g2qpkexdbNt3Vs3gq.png",
+        "rel": "category-images/RixPGXSwVvAho4IleFmiie7g2qpkexdbNt3Vs3gq.png",
+        "keyword": "Eggs",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#123"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/ILYNbX5GenU9kEeNR3hMxXvL2kBRYOmjYUkl3gt6.png",
+        "rel": "category-images/ILYNbX5GenU9kEeNR3hMxXvL2kBRYOmjYUkl3gt6.png",
+        "keyword": "Chips & Wafers",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#124"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/vxoCwT5f329JFc1SmiUKHsUVCanCiyhVvTbJ9CMU.png",
+        "rel": "category-images/vxoCwT5f329JFc1SmiUKHsUVCanCiyhVvTbJ9CMU.png",
+        "keyword": "Bhujia & Mixtures",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#125"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/T10I6kv9cKGiDpo5Kn1doQi5QBCkpyZmtaAPLJXe.webp",
+        "rel": "category-images/T10I6kv9cKGiDpo5Kn1doQi5QBCkpyZmtaAPLJXe.webp",
+        "keyword": "Chocolates",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#126"
+    },
+    {
+        "src": "http://localhost:8000/storage/category-images/78u4TqZLOL6jG2ejLzPqDxfogUTIEzd2blkeVKdr.png",
+        "rel": "category-images/78u4TqZLOL6jG2ejLzPqDxfogUTIEzd2blkeVKdr.png",
+        "keyword": "Indian Sweets",
+        "dir": "category-images",
+        "w": 400,
+        "h": 300,
+        "ref": "categories#127"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/M4skAYBKMh65Q5aB3klGucJdtvY1eu6evLRlWojd.png",
+        "rel": "products/M4skAYBKMh65Q5aB3klGucJdtvY1eu6evLRlWojd.png",
+        "keyword": "Paneer Tikka",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/NyoCscpqucKWMYt4k2SCZRfYhobEDIhcM0wtK6QK.jpg",
+        "rel": "products/NyoCscpqucKWMYt4k2SCZRfYhobEDIhcM0wtK6QK.jpg",
+        "keyword": "Chicken Tikka",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#2"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/5DQcNam5jZuGZuHBBRB9xHkEuWrpUK0Ivd088euA.webp",
+        "rel": "products/5DQcNam5jZuGZuHBBRB9xHkEuWrpUK0Ivd088euA.webp",
+        "keyword": "Veg Biryani",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#3"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/5folO4l9nNGHKCYIVhRget72QFjh4aA37GcdaApt.jpg",
+        "rel": "products/5folO4l9nNGHKCYIVhRget72QFjh4aA37GcdaApt.jpg",
+        "keyword": "Chicken Biryani",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#4"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/maheDF5Obyp9faxalsaW4fZKd3ZmVWDK0M8QkHUf.jpg",
+        "rel": "products/maheDF5Obyp9faxalsaW4fZKd3ZmVWDK0M8QkHUf.jpg",
+        "keyword": "Paneer Butter Masala",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#5"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/13J6O4lDGHeIhELx9Dd3pZ8WumxfVphxbnLVLdOg.webp",
+        "rel": "products/13J6O4lDGHeIhELx9Dd3pZ8WumxfVphxbnLVLdOg.webp",
+        "keyword": "Dal Makhani",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#6"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/4pa5RPBeeCpSjZsGcOzPiZmV3U96A8A8tTELZNDk.jpg",
+        "rel": "products/4pa5RPBeeCpSjZsGcOzPiZmV3U96A8A8tTELZNDk.jpg",
+        "keyword": "Butter Naan",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#7"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/pZx09kTmH48JKcb8hqbIKt9PJi1gSPqGVrcWGxZT.jpg",
+        "rel": "products/pZx09kTmH48JKcb8hqbIKt9PJi1gSPqGVrcWGxZT.jpg",
+        "keyword": "Amul Taaza Milk 500ml",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#13"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/cZg3DOiGM9sM5pemrrSyRB4rt8jnBeobbNEG5Mez.jpg",
+        "rel": "products/cZg3DOiGM9sM5pemrrSyRB4rt8jnBeobbNEG5Mez.jpg",
+        "keyword": "Amul Butter 100g",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#14"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/4LjnprdwNd9vv42Af2TozYVPWsR34GKwksK5Qnky.jpg",
+        "rel": "products/4LjnprdwNd9vv42Af2TozYVPWsR34GKwksK5Qnky.jpg",
+        "keyword": "Farm Eggs (6 pack)",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#15"
+    },
+    {
+        "src": "http://localhost:8000/storage/products/Ditf1MoNHy5LTYlySa8yT1il2FJcm7nzQ9ORyl4p.webp",
+        "rel": "products/Ditf1MoNHy5LTYlySa8yT1il2FJcm7nzQ9ORyl4p.webp",
+        "keyword": "Aashirvaad Atta 5kg",
+        "dir": "products",
+        "w": 600,
+        "h": 400,
+        "ref": "products#21"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/rBo5pCHxosxYnYGzxuJmNAlElQvsvyAtWubC9YX2.gif",
+        "rel": "banner-images/rBo5pCHxosxYnYGzxuJmNAlElQvsvyAtWubC9YX2.gif",
+        "keyword": "Flat 50Rs Off",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/U4ZWJ1vXotvrjL872k6SieDD7dKkefCOcFey5ks2.png",
+        "rel": "banner-images/U4ZWJ1vXotvrjL872k6SieDD7dKkefCOcFey5ks2.png",
+        "keyword": "all in one services",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#14"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/iV2QVyzfdTktWzA9vqhNKhhB4MZ9jQw2u4y04qfk.png",
+        "rel": "banner-images/iV2QVyzfdTktWzA9vqhNKhhB4MZ9jQw2u4y04qfk.png",
+        "keyword": "promo",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#15"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/9AY9iGTZhxIfuUHRMRqfrsb8pCDXD59m3WztIohP.jpg",
+        "rel": "banner-images/9AY9iGTZhxIfuUHRMRqfrsb8pCDXD59m3WztIohP.jpg",
+        "keyword": "promo",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#16"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/8wkmdZShOdOWOSmvlX6QQzPyxKuJKFlCZsl2P7VK.webp",
+        "rel": "banner-images/8wkmdZShOdOWOSmvlX6QQzPyxKuJKFlCZsl2P7VK.webp",
+        "keyword": "promo",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#17"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/faPn6b86jXcUihO6OOFKwGGkLq8PV6kwPpZ6GZ9O.png",
+        "rel": "banner-images/faPn6b86jXcUihO6OOFKwGGkLq8PV6kwPpZ6GZ9O.png",
+        "keyword": "spice villa",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#19"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/Y8JWy1G6ybgECmBT2tTtr9AobRKE4XSctPezUtOg.jpg",
+        "rel": "banner-images/Y8JWy1G6ybgECmBT2tTtr9AobRKE4XSctPezUtOg.jpg",
+        "keyword": "spice villa",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#23"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/QHlkeFVI8kwXAuZOKUwdIhUHxG6sF660YdLlAJiq.webp",
+        "rel": "banner-images/QHlkeFVI8kwXAuZOKUwdIhUHxG6sF660YdLlAJiq.webp",
+        "keyword": "Flash Sale on Dairy Products",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#24"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/nk371vuY9PdpAPW06vFOrEFZ8RrJQahyi3GcKN1z.webp",
+        "rel": "banner-images/nk371vuY9PdpAPW06vFOrEFZ8RrJQahyi3GcKN1z.webp",
+        "keyword": "Flash Sale On Soft Drinks",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#25"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/Z2V8ybRiKxwDjFAihF7Zfh4mSYqNEYtHjQ8Ir6QU.webp",
+        "rel": "banner-images/Z2V8ybRiKxwDjFAihF7Zfh4mSYqNEYtHjQ8Ir6QU.webp",
+        "keyword": "Flash Sale",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#26"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/oEnRG2xmnkufrtdH9Vq3zfOlFnrej0bae2KmDvnH.jpg",
+        "rel": "banner-images/oEnRG2xmnkufrtdH9Vq3zfOlFnrej0bae2KmDvnH.jpg",
+        "keyword": "Credit Card",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#27"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/iFO1AEAoJBjiDHOa5KrMoyBG1Zad6XlrljROf5Om.jpg",
+        "rel": "banner-images/iFO1AEAoJBjiDHOa5KrMoyBG1Zad6XlrljROf5Om.jpg",
+        "keyword": "Credit Card",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#28"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/e92MBD6t2YR5WWDnrKygfWFeKN133L7GrFjfjhRV.webp",
+        "rel": "banner-images/e92MBD6t2YR5WWDnrKygfWFeKN133L7GrFjfjhRV.webp",
+        "keyword": "credit card",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#29"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/dHqRRGiffXc7yQjEYQe5fmJ9O1ghMAR7Ys5Zmkbg.jpg",
+        "rel": "banner-images/dHqRRGiffXc7yQjEYQe5fmJ9O1ghMAR7Ys5Zmkbg.jpg",
+        "keyword": "credit card",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#30"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/P0FMYn6RY73AebrATxWmedLBxlY9u62kXb82CXy2.jpg",
+        "rel": "banner-images/P0FMYn6RY73AebrATxWmedLBxlY9u62kXb82CXy2.jpg",
+        "keyword": "credit card",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#31"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/sgoCdPW3sUZDi9QcDpCpalsUTWqY3s485HaZ4Rtv.webp",
+        "rel": "banner-images/sgoCdPW3sUZDi9QcDpCpalsUTWqY3s485HaZ4Rtv.webp",
+        "keyword": "credit card",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#32"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/gLW68f73yNvlGPqKaEjHyGLxyfNCNn0pRK9sB9Wx.jpg",
+        "rel": "banner-images/gLW68f73yNvlGPqKaEjHyGLxyfNCNn0pRK9sB9Wx.jpg",
+        "keyword": "All Services In Minutes",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#33"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/gbiPj7a5w9ZhURJyUbmPOaTgFnFmxKGfph7DXAJv.jpg",
+        "rel": "banner-images/gbiPj7a5w9ZhURJyUbmPOaTgFnFmxKGfph7DXAJv.jpg",
+        "keyword": "Auto In minutes",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#34"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-images/T1oTVxhPAnl8Tmz44n0LVD1SNDlrRZUrgBYWDQqE.gif",
+        "rel": "banner-images/T1oTVxhPAnl8Tmz44n0LVD1SNDlrRZUrgBYWDQqE.gif",
+        "keyword": "Flat 50Rs Off",
+        "dir": "banner-images",
+        "w": 1200,
+        "h": 520,
+        "ref": "banners#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/banner-videos/IucHY8RwoGXhqfTUY5WmDwmbUe47KqTYLeS3HwWU.mp4",
+        "rel": "banner-videos/IucHY8RwoGXhqfTUY5WmDwmbUe47KqTYLeS3HwWU.mp4",
+        "keyword": "Flat 50Rs Off",
+        "dir": "banner-videos",
+        "w": 0,
+        "h": 0,
+        "ref": "banners#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/762qsJNlMNwKT57tjxLl1b6rpYVxNJ09DUPeTy8X.jpg",
+        "rel": "vendor-images/762qsJNlMNwKT57tjxLl1b6rpYVxNJ09DUPeTy8X.jpg",
+        "keyword": "Spice Villa Restaurant Pvt Ltd",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/8o6xnvy0pp5eDu2usvnooFak1Xp4W3Dne14lJCZP.jpg",
+        "rel": "vendor-images/8o6xnvy0pp5eDu2usvnooFak1Xp4W3Dne14lJCZP.jpg",
+        "keyword": "Rajasthani Rasoi Jaipur",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#3"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/rCEecjkBnlTYFHKrcGq8l6jmDm5MAETbyYjSUBHF.jpg",
+        "rel": "vendor-images/rCEecjkBnlTYFHKrcGq8l6jmDm5MAETbyYjSUBHF.jpg",
+        "keyword": "Handi Restaurant",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#4"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/HPpIMypYSFV3TfkTfLnbr5bhuz7TRyXXvFHrUYxq.jpg",
+        "rel": "vendor-images/HPpIMypYSFV3TfkTfLnbr5bhuz7TRyXXvFHrUYxq.jpg",
+        "keyword": "Laxmi Mishthan Bhandar",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#5"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/SGXNXfC2uWy4VpxevTv2Lw3kREdo7344VBasUqyM.jpg",
+        "rel": "vendor-images/SGXNXfC2uWy4VpxevTv2Lw3kREdo7344VBasUqyM.jpg",
+        "keyword": "Vidhyadhar Dhaba",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#8"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/E5Bt1ACEKxp8IW4YjGMlC4aIqbeTRQUWiXPt4YQ7.jpg",
+        "rel": "vendor-images/E5Bt1ACEKxp8IW4YjGMlC4aIqbeTRQUWiXPt4YQ7.jpg",
+        "keyword": "Jhotwara Kitchen",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#9"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/cBIOmHcM36XkBKucFdIpkwn86WTsM2Kc3L2cMw9u.jpg",
+        "rel": "vendor-images/cBIOmHcM36XkBKucFdIpkwn86WTsM2Kc3L2cMw9u.jpg",
+        "keyword": "Jagatpura Spice Court",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#12"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/wofzeDkNkUtFFPtqNbSG4cInKuFECxrQms3zQto3.jpg",
+        "rel": "vendor-images/wofzeDkNkUtFFPtqNbSG4cInKuFECxrQms3zQto3.jpg",
+        "keyword": "Sitapura Biryani House",
+        "dir": "vendor-images",
+        "w": 400,
+        "h": 400,
+        "ref": "vendors#13"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/jGmLVHP3ERYL77UPpYFxQagvZ5eWRB79YoGu9G6M.jpg",
+        "rel": "vendor-images/jGmLVHP3ERYL77UPpYFxQagvZ5eWRB79YoGu9G6M.jpg",
+        "keyword": "Spice Villa Restaurant Pvt Ltd",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#1"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/ShlbTacbASoIoVN12h4kmRUbjwdByjV8gmYvHjlL.jpg",
+        "rel": "vendor-images/ShlbTacbASoIoVN12h4kmRUbjwdByjV8gmYvHjlL.jpg",
+        "keyword": "Rajasthani Rasoi Jaipur",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#3"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/H39BlfYjTakVijBUi0AhXQcxVOKqPBKOVMXxAMZb.jpg",
+        "rel": "vendor-images/H39BlfYjTakVijBUi0AhXQcxVOKqPBKOVMXxAMZb.jpg",
+        "keyword": "Handi Restaurant",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#4"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/L8o8r8ZgEH76LD8IsBGLlkSSsuhYuv1we5KCrJLY.jpg",
+        "rel": "vendor-images/L8o8r8ZgEH76LD8IsBGLlkSSsuhYuv1we5KCrJLY.jpg",
+        "keyword": "Laxmi Mishthan Bhandar",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#5"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/MP2lWFq2WqH1KKiQRIIt5mxhejXhuliKhwEOkNqY.jpg",
+        "rel": "vendor-images/MP2lWFq2WqH1KKiQRIIt5mxhejXhuliKhwEOkNqY.jpg",
+        "keyword": "Vidhyadhar Dhaba",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#8"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/8k48UXNOCaHKLRA0VWhu4b87P1kNsxsbBSmz47xC.jpg",
+        "rel": "vendor-images/8k48UXNOCaHKLRA0VWhu4b87P1kNsxsbBSmz47xC.jpg",
+        "keyword": "Jhotwara Kitchen",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#9"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/Q6bOJRURwwxweDRzmDzZGYpSivCcgYEiTP8aWDk1.jpg",
+        "rel": "vendor-images/Q6bOJRURwwxweDRzmDzZGYpSivCcgYEiTP8aWDk1.jpg",
+        "keyword": "Jagatpura Spice Court",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#12"
+    },
+    {
+        "src": "http://localhost:8000/storage/vendor-images/gpFBsXGb0TYxRzIz13jLfZG2NQVE2BH7BtZx3fc6.jpg",
+        "rel": "vendor-images/gpFBsXGb0TYxRzIz13jLfZG2NQVE2BH7BtZx3fc6.jpg",
+        "keyword": "Sitapura Biryani House",
+        "dir": "vendor-images",
+        "w": 900,
+        "h": 500,
+        "ref": "vendors#13"
+    }
+]

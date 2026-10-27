@@ -1,0 +1,60 @@
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAppStore } from '@/store/appStore';
+import { SERVICE_THEMES, SERVICE_ROUTES, activeService } from './service-theme';
+import { cn } from '@/lib/utils';
+import type { ServiceType } from '@/types/models';
+
+interface ServiceModuleSwitcherProps {
+  activeService?: ServiceType | null;
+  className?: string;
+}
+
+export function ServiceModuleSwitcher({ activeService: activeProp, className }: ServiceModuleSwitcherProps) {
+  const navigate = useNavigate();
+  // `search` resolves the shared screens (/cart, /checkout, /search) and
+  // `state.type` the product page (its links pass the module via router state),
+  // so the owning module stays lit on every one of its screens.
+  const { pathname, search, state } = useLocation();
+  const setService = useAppStore((s) => s.setService);
+
+  const active =
+    activeProp !== undefined
+      ? activeProp
+      : activeService(pathname, search, (state as { type?: string } | null)?.type);
+
+  const go = (value: ServiceType) => {
+    setService(value);
+    if (pathname === SERVICE_ROUTES[value]) return;
+    navigate(SERVICE_ROUTES[value]);
+  };
+
+  return (
+    <nav aria-label="Services" className={cn('module-glass', className)} role="tablist">
+      <div className="module-glass-inner">
+        {(Object.keys(SERVICE_THEMES) as ServiceType[]).map((value) => {
+          const theme = SERVICE_THEMES[value];
+          const Icon = theme.icon;
+          const isActive = active === value;
+
+          return (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={`Open ${theme.label}`}
+              className={cn('module-glass-tab', isActive ? 'is-active' : 'is-inactive')}
+              onClick={() => go(value)}
+            >
+              <span className="module-glass-tab-content">
+                <Icon className="module-glass-icon" strokeWidth={2.1} />
+                <span className="module-glass-label">{theme.label}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}

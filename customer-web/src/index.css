@@ -1,0 +1,929 @@
+@import "tailwindcss";
+
+@theme {
+  /* Zomato design system type. Outfit is the geometric sans the reference UI
+     uses for every screen; Playfair Display italic carries the display accents. */
+  --font-sans: "Outfit", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+
+  /* -------------------------------------------------------------------- */
+  /* Zomato palette (food module only).                                    */
+  /* Exact equivalents of the reference app's oklch tokens:               */
+  /*   primary   oklch(0.6 0.21 22)   -> #e23242  Zomato red               */
+  /*   dark      oklch(0.24 0.01 260) -> #1c1f24  nav / dark surface       */
+  /*   veg       oklch(0.55 0.15 150) -> #05893e  veg green                */
+  /*   gold      oklch(0.72 0.11 75)  -> #cd9a50  PRO gold                 */
+  /*   info      oklch(0.55 0.18 260) -> #296cd8  info blue                */
+  /* -------------------------------------------------------------------- */
+  --color-z-red: #e23242;
+  --color-z-red-dark: #c72232;
+  --color-z-red-soft: #fdeaec;
+  --color-z-green: #05893e;
+  --color-z-green-soft: #e7f6ed;
+  --color-z-dark: #1c1f24;
+  --color-z-gold: #cd9a50;
+  --color-z-gold-soft: #fbedd1;
+  --color-z-info: #296cd8;
+  --color-z-info-soft: #e3efff;
+
+  --color-brand-50: #eef6ff;
+  --color-brand-100: #d9ecff;
+  --color-brand-200: #bcdeff;
+  --color-brand-300: #8ecaff;
+  --color-brand-400: #59abff;
+  --color-brand-500: #3386ff;
+  --color-brand-600: #1b66f5;
+  --color-brand-700: #1451e1;
+  --color-brand-800: #1743b6;
+  --color-brand-900: #193c8f;
+  --color-brand-950: #142657;
+
+  --color-accent-50: #fff4ed;
+  --color-accent-100: #ffe6d5;
+  --color-accent-200: #fec9aa;
+  --color-accent-300: #fda274;
+  --color-accent-400: #fb703c;
+  --color-accent-500: #f94d16;
+  --color-accent-600: #ea320c;
+  --color-accent-700: #c2230c;
+  --color-accent-800: #9a1e12;
+  --color-accent-900: #7c1c12;
+
+  /* Food module palette — Zomato red. Scoped to Food: Grocery and Rides read
+     their own grocery and brand scales, so nothing outside the food module
+     changes when this ramp does. The 600 step is the exact Zomato red. */
+  --color-food-50: #fdecee;
+  --color-food-100: #fbdde0;
+  --color-food-200: #f7bcc1;
+  --color-food-300: #f19aa2;
+  --color-food-400: #ec6b78;
+  --color-food-500: #e64252;
+  --color-food-600: #e23242;
+  --color-food-700: #c72232;
+  --color-food-800: #a81d2b;
+  --color-food-900: #8a1924;
+  --color-food-950: #4e0d11;
+
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #f59e0b;
+
+  /* Grocery quick-commerce: warm yellow / cream palette.
+     Scoped to the Grocery service only; Food and Ride keep their own themes. */
+  --color-grocery-50: #fffdf5;
+  --color-grocery-100: #fff8e1;
+  --color-grocery-200: #fdf0c8;
+  --color-grocery-300: #fae39a;
+  --color-grocery-400: #f7cf4f;
+  --color-grocery-500: #f5b921;
+  --color-grocery-600: #e0a008;
+  --color-grocery-700: #b87f06;
+  --color-grocery-800: #94620f;
+  --color-grocery-900: #7a5212;
+
+  --color-ink-50: #f7f6f4;
+  --color-ink-100: #e9e7e3;
+  --color-ink-500: #6b675f;
+  --color-ink-700: #37332e;
+  --color-ink-800: #211d19;
+  --color-ink-900: #17140f;
+  --color-ink-950: #100e0a;
+
+  --shadow-card: 0 1px 2px rgb(16 14 10 / 0.04), 0 6px 18px -8px rgb(16 14 10 / 0.1);
+  --shadow-float: 0 12px 32px -8px rgb(16 14 10 / 0.22);
+  --shadow-pill: 0 4px 14px -6px rgb(16 14 10 / 0.18);
+}
+
+@layer base {
+  :root {
+    --page-gutter: 1rem;
+
+    /* Height of the fixed bottom module dock (`layout/BottomNav`) — the
+       Food / Grocery / Rides switcher that replaces the old five-item page
+       nav. Every fixed or sticky action bar (checkout, view-cart, the
+       restaurant search bar) and every page's bottom padding offsets itself
+       from this single value, so resizing the dock stays a one-line change.
+       Callers add `env(safe-area-inset-bottom)` themselves, because the dock
+       grows by the inset on a notched device. The value is a floor: the dock
+       uses it as `min-height`, so as long as it is >= the switcher's natural
+       height the fixed bars sit flush against the dock's top edge. Measured
+       for the slimmed-down light-glass dock (8px padding + 65px track + 1px
+       border). */
+    --bottom-dock-h: 5.125rem;
+
+    /* Restaurant cards — the "notch" variant.
+
+       Shared geometry for every restaurant card that opts into the notched
+       design (the Food recommendation rail, the Food restaurant grid and the
+       Restaurants grid). The values are deliberately unit-free and derived
+       from the card's own width, so the same card reads correctly on a phone
+       and on a desktop.
+
+       `--notch-surface` is the colour of the rating notch itself (see
+       `.notch-notch`). The card around it is transparent — no tile, no
+       shadow, no border — so the page background shows through around the
+       photo and the info area. The notch keeps its own white surface and
+       still reads as a cut-out in the photo's bottom-left corner. */
+    --notch-radius: 18px; /* card + image top-corner radius */
+    --notch-curve: 14px; /* radius of the two inward curves of the notch */
+    --notch-aspect: 1.25; /* image aspect ratio (width / height) */
+    --notch-overhang: 6px; /* how far the rating pill dips below the image */
+    --notch-gap: 5px; /* breathing room around the rating pill, inside the cutout */
+    --notch-surface: var(--color-white);
+  }
+  @media (min-width: 640px) {
+    :root {
+      --page-gutter: 1.5rem;
+    }
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink-50 text-neutral-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+  img {
+    -webkit-user-drag: none;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+  }
+  .snap-start {
+    scroll-snap-align: start;
+  }
+  .snap-center {
+    scroll-snap-align: center;
+  }
+  .tap {
+    @apply cursor-pointer select-none;
+    -webkit-touch-callout: none;
+  }
+  .edge-bleed {
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding-inline: var(--page-gutter);
+  }
+  /* Recommended rail: bleeds to the viewport edges with a left gutter only, so
+     the last card is clipped at the true right edge while the first card keeps
+     its gutter. Horizontally scrollable, vertically clipped (grid rows still
+     stack and scroll with the page). */
+  .rec-rail {
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding-inline-start: var(--page-gutter);
+    /* Bottom padding clears the rating badge that overhangs the card image. */
+    padding-block: 4px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+  }
+  /* Two fixed rows, filled column-by-column (1&2 → column 1, 3&4 → column 2,
+     …) so the rail is a horizontally scrollable pair of rows. Card width is
+     derived from the container, never fixed; exactly 3 columns are visible on
+     phones, rising on wider content. `auto` rows mean an odd restaurant count
+     simply leaves the last column half-full — never a third row. */
+  .rec-grid {
+    --rec-gap: 0.75rem;
+    display: grid;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 2 * var(--rec-gap)) / 3);
+    column-gap: var(--rec-gap);
+    row-gap: var(--rec-gap);
+  }
+  @media (min-width: 640px) {
+    .rec-grid {
+      grid-auto-columns: calc((100% - 3 * var(--rec-gap)) / 4);
+    }
+  }
+  @media (min-width: 1024px) {
+    .rec-grid {
+      grid-auto-columns: calc((100% - 4 * var(--rec-gap)) / 5);
+    }
+  }
+}
+
+/* Top-band theme.
+
+   The upper section of every top-level route — header band, module switcher,
+   search and (on `/`) the hero canvas — is painted from one set of custom
+   properties instead of colours written into each component. `AppShell` points
+   them at the route's theme with `data-service-theme`, so the selected module,
+   the banner CTA, the microphone and the background behind them all change
+   together and can never disagree.
+
+   `[data-service-theme='neutral']` is `/` and every route that never sets the
+   attribute: neither block below needs a `neutral` override because `:root`
+   carries the Blue (Rides) treatment already. Nothing outside the band styles
+   from these; the default exists so a variable can never resolve to nothing.
+
+   Two gradients, cut to meet: `--hero-header-bg` ends on the exact stop
+   `--hero-bg` starts from, which is what makes the header band and the
+   canvas below it one surface rather than two gradients meeting at a seam.
+   `/food` and `/grocery` only paint the header-band gradient (their pages bear
+   no canvas), so the `--hero-bg` values there exist purely for the road. */
+:root,
+[data-service-theme='rides'] {
+  --hero-header-bg: linear-gradient(to bottom, var(--color-brand-800), var(--color-brand-900));
+  --hero-bg: linear-gradient(to bottom, var(--color-brand-900), var(--color-brand-950));
+  --hero-surface: color-mix(in srgb, var(--color-white) 12%, transparent);
+  --hero-active-color: var(--color-brand-600);
+  /* Foreground that sits *on* the active colour: white on Food and Rides,
+     near-black on Grocery's bright gold module. */
+  --hero-active-contrast: var(--color-white);
+  --hero-search-accent: var(--color-brand-600);
+  --hero-muted-text: color-mix(in srgb, var(--color-white) 55%, transparent);
+  /* Fill for an unselected module: a shade darker than the band behind it. */
+  --hero-module-dark: var(--color-brand-950);
+}
+
+[data-service-theme='food'] {
+  /* Zomato's top band: one flat, saturated red from edge to edge — no
+     burgundy, no gradient. Every accent on the band (selected module, banner
+     CTA, microphone, cart badge) reads the same red or the dark surface. */
+  --hero-header-bg: linear-gradient(to bottom, var(--color-z-red), var(--color-z-red));
+  --hero-bg: linear-gradient(to bottom, var(--color-z-red), var(--color-z-red-dark));
+  --hero-active-color: var(--color-z-red);
+  --hero-search-accent: var(--color-z-red);
+  --hero-module-dark: var(--color-z-red-dark);
+  --hero-muted-text: color-mix(in srgb, var(--color-white) 85%, transparent);
+  --hero-surface: color-mix(in srgb, var(--color-white) 18%, transparent);
+}
+
+[data-service-theme='grocery'] {
+  --hero-header-bg: linear-gradient(to bottom, var(--color-grocery-800), var(--color-grocery-900));
+  --hero-bg: linear-gradient(
+    to bottom,
+    var(--color-grocery-900),
+    color-mix(in srgb, var(--color-grocery-900) 60%, var(--color-ink-950))
+  );
+  --hero-surface: color-mix(in srgb, var(--color-grocery-100) 14%, transparent);
+  --hero-active-color: var(--color-grocery-500);
+  --hero-active-contrast: var(--color-ink-900);
+  --hero-search-accent: var(--color-grocery-600);
+  --hero-muted-text: color-mix(in srgb, var(--color-grocery-200) 72%, transparent);
+  --hero-module-dark: var(--color-grocery-900);
+}
+
+/* Surfaces painted from the variables above. Components opt in with these
+   classes; no hero colour is written into a component itself. */
+@layer components {
+  .hero-header-bg {
+    background-image: var(--hero-header-bg);
+  }
+
+  .hero-bg {
+    background-image: var(--hero-bg);
+  }
+
+  /* Translucent panel sitting on the hero: the promo cards' brand surface. */
+  .hero-surface {
+    background-color: var(--hero-surface);
+  }
+
+  /* The two accents that must always be the active service's colour. */
+  .hero-cta {
+    background-color: var(--hero-active-color);
+    color: var(--hero-active-contrast);
+  }
+
+  .hero-search-accent {
+    background-color: var(--hero-search-accent);
+    color: var(--hero-active-contrast);
+  }
+
+  /* Small count badge on the themed band (the cart), so it always matches the
+     active module instead of the stored service. */
+  .hero-badge {
+    background-color: var(--hero-active-color);
+    color: var(--hero-active-contrast);
+  }
+
+  /* Secondary text on the hero, tuned per service so it stays legible on the
+     band it sits on. */
+  .hero-muted {
+    color: var(--hero-muted-text);
+  }
+
+  /* Gentle hand-off into the light content area below the hero, so the change
+     of surface never lands as a hard line. Fades to the page colour (`ink-50`)
+     rather than to white, because that is what the content area is painted. */
+  .hero-fade {
+    background-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in srgb, var(--color-ink-50) 45%, transparent) 55%,
+      var(--color-ink-50) 100%
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Restaurant cards — the "notch" variant                             */
+  /* ------------------------------------------------------------------ */
+
+  /* A card whose image has rounded top corners, an offer chip at the top-left
+     and a green rating pill sitting in a white notch cut into the bottom-left
+     of the image.
+
+     The card itself is NOT a tile: it has no background, no shadow and no
+     border, so the page background shows through around the photo and the
+     info area below it. Only the notch keeps a surface of its own
+     (`--notch-surface`, see `.notch-notch`), which is what makes the cut-out
+     in the photo's bottom-left corner read as a notch. */
+
+  .notch-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    background-color: transparent;
+    border-radius: var(--notch-radius);
+    overflow: hidden;
+  }
+
+  /* The image block: rounded at the top only — the bottom-left corner is
+     where the notch is cut. The aspect ratio is a token, so the media keeps
+     its proportion at every card width. */
+  .notch-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--notch-aspect);
+    overflow: hidden;
+    background-color: var(--color-neutral-100);
+    border-radius: var(--notch-radius) var(--notch-radius) 0 0;
+  }
+
+  /* Offer chip, top-left. It keeps the same inset from the media's edges, so
+     it never runs into the closed overlay. */
+  .notch-offer {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 3;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background-color: rgb(23 20 15 / 0.72);
+    color: var(--color-white);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 5px 7px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+  }
+
+  .notch-closed {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23 20 15 / 0.55);
+    color: var(--color-white);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* The notch itself.
+
+     It is anchored to the top edge of the info area (`bottom: 100%`), so it
+     always sits exactly on the image/info boundary no matter how tall the
+     image is — nothing here depends on a hardcoded offset. The
+     `translateY` lets the rating pill dip a few pixels below the image, which
+     is what makes it read as "on the boundary" rather than "floating over
+     the photo".
+
+     The shape is the reference one: a flat-topped block whose top-right
+     corner is rounded, plus the two inward curves (`::before` above-left,
+     `::after` to the right). The curves are painted with a radial gradient
+     whose transparent centre is the quarter-disc that lets the photo show
+     through.
+
+     The block hugs the rating pill: its height is the pill's height plus the
+     `--notch-gap` breathing room, so the pill sits exactly `--notch-gap`
+     below the top edge of the white cutout and `--notch-gap` left of its
+     right edge. Because the block still overlaps the info area by
+     `--notch-overhang`, the cut-out never shows a seam where it meets the
+     details below it. The notch keeps its own white surface — it is the one
+     piece of the card that is not the page background. */
+  .notch-notch {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    width: max-content;
+    padding: var(--notch-gap) var(--notch-gap) 0 0;
+    background-color: var(--notch-surface);
+    border-top-right-radius: var(--notch-curve);
+    line-height: 0;
+    transform: translateY(var(--notch-overhang));
+  }
+
+  .notch-notch::before,
+  .notch-notch::after {
+    content: '';
+    position: absolute;
+    width: var(--notch-curve);
+    height: var(--notch-curve);
+    background: radial-gradient(
+      circle at 100% 0,
+      transparent var(--notch-curve),
+      var(--notch-surface) calc(var(--notch-curve) + 0.5px)
+    );
+  }
+
+  /* The curve above the notch: a concave bite out of the photo's
+     bottom-left corner. */
+  .notch-notch::before {
+    left: 0;
+    top: calc(-1 * var(--notch-curve));
+  }
+
+  /* The curve to the right of the notch, closing the sweep. */
+  .notch-notch::after {
+    right: calc(-1 * var(--notch-curve));
+    bottom: 0;
+  }
+
+  /* Compact green rating badge: white star + bold rating, one decimal.
+     Zomato's badge is a solid green tile rather than a full pill. */
+  .notch-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background-color: var(--color-z-green);
+    color: var(--color-white);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 5px 8px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-pill);
+  }
+
+  /* The info area under the image. It is transparent: the page background
+     shows through it, just like around the photo. */
+  .notch-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 12px 12px;
+  }
+
+  .notch-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .notch-name {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--color-neutral-900);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .notch-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
+    color: var(--color-neutral-500);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .notch-meta-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Compact variant for the narrow recommendation rail. */
+  .notch-card-sm .notch-body {
+    padding: 12px 10px 10px;
+  }
+
+  .notch-card-sm .notch-name {
+    font-size: 13px;
+  }
+
+  .notch-card-sm .notch-meta {
+    font-size: 11px;
+  }
+
+  .notch-card-sm .notch-rating {
+    font-size: 11px;
+    padding: 4px 7px;
+  }
+
+  .notch-card-sm .notch-offer {
+    left: 6px;
+    top: 6px;
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+}
+
+/* Service module tabs.
+
+   The tab silhouettes are drawn as inline SVG paths rather than `clip-path`, so
+   the flared outline of one tab can overlap its neighbour (that overlap is what
+   makes the row read as one connected component). Both the tabs and the SVGs keep
+   `overflow: visible` for exactly that reason — clipping would cut the flare off
+   and leave visible seams between modules.
+
+   Every colour comes from the hero theme variables above, which are themselves
+   composed from the `--color-*` tokens; nothing here hardcodes a raw colour,
+   and no styling is applied from JSX. */
+@layer components {
+  .module-tabs {
+    display: grid;
+    /* `minmax(0, 1fr)` rather than a bare `1fr` so a long label can shrink
+       instead of forcing the column wider and overflowing the viewport. */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    /* The tabs deliberately paint past their own columns — that is what makes
+       them touch — but the outermost flare would otherwise push past the page
+       gutter and give the document a horizontal scrollbar. Reserve enough room
+       to absorb it; the padding scales with the column width it has to absorb. */
+    padding-inline: 3%;
+  }
+
+  .module-tab {
+    position: relative;
+    /* Confines the SVG's negative z-index to the button, so the silhouette
+       paints behind the label but never behind the tab's ancestors. */
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.5rem 0.25rem 0.875rem;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    overflow: visible;
+  }
+
+  .module-tab.active {
+    /* Raised: lifted above the strip and reaching lower than its neighbours. */
+    z-index: 2;
+    margin-top: -0.5rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .module-background {
+    position: absolute;
+    /* Paints behind `.module-content`, which has no background of its own. */
+    z-index: -1;
+    /* The paths are inset inside their own viewBox (the idle path spans 110 of
+       124 units), so an SVG sized to exactly one cell leaves a visible gap
+       between modules — measured at ~11% of the cell width. Widen the SVG box
+       beyond the cell so adjacent paths meet edge to edge, and let the active
+       path (which fills 136 of 136 units) sit proud of its neighbours on both
+       sides, which is what makes it read as wider. This is also why
+       `overflow: visible` is required: the box genuinely exceeds its cell. */
+    top: 0;
+    left: -8%;
+    /* Both dimensions are set explicitly. The SVG is a replaced element with an
+       intrinsic aspect ratio from its `viewBox`, so leaving either dimension
+       `auto` makes it resolve from that ratio instead of from the tab — which
+       rendered a 77px silhouette inside a 66px button and spilled the shape
+       below its own tab. `preserveAspectRatio="none"` stretches the path to
+       whatever box these produce, so the proportions are ours to choose. */
+    width: 116%;
+    height: 100%;
+    right: auto;
+    bottom: auto;
+    /* Required so the path that flares outside the viewBox is not clipped. */
+    overflow: visible;
+    pointer-events: none;
+    transition: transform 0.2s ease-out;
+  }
+
+  .module-background path {
+    /* Inactive fill: a shade darker than whichever band the active service
+       paints, so the silhouette always reads as recessed against it. */
+    fill: color-mix(in srgb, var(--hero-module-dark) 55%, transparent);
+    stroke: color-mix(in srgb, var(--color-white) 12%, transparent);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    transition: fill 0.2s ease-out;
+  }
+
+  .module-tab.active .module-background path {
+    /* Selected fill: the active service's colour — Food's #d42021, Grocery's
+       gold, Rides' blue. The same value drives the banner CTA and the search
+       microphone, so the highlighted module always matches its surroundings. */
+    fill: var(--hero-active-color);
+    stroke: color-mix(in srgb, var(--color-white) 22%, transparent);
+  }
+
+  .module-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .module-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: color-mix(in srgb, var(--color-white) 72%, transparent);
+    transition: color 0.2s ease-out, transform 0.2s ease-out;
+  }
+
+  .module-tab.active .module-icon {
+    color: var(--hero-active-contrast);
+    transform: scale(1.06);
+  }
+
+  .module-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: color-mix(in srgb, var(--color-white) 62%, transparent);
+  }
+
+  .module-tab.active .module-label {
+    font-size: 0.75rem;
+    color: var(--hero-active-contrast);
+  }
+
+  .module-tab:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: -2px;
+    border-radius: 0.5rem;
+  }
+
+  /* Applied from JSX (`has-badge`) rather than via a CSS `:has()` selector, so
+     the layout does not depend on `:has()` support. Reserves room above the
+     label so a badge can never overlap it. */
+  .module-tab.has-badge {
+    padding-top: 1.125rem;
+  }
+
+  .time-badge {
+    position: absolute;
+    top: 0.25rem;
+    left: 50%;
+    translate: -50% 0;
+    padding-inline: 0.375rem;
+    border-radius: 9999px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--color-ink-900);
+    background: var(--color-white);
+  }
+}
+
+@theme {
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-fade-up: fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-sheet-up: sheet-up 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down: slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-pop: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-wiggle: wiggle 0.4s ease-in-out;
+  --animate-image-in: image-in 0.35s ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes sheet-up {
+    from { opacity: 0.4; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(-8deg); }
+    60% { transform: rotate(8deg); }
+  }
+  @keyframes image-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* Service module switcher - Glassmorphism
+   NOTE: this must live outside `@theme` — @theme only accepts theme tokens and
+   nested selectors there are dropped by Tailwind, which left the switcher
+   unstyled (icons/labels floating on the header background). */
+@layer components {
+  .module-glass {
+    width: 100%;
+    padding: 0;
+  }
+
+  .module-glass-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 24px;
+    /* Light frosted track instead of the old dark pill: 6% ink over the dock's
+       white blur reads as smoked glass, so nothing renders as a black plate
+       and the solid white active chip above it stays clearly raised.
+       The two-stop white wash on top is the sheen — light falling across the
+       glass — layered over that tint, and the backdrop blur is pushed to
+       24px/180% so whatever scrolls beneath smears into a soft field rather
+       than showing through as shapes. */
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.74) 0%,
+        rgba(255, 255, 255, 0.2) 58%,
+        rgba(255, 255, 255, 0.42) 100%
+      ),
+      rgba(23, 20, 15, 0.07);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    box-shadow:
+      0 8px 24px -8px rgba(16, 14, 10, 0.22),
+      0 1px 3px rgba(16, 14, 10, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.38);
+    padding: 4px;
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .module-glass-tab {
+    position: relative;
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #6b675f;
+    cursor: pointer;
+    padding: 6px 8px 10px;
+    border-radius: 20px;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+    text-align: center;
+  }
+
+  .module-glass-tab:focus-visible {
+    outline: 2px solid rgba(244, 123, 53, 0.9);
+    outline-offset: 2px;
+  }
+
+  .module-glass-tab.is-active {
+    /* Slight top-lit gradient so the raised chip reads as the same material as
+       the track, not a flat white sticker. */
+    background: linear-gradient(180deg, #ffffff 0%, #faf9f7 100%);
+    border-color: rgba(16, 14, 10, 0.06);
+    box-shadow:
+      0 6px 14px -6px rgba(16, 14, 10, 0.28),
+      0 1px 3px rgba(16, 14, 10, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    color: #17140f;
+  }
+
+  .module-glass-tab.is-inactive {
+    background: transparent;
+  }
+
+  .module-glass-tab.is-inactive:hover {
+    background: rgba(23, 20, 15, 0.05);
+  }
+
+  .module-glass-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .module-glass-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+    flex: none;
+  }
+
+  .module-glass-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .module-glass-tab.is-active .module-glass-label {
+    font-weight: 700;
+  }
+
+  .module-glass-underline {
+    position: absolute;
+    left: 26%;
+    right: 26%;
+    bottom: 4px;
+    height: 2px;
+    border-radius: 9999px;
+    background: #F47B35;
+    box-shadow: 0 0 8px rgba(244, 123, 53, 0.55);
+    pointer-events: none;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .module-glass-inner {
+      background: rgba(240, 238, 235, 0.96);
+    }
+  }
+}

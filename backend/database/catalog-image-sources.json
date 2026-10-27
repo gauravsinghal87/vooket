@@ -1,0 +1,1143 @@
+{
+    "_comment": "Semantic image plan for the Grocery catalog. Leaf subjects resolve to the lead image of the named Wikipedia article, which is by construction a photo of that exact subject, so nothing depends on fuzzy keyword search. Parent categories are collages of the images of the subjects they group. No Blinkit artwork, no brand packaging, no scenic filler: every file shows the thing it stands for.",
+    "subjects": {
+        "product-banana": {
+            "dir": "products",
+            "name": "banana",
+            "article": "Banana",
+            "must": [
+                "banana"
+            ],
+            "prefer": [
+                "bunch",
+                "yellow",
+                "variet",
+                "single",
+                "fruit"
+            ],
+            "avoid": [
+                "leaf",
+                "flower",
+                "slice",
+                "bread",
+                "chip",
+                "pudding",
+                "plantation",
+                "harvest"
+            ]
+        },
+        "product-tomato": {
+            "dir": "products",
+            "name": "tomato",
+            "article": "Tomato",
+            "must": [
+                "tomato"
+            ],
+            "prefer": [
+                "red",
+                "cluster",
+                "vine",
+                "ripe",
+                "fresh",
+                "round"
+            ],
+            "avoid": [
+                "sauce",
+                "paste",
+                "soup",
+                "juice",
+                "plant",
+                "flower",
+                "puree",
+                "ketchup",
+                "worm",
+                "disease",
+                "rot",
+                "blemish",
+                "defect",
+                "green",
+                "unripe"
+            ]
+        },
+        "product-milk": {
+            "dir": "products",
+            "name": "milk",
+            "article": "Milk",
+            "must": [
+                "milk"
+            ],
+            "prefer": [
+                "bottle",
+                "glass",
+                "glass of",
+                "jug",
+                "white",
+                "fresh",
+                "pint"
+            ],
+            "avoid": [
+                "choco",
+                "almond",
+                "oat",
+                "soy",
+                "coconut",
+                "powder",
+                "formula",
+                "chocolate",
+                "shake",
+                "malted",
+                "curd",
+                "cheese",
+                "cream",
+                "butter",
+                "goat",
+                "buffalo",
+                "camel",
+                "buffalo milk",
+                "condensed",
+                "evaporated",
+                "maiden"
+            ]
+        },
+        "product-butter": {
+            "dir": "products",
+            "name": "butter",
+            "article": "Butter",
+            "must": [
+                "butter"
+            ],
+            "prefer": [
+                "block",
+                "dairy",
+                "salted",
+                "unsalted",
+                "stick",
+                "cube",
+                "churn",
+                "slice of"
+            ],
+            "avoid": [
+                "peanut",
+                "almond",
+                "cocoa",
+                "cacao",
+                "shea",
+                "mango",
+                "apple",
+                "cupcake",
+                "cookie",
+                "cake",
+                "flower",
+                "fly",
+                "bird",
+                "fish",
+                "buttercup",
+                "artichoke",
+                "bar",
+                "wrapper",
+                "fly",
+                "puff",
+                "pastry"
+            ]
+        },
+        "product-eggs": {
+            "dir": "products",
+            "name": "eggs",
+            "article": "Egg as food",
+            "file": "File:6-Pack-Chicken-Eggs.jpg"
+        },
+        "product-bread": {
+            "dir": "products",
+            "name": "bread",
+            "article": "Bread",
+            "must": [
+                "bread"
+            ],
+            "prefer": [
+                "loaf",
+                "white",
+                "sliced",
+                "wheat",
+                "bread loaf",
+                "whole"
+            ],
+            "avoid": [
+                "starter",
+                "sourdough starter",
+                "pudding",
+                "garlic",
+                "pita",
+                "flatbread",
+                "banana",
+                "breadsticks",
+                "crum",
+                "rye",
+                "sliced loaf of white",
+                "dough",
+                "bun",
+                "roll",
+                "stick",
+                "rolls"
+            ]
+        },
+        "product-oil": {
+            "dir": "products",
+            "name": "cooking-oil",
+            "article": "Vegetable oil",
+            "must": [
+                "oil"
+            ],
+            "prefer": [
+                "bottle",
+                "vegetable",
+                "sunflower",
+                "cooking",
+                "refined",
+                "palm"
+            ],
+            "avoid": [
+                "olive",
+                "essential",
+                "motor",
+                "engine",
+                "lubric",
+                "paint",
+                "varnish",
+                "coconut only",
+                "hair",
+                "salad dressing",
+                "mayonnaise"
+            ]
+        },
+        "product-atta": {
+            "dir": "products",
+            "name": "atta-flour",
+            "article": "Flour",
+            "must": [
+                "flour"
+            ],
+            "prefer": [
+                "wheat",
+                "atta",
+                "whole wheat",
+                "bag",
+                "sack",
+                "chakki",
+                "plain"
+            ],
+            "avoid": [
+                "soy",
+                "rice flour",
+                "cornstarch",
+                "almond",
+                "nut",
+                "powdered",
+                "pastry",
+                "bread",
+                "self raising",
+                "rye",
+                "cake",
+                "couscous",
+                "semolina"
+            ]
+        },
+        "product-rice": {
+            "dir": "products",
+            "name": "rice",
+            "article": "Basmati rice",
+            "must": [
+                "rice"
+            ],
+            "prefer": [
+                "basmati",
+                "grain",
+                "grains",
+                "white",
+                "raw"
+            ],
+            "avoid": [
+                "field",
+                "paddy",
+                "plant",
+                "cooked",
+                "dish",
+                "noodle",
+                "cake",
+                "sprout",
+                "bran",
+                "husk",
+                "straw",
+                "cake"
+            ]
+        },
+        "product-chips": {
+            "dir": "products",
+            "name": "chips",
+            "article": "Potato crisps",
+            "must": [
+                "crisp",
+                "chip"
+            ],
+            "prefer": [
+                "packet",
+                "bag",
+                "potato",
+                "tub",
+                "stack"
+            ],
+            "avoid": [
+                "wood",
+                "board",
+                "tortilla",
+                "kettle",
+                "fish",
+                "electronic",
+                "dried"
+            ]
+        },
+        "product-noodles": {
+            "dir": "products",
+            "name": "instant-noodles",
+            "article": "Instant noodles",
+            "must": [
+                "noodle",
+                "ramen",
+                "noodles"
+            ],
+            "prefer": [
+                "block",
+                "dry",
+                "instant",
+                "packet",
+                "cup"
+            ],
+            "avoid": [
+                "soup",
+                "chicken noodle soup",
+                "beef",
+                "ramen bowl",
+                "fried",
+                "dish",
+                "spaghetti",
+                "egg noodle",
+                "rice noodle",
+                "lasagna"
+            ]
+        },
+        "product-cola": {
+            "dir": "products",
+            "name": "soft-drink",
+            "article": "Soft drink",
+            "must": [
+                "cola",
+                "soft drink",
+                "soda"
+            ],
+            "prefer": [
+                "bottle",
+                "glass",
+                "drink",
+                "fizzy"
+            ],
+            "avoid": [
+                "coca-cola",
+                "pepsi",
+                "sprite",
+                "fanta",
+                "dr pepper",
+                "mountain dew",
+                "red bull",
+                "energy"
+            ]
+        },
+        "product-detergent": {
+            "dir": "products",
+            "name": "detergent",
+            "article": "Detergent",
+            "must": [
+                "detergent",
+                "washing powder"
+            ],
+            "prefer": [
+                "powder",
+                "box",
+                "laundry",
+                "washing machine"
+            ],
+            "avoid": [
+                "dish",
+                "hand",
+                "liquid",
+                "soap",
+                "bio",
+                "biology",
+                "dishwasher",
+                "industrial",
+                "enzyme",
+                "test"
+            ]
+        },
+        "product-toothpaste": {
+            "dir": "products",
+            "name": "toothpaste",
+            "article": "Toothpaste",
+            "must": [
+                "toothpaste"
+            ],
+            "prefer": [
+                "tube",
+                "brush",
+                "mint",
+                "fluoride"
+            ],
+            "avoid": [
+                "toothbrush only",
+                "whitening kit",
+                "powder"
+            ]
+        },
+        "category-fresh-fruits": {
+            "dir": "category-images",
+            "name": "fresh-fruits",
+            "article": "Fruit",
+            "must": [
+                "fruit"
+            ],
+            "prefer": [
+                "platter",
+                "assort",
+                "market",
+                "bowl",
+                "mixed"
+            ],
+            "avoid": [
+                "tree",
+                "plant",
+                "flower",
+                "seed",
+                "nomenclature",
+                "botanical",
+                "diagram",
+                "museum",
+                "wild",
+                "leaf",
+                "theory"
+            ]
+        },
+        "category-fresh-vegetables": {
+            "dir": "category-images",
+            "name": "fresh-vegetables",
+            "article": "Vegetable",
+            "must": [
+                "vegetable",
+                "market"
+            ],
+            "prefer": [
+                "market",
+                "assort",
+                "fresh",
+                "mixed"
+            ],
+            "avoid": [
+                "diagram",
+                "chart",
+                "nomenclature",
+                "soup",
+                "raw bar",
+                "definition"
+            ]
+        },
+        "category-coriander-greens": {
+            "dir": "category-images",
+            "name": "coriander-greens",
+            "article": "Coriander",
+            "must": [
+                "coriander",
+                "cilantro"
+            ],
+            "prefer": [
+                "bunch",
+                "leaf",
+                "leaves",
+                "fresh",
+                "herb"
+            ],
+            "avoid": [
+                "root",
+                "seed",
+                "flower",
+                "spice jar",
+                "powder",
+                "plant",
+                "cilantro flower"
+            ]
+        },
+        "category-yogurt-curd": {
+            "dir": "category-images",
+            "name": "yogurt-curd",
+            "article": "Yogurt",
+            "must": [
+                "yogurt",
+                "yoghurt",
+                "curd",
+                "dahi"
+            ],
+            "prefer": [
+                "bowl",
+                "plain",
+                "cup",
+                "natural",
+                "fresh"
+            ],
+            "avoid": [
+                "drink",
+                "smoothie",
+                "beverage",
+                "frozen",
+                "parfait",
+                "ice",
+                "frozen yogurt shop",
+                "culture",
+                "microbiology"
+            ]
+        },
+        "category-buns-rolls": {
+            "dir": "category-images",
+            "name": "buns-rolls",
+            "article": "Bun",
+            "must": [
+                "bun",
+                "roll"
+            ],
+            "prefer": [
+                "bread",
+                "loaf",
+                "buns",
+                "rolls"
+            ],
+            "avoid": [
+                "spring roll",
+                "egg roll",
+                "bunny",
+                "rabbit",
+                "hair",
+                "cinnamon roll recipe",
+                "burger bun only",
+                "roll dough"
+            ]
+        },
+        "category-cakes": {
+            "dir": "category-images",
+            "name": "cakes",
+            "article": "Cake",
+            "must": [
+                "cake"
+            ],
+            "prefer": [
+                "birthday",
+                "layer",
+                "whole",
+                "chocolate",
+                "cream"
+            ],
+            "avoid": [
+                "pancake",
+                "cupcake",
+                "cheesecake slice only",
+                "recipe",
+                "icing only",
+                "tart",
+                "flan",
+                "sponge only",
+                "bread"
+            ]
+        },
+        "category-pulses-dal": {
+            "dir": "category-images",
+            "name": "pulses-dal",
+            "article": "Lentil",
+            "must": [
+                "lentil",
+                "dal",
+                "pulse",
+                "masoor"
+            ],
+            "prefer": [
+                "bowl",
+                "red",
+                "green",
+                "split",
+                "raw",
+                "seeds"
+            ],
+            "avoid": [
+                "soup",
+                "stew",
+                "dal makhani",
+                "cooked dish",
+                "protein diagram",
+                "lab"
+            ]
+        },
+        "category-spices": {
+            "dir": "category-images",
+            "name": "spices",
+            "article": "Spice",
+            "must": [
+                "spice",
+                "masala",
+                "turmeric",
+                "chili",
+                "pepper",
+                "cumin"
+            ],
+            "prefer": [
+                "bowl",
+                "powder",
+                "ground",
+                "market",
+                "indian",
+                "mixed",
+                "whole"
+            ],
+            "avoid": [
+                "chili pepper spray",
+                "hot pepper plant",
+                "pepper spray",
+                "map",
+                "diagram",
+                "rack of spices museum",
+                "star anise only",
+                "wall"
+            ]
+        },
+        "category-ghee": {
+            "dir": "category-images",
+            "name": "ghee",
+            "article": "Ghee",
+            "must": [
+                "ghee"
+            ],
+            "prefer": [
+                "jar",
+                "bottle",
+                "bowl",
+                "clarified",
+                "lqd"
+            ],
+            "avoid": [
+                "cow only",
+                "marathi",
+                "hindi",
+                "plant",
+                "seed",
+                "desi",
+                "cow ghee pot"
+            ]
+        },
+        "category-biscuits-cookies": {
+            "dir": "category-images",
+            "name": "biscuits-cookies",
+            "article": "Biscuit",
+            "must": [
+                "biscuit",
+                "cookie"
+            ],
+            "prefer": [
+                "stack",
+                "plate",
+                "packet",
+                "chocolate chip",
+                "pack"
+            ],
+            "avoid": [
+                "recipe",
+                "biscuit cutter",
+                "cutter",
+                "dough",
+                "gravy",
+                "gravies",
+                "sandwich biscuit only"
+            ]
+        },
+        "category-chocolates": {
+            "dir": "category-images",
+            "name": "chocolates",
+            "article": "Chocolate",
+            "must": [
+                "chocolate"
+            ],
+            "prefer": [
+                "bar",
+                "pieces",
+                "block",
+                "dark",
+                "tablet",
+                "truffle"
+            ],
+            "avoid": [
+                "hot chocolate",
+                "cake",
+                "fountain",
+                "mousse",
+                "drink",
+                "hot",
+                "syrup",
+                "ice cream",
+                "cookie",
+                "brownie",
+                "spread",
+                "nutella",
+                "milk chocolate bar only"
+            ]
+        },
+        "category-nuts-dry-fruits": {
+            "dir": "category-images",
+            "name": "nuts-dry-fruits",
+            "article": "Almond",
+            "must": [
+                "almond",
+                "cashew",
+                "nut",
+                "walnut"
+            ],
+            "prefer": [
+                "shelled",
+                "whole",
+                "mixed",
+                "bowl",
+                "blanched"
+            ],
+            "avoid": [
+                "nutmeg",
+                "peanut butter",
+                "flour",
+                "milk",
+                "oil",
+                "tree",
+                "blossom",
+                "cake",
+                "sauce",
+                "butter"
+            ]
+        },
+        "category-tea-coffee": {
+            "dir": "category-images",
+            "name": "tea-coffee",
+            "article": "Tea",
+            "must": [
+                "tea"
+            ],
+            "prefer": [
+                "cup",
+                "leaf",
+                "leaves",
+                "bag",
+                "brewed",
+                "green",
+                "black",
+                "chai"
+            ],
+            "avoid": [
+                "teapot only",
+                "tea tree",
+                "oil",
+                "plant",
+                "field",
+                "plantation",
+                "matcha only",
+                "temple",
+                "powder"
+            ]
+        },
+        "category-packaged-water": {
+            "dir": "category-images",
+            "name": "packaged-water",
+            "article": "Bottled water",
+            "must": [
+                "water"
+            ],
+            "prefer": [
+                "bottle",
+                "bottles",
+                "packaged",
+                "mineral",
+                "plastic",
+                "spring"
+            ],
+            "avoid": [
+                "waterfall",
+                "sea",
+                "ocean",
+                "river",
+                "lake",
+                "beach",
+                "glass of",
+                "tap",
+                "fountain",
+                "rain",
+                "ice",
+                "well",
+                "map"
+            ]
+        },
+        "category-cleaning-supplies": {
+            "dir": "category-images",
+            "name": "cleaning-supplies",
+            "article": "Household cleaning",
+            "must": [
+                "clean",
+                "cleaning",
+                "cleaner",
+                "mop",
+                "sponge"
+            ],
+            "prefer": [
+                "spray",
+                "supplies",
+                "products",
+                "mop",
+                "bucket",
+                "wipe"
+            ],
+            "avoid": [
+                "logo",
+                "chart",
+                "diagram",
+                "cleaning guide",
+                "window cleaner only"
+            ]
+        },
+        "category-disposables": {
+            "dir": "category-images",
+            "name": "disposables",
+            "article": "Disposable product",
+            "must": [
+                "disposable",
+                "paper",
+                "tissue",
+                "cup",
+                "plate",
+                "napkin"
+            ],
+            "prefer": [
+                "plate",
+                "cup",
+                "tissue",
+                "napkin",
+                "stack",
+                "pack"
+            ],
+            "avoid": [
+                "camera",
+                "contact lens",
+                "razor",
+                "glove only",
+                "injection",
+                "needle",
+                "plate tectonics",
+                "contact",
+                "tray only"
+            ]
+        },
+        "category-bath-body": {
+            "dir": "category-images",
+            "name": "bath-body",
+            "article": "Soap",
+            "must": [
+                "soap",
+                "shampoo",
+                "bath"
+            ],
+            "prefer": [
+                "bar",
+                "bottle",
+                "hand",
+                "bath",
+                "lotion",
+                "shower"
+            ],
+            "avoid": [
+                "sculpture",
+                "soap carving",
+                "carving",
+                "dish",
+                "detergent",
+                "antiseptic"
+            ]
+        },
+        "category-hair-care": {
+            "dir": "category-images",
+            "name": "hair-care",
+            "article": "Shampoo",
+            "must": [
+                "shampoo",
+                "hair"
+            ],
+            "prefer": [
+                "bottle",
+                "oil",
+                "conditioner",
+                "care"
+            ],
+            "avoid": [
+                "dryer",
+                "haircut",
+                "surgery",
+                "loss",
+                "growth oil only",
+                "comb",
+                "brush only"
+            ]
+        },
+        "category-skincare": {
+            "dir": "category-images",
+            "name": "skincare",
+            "article": "Skin care",
+            "must": [
+                "skin",
+                "cream",
+                "lotion",
+                "cosmetic"
+            ],
+            "prefer": [
+                "cream",
+                "lotion",
+                "serum",
+                "face",
+                "moisturiser",
+                "moisturizer"
+            ],
+            "avoid": [
+                "ice cream",
+                "whipped",
+                "cake",
+                "dairy",
+                "film",
+                "disease",
+                "acne chart",
+                "map"
+            ]
+        },
+        "category-baby-care": {
+            "dir": "category-images",
+            "name": "baby-care",
+            "article": "Diaper",
+            "must": [
+                "diaper",
+                "nappy",
+                "infant",
+                "baby"
+            ],
+            "prefer": [
+                "pack",
+                "disposable",
+                "cloth",
+                "baby"
+            ],
+            "avoid": [
+                "adult",
+                "incontinence",
+                "dog",
+                "training"
+            ]
+        },
+        "category-frozen-food": {
+            "dir": "category-images",
+            "name": "frozen-food",
+            "article": "Frozen food",
+            "must": [
+                "frozen"
+            ],
+            "prefer": [
+                "food",
+                "packet",
+                "freezer",
+                "vegetable",
+                "pea",
+                "ice cream",
+                "bag"
+            ],
+            "avoid": [
+                "lake",
+                "tundra",
+                "frozen yogurt shop",
+                "frozen pipe",
+                "snapshot",
+                "lake bed",
+                "permafrost",
+                "flame",
+                "photo"
+            ]
+        },
+        "category-ready-to-eat": {
+            "dir": "category-images",
+            "name": "ready-to-eat",
+            "article": "Ready-to-eat",
+            "must": [
+                "ready"
+            ],
+            "prefer": [
+                "eat",
+                "meal",
+                "meal kit",
+                "ready to eat",
+                "tray",
+                "packaged"
+            ],
+            "avoid": [
+                "restaurant",
+                "dining",
+                "kitchen",
+                "symbol",
+                "logo",
+                "brand",
+                "sign"
+            ]
+        },
+        "category-milk": {
+            "dir": "category-images",
+            "name": "milk",
+            "reuse": "product-milk"
+        },
+        "category-butter": {
+            "dir": "category-images",
+            "name": "butter",
+            "reuse": "product-butter"
+        },
+        "category-eggs": {
+            "dir": "category-images",
+            "name": "eggs",
+            "reuse": "product-eggs"
+        },
+        "category-breads": {
+            "dir": "category-images",
+            "name": "breads",
+            "reuse": "product-bread"
+        },
+        "category-rice": {
+            "dir": "category-images",
+            "name": "rice",
+            "reuse": "product-rice"
+        },
+        "category-atta": {
+            "dir": "category-images",
+            "name": "atta",
+            "reuse": "product-atta"
+        },
+        "category-chips-namkeen": {
+            "dir": "category-images",
+            "name": "chips-namkeen",
+            "reuse": "product-chips"
+        },
+        "category-noodles-instant": {
+            "dir": "category-images",
+            "name": "noodles-instant",
+            "reuse": "product-noodles"
+        },
+        "category-soft-drinks": {
+            "dir": "category-images",
+            "name": "soft-drinks",
+            "reuse": "product-cola"
+        },
+        "category-detergents": {
+            "dir": "category-images",
+            "name": "detergents",
+            "reuse": "product-detergent"
+        },
+        "category-oral-care": {
+            "dir": "category-images",
+            "name": "oral-care",
+            "reuse": "product-toothpaste"
+        },
+        "category-vegetables-fruits": {
+            "dir": "category-images",
+            "name": "vegetables-fruits",
+            "from": [
+                "category-fresh-vegetables",
+                "category-fresh-fruits",
+                "category-coriander-greens"
+            ]
+        },
+        "category-dairy-bread-eggs": {
+            "dir": "category-images",
+            "name": "dairy-bread-eggs",
+            "from": [
+                "product-milk",
+                "product-eggs",
+                "product-bread"
+            ]
+        },
+        "category-atta-rice-dal": {
+            "dir": "category-images",
+            "name": "atta-rice-dal",
+            "from": [
+                "product-rice",
+                "product-atta",
+                "category-pulses-dal"
+            ]
+        },
+        "category-oils-ghee-masala": {
+            "dir": "category-images",
+            "name": "oils-ghee-masala",
+            "from": [
+                "product-oil",
+                "category-ghee",
+                "category-spices"
+            ]
+        },
+        "category-oils-ghee": {
+            "dir": "category-images",
+            "name": "oils-ghee",
+            "from": [
+                "product-oil",
+                "category-ghee"
+            ]
+        },
+        "category-bakery-biscuits": {
+            "dir": "category-images",
+            "name": "bakery-biscuits",
+            "from": [
+                "product-bread",
+                "category-biscuits-cookies",
+                "category-cakes"
+            ]
+        },
+        "category-snacks-instant": {
+            "dir": "category-images",
+            "name": "snacks-instant",
+            "from": [
+                "product-chips",
+                "product-noodles",
+                "category-chocolates"
+            ]
+        },
+        "category-drinks-beverages": {
+            "dir": "category-images",
+            "name": "drinks-beverages",
+            "from": [
+                "product-cola",
+                "category-tea-coffee",
+                "category-packaged-water"
+            ]
+        },
+        "category-home-cleaning": {
+            "dir": "category-images",
+            "name": "home-cleaning",
+            "from": [
+                "product-detergent",
+                "category-cleaning-supplies",
+                "category-disposables"
+            ]
+        },
+        "category-personal-care": {
+            "dir": "category-images",
+            "name": "personal-care",
+            "from": [
+                "product-toothpaste",
+                "category-bath-body",
+                "category-hair-care"
+            ]
+        }
+    }
+}
