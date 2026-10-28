@@ -13,7 +13,7 @@ export function BottomNav() {
           <ServiceModuleSwitcher />
         </View>
       ) : (
-        <BlurView intensity={30} tint="dark" style={styles.blurContainer}>
+        <BlurView intensity={40} tint="light" style={styles.blurContainer}>
           <View style={styles.overlay}>
             <ServiceModuleSwitcher />
           </View>
@@ -41,20 +41,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
+  /* White glass: the light blur carries the frost, a translucent white plate
+     over it keeps the pill readable on any content, and the hairline white
+     border is what reads as the glass edge. */
   overlay: {
-    backgroundColor: 'rgba(25, 25, 25, 0.38)',
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.28)',
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 999,
   },
   glassFallback: {
-    backgroundColor: 'rgba(25, 25, 25, 0.48)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.32)',
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 999,
     overflow: 'hidden',
     shadowColor: '#000000',
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.14,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,

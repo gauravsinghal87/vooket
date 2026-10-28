@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Car, ShoppingBasket, UtensilsCrossed } from 'lucide-react-native';
 import { useGlobalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/appStore';
-import { SERVICE_ROUTES, activeService } from '@/theme';
+import { SERVICE_ROUTES, activeService, colors } from '@/theme';
 import type { ServiceType } from '@/types/models';
 
 const ICONS: Record<ServiceType, typeof Car> = {
@@ -63,12 +63,14 @@ export function ServiceModuleSwitcher({ activeServiceOverride }: Props) {
       };
     }
     if (value === 'grocery') {
+      /* Dark foreground on the gold pill: white on #f5b921 is ~1.8:1 and was
+         unreadable — more so now that the bar itself is white glass. */
       return {
         backgroundColor: '#f5b921',
         borderColor: '#f5b921',
         shadowColor: '#7A5A00',
-        iconColor: '#FFFFFF',
-        labelColor: '#FFFFFF',
+        iconColor: colors.ink[900],
+        labelColor: colors.ink[900],
       };
     }
     if (value === 'rides') {
@@ -125,7 +127,7 @@ export function ServiceModuleSwitcher({ activeServiceOverride }: Props) {
                 <Icon
                   size={20}
                   strokeWidth={2.1}
-                  color={isActive && activeColors ? activeColors.iconColor : 'rgba(255,255,255,0.85)'}
+                  color={isActive && activeColors ? activeColors.iconColor : colors.neutral[500]}
                 />
                 <Text
                   numberOfLines={1}
@@ -207,7 +209,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.1,
-    color: 'rgba(255,255,255,0.85)',
+    color: colors.neutral[500],
     textAlign: 'center',
   },
   labelActive: {
