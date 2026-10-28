@@ -33,32 +33,69 @@ export function ServiceModuleSwitcher({ activeServiceOverride }: Props) {
   );
   const search = entries.length ? `?${new URLSearchParams(entries).toString()}` : '';
   const setService = useAppStore((s) => s.setService);
+  const storedService = useAppStore((s) => s.service);
+  // `/orders` belongs to no single service: it is scoped by the switcher's own
+  // selection, so the chosen tab stays lit there and picking a module reloads
+  // the history list in place instead of navigating to that module's home.
+  const routeService = activeService(pathname, search);
+  const isHistoryScreen = pathname === '/orders';
 
   const active =
-    activeServiceOverride !== undefined ? activeServiceOverride : activeService(pathname, search);
+    activeServiceOverride !== undefined
+      ? activeServiceOverride
+      : (routeService ?? (isHistoryScreen ? storedService : null));
 
   const go = (value: ServiceType) => {
     setService(value);
     if (pathname === SERVICE_ROUTES[value]) return;
+    if (isHistoryScreen) return;
     router.push(SERVICE_ROUTES[value] as never);
+  };
+
+  const getActiveColors = (value: ServiceType) => {
+    if (value === 'food') {
+      return {
+        backgroundColor: '#e64252',
+        borderColor: '#e64252',
+        shadowColor: '#9B1423',
+        iconColor: '#FFFFFF',
+        labelColor: '#FFFFFF',
+      };
+    }
+    if (value === 'grocery') {
+      return {
+        backgroundColor: '#f5b921',
+        borderColor: '#f5b921',
+        shadowColor: '#7A5A00',
+        iconColor: '#FFFFFF',
+        labelColor: '#FFFFFF',
+      };
+    }
+    if (value === 'rides') {
+      return {
+        backgroundColor: '#1451e1',
+        borderColor: '#1451e1',
+        shadowColor: '#14419B',
+        iconColor: '#FFFFFF',
+        labelColor: '#FFFFFF',
+      };
+    }
+    return {
+      backgroundColor: 'rgba(255,255,255,0.18)',
+      borderColor: 'rgba(255,255,255,0.3)',
+      shadowColor: '#000000',
+      iconColor: '#FFFFFF',
+      labelColor: '#FFFFFF',
+    };
   };
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.glass}>
-        {/* Frosted sheen: a static top-lit highlight clipped to the track's own
-            radius, so the surface reads as lit glass rather than a flat plate.
-            It sits under the tabs and never intercepts touches. */}
-        <LinearGradient
-          pointerEvents="none"
-          colors={['rgba(255, 255, 255, 0.78)', 'rgba(255, 255, 255, 0.18)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={styles.sheen}
-        />
         {(Object.keys(SERVICE_ROUTES) as ServiceType[]).map((value) => {
           const Icon = ICONS[value];
           const isActive = active === value;
+          const activeColors = isActive ? getActiveColors(value) : null;
 
           return (
             <Pressable
@@ -67,11 +104,37 @@ export function ServiceModuleSwitcher({ activeServiceOverride }: Props) {
               accessibilityState={{ selected: isActive }}
               accessibilityLabel={`Open ${value[0].toUpperCase() + value.slice(1)}`}
               onPress={() => go(value)}
-              style={[styles.tab, isActive && styles.tabActive]}
+              style={styles.tab}
             >
+              {isActive && activeColors ? (
+                <View
+                  style={[
+                    styles.tabActiveContainer,
+                    {
+                      backgroundColor: activeColors.backgroundColor,
+                      borderColor: activeColors.borderColor,
+                      shadowColor: activeColors.shadowColor,
+                    },
+                  ]}
+                  pointerEvents="none"
+                >
+                  <View style={styles.tabActiveTopHighlight} pointerEvents="none" />
+                </View>
+              ) : null}
               <View style={styles.tabContent}>
-                <Icon size={20} strokeWidth={2.1} color={isActive ? '#17140F' : '#6B675F'} />
-                <Text numberOfLines={1} style={[styles.label, isActive && styles.labelActive]}>
+                <Icon
+                  size={20}
+                  strokeWidth={2.1}
+                  color={isActive && activeColors ? activeColors.iconColor : 'rgba(255,255,255,0.85)'}
+                />
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.label,
+                    isActive && styles.labelActive,
+                    isActive && activeColors && { color: activeColors.labelColor },
+                  ]}
+                >
                   {value[0].toUpperCase() + value.slice(1)}
                 </Text>
               </View>
@@ -85,62 +148,52 @@ export function ServiceModuleSwitcher({ activeServiceOverride }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    // Full width: only a hairline inset keeps the track's rounded corners off
-    // the physical screen edges — there is no centred max-width pill any more.
     width: '100%',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
   },
   glass: {
     flexDirection: 'row',
     alignItems: 'stretch',
     width: '100%',
-    borderRadius: 26,
-    /* Smoked-glass base — deliberately OPAQUE. It is the exact colour a 6% ink
-       tint resolves to over the white dock, so it looks identical to the
-       translucent version, but the paint is guaranteed to cover the whole
-       track: a semi-transparent fill over a rounded, bordered, clipped box can
-       drop out and let the bright dock show through as a stray white band
-       behind the inactive tabs. */
-    backgroundColor: '#F1F0EE',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 999,
+    backgroundColor: 'transparent',
     padding: 4,
     gap: 4,
-    shadowColor: '#16120E',
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-    // No `overflow: hidden`: clipping a translucent box is what let the
-    // artifact through, and every child now paints inside the radius itself.
-  },
-  // Matches `glass`'s radius exactly, so the sheen needs no clipping parent.
-  sheen: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 26,
   },
   tab: {
     flex: 1,
     minWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: 999,
     paddingTop: 6,
     paddingBottom: 10,
     paddingHorizontal: 8,
-    // No border at all: a transparent 1pt border on a rounded Android Pressable
-    // is another way that band can surface, and every tab already has the same
-    // footprint from `flex: 1`.
     backgroundColor: 'transparent',
+    overflow: 'visible',
   },
-  tabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#16120E',
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
+  tabActiveContainer: {
+    position: 'absolute',
+    top: 2,
+    bottom: 2,
+    left: 2,
+    right: 2,
+    borderRadius: 999,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowOpacity: 0.26,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    elevation: 5,
+  },
+  tabActiveTopHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 0,
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
   },
   tabContent: {
     alignItems: 'center',
@@ -148,17 +201,17 @@ const styles = StyleSheet.create({
     gap: 4,
     minWidth: 0,
     maxWidth: '100%',
+    zIndex: 2,
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.1,
-    color: '#6B675F',
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
   },
   labelActive: {
     fontWeight: '700',
-    color: '#17140F',
   },
   underline: {
     position: 'absolute',

@@ -295,37 +295,7 @@ export function RestaurantPage() {
               >
                 {r.name}
               </h2>
-              <div className="flex shrink-0 items-center gap-1">
-                <button
-                  type="button"
-                  onClick={focusSearch}
-                  aria-label={`Search in ${r.name}`}
-                  className="tap flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-100"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFav((v) => !v)}
-                  aria-pressed={fav}
-                  aria-label={fav ? 'Remove from favourites' : 'Add to favourites'}
-                  className="tap flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-100"
-                >
-                  <Heart className={cn('h-5 w-5', fav && 'fill-food-500 text-food-500')} />
-                </button>
-                <Link
-                  to="/cart"
-                  aria-label={`Cart, ${cartCount} items`}
-                  className="tap relative flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-100"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  {cartCount > 0 && (
-                    <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-food-600 px-1 text-[10px] font-bold text-white">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-              </div>
+              <div className="flex shrink-0 items-center gap-1" />
             </div>
           </div>
 

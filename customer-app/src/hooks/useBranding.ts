@@ -32,7 +32,8 @@ export function useBranding(): Branding {
 
   return {
     ...getBranding(),
-    name: branding.name ?? getBranding().name,
+    // A blank configured name falls back instead of blanking the label out.
+    name: branding.name?.trim() ? branding.name : getBranding().name,
     logo: branding.logo ?? null,
     currency: branding.currency ?? getBranding().currency,
     supportPhone: branding.support_phone ?? null,

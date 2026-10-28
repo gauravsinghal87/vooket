@@ -34,7 +34,7 @@ function HeroMedia({ banner }: { banner: Banner | undefined }) {
         autoPlay
         preload="auto"
         onError={() => setVideoFailed(true)}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover z-1"
       />
     );
   }
@@ -86,7 +86,7 @@ export function FoodHero({
         />
       </div>
 
-      <div className="relative z-10 flex min-h-[430px] flex-col sm:min-h-[450px] lg:min-h-[470px]">
+      <div className="relative z-10 flex min-h-[330px] flex-col sm:min-h-[450px] lg:min-h-[470px]">
         <Header variant="overlay" />
 
         {/* The Food search + Veg Mode control sits inside the hero, directly
@@ -95,7 +95,7 @@ export function FoodHero({
           <div className="mx-auto w-full max-w-5xl px-[var(--page-gutter)] pt-3 sm:pt-4">{searchSlot}</div>
         )}
 
-        <div className="mx-auto mt-auto w-full max-w-5xl px-[var(--page-gutter)] pb-3 pt-6 sm:pt-7">
+        <div className="mx-auto mt-auto w-full max-w-5xl px-[var(--page-gutter)] pb-3 pt-6 sm:pt-7 justify-items-center">
           {banner && (
             <button
               type="button"
@@ -104,13 +104,13 @@ export function FoodHero({
               aria-label={banner.title}
             >
               {banner.cta_text && (
-                <span className="hero-cta mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide shadow-pill">
+                <span className="hero-cta-dark mb-2 inline-block rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide shadow-pill">
                   {banner.cta_text}
                 </span>
               )}
-              <span className="block text-3xl font-extrabold leading-tight drop-shadow-sm sm:text-4xl">
+              {/* <span className="block text-3xl font-extrabold leading-tight drop-shadow-sm sm:text-4xl">
                 {banner.title}
-              </span>
+              </span> */}
               {banner.subtitle && (
                 <span className="mt-1.5 block max-w-lg text-sm leading-snug text-white/80 sm:text-base">
                   {banner.subtitle}

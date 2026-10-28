@@ -335,6 +335,19 @@ export const support = {
 };
 
 export const orders = {
+  /**
+   * History for exactly one module: the backend filters orders by module in
+   * SQL (`orders.order_type`) or reads the rides table for `rides`, so the
+   * client never receives another module's records to filter itself.
+   */
+  getHistory(
+    module: 'food' | 'grocery' | 'rides',
+    page?: number,
+  ): Promise<Paginated<Order> | Paginated<Ride>> {
+    const qs = new URLSearchParams({ module });
+    if (page) qs.set('page', String(page));
+    return apiClient.get(`/orders?${qs.toString()}`);
+  },
   getOrders(params?: { status?: string; order_type?: string; page?: number }): Promise<Paginated<Order>> {
     const qs = new URLSearchParams();
     if (params?.status) qs.set('status', params.status);

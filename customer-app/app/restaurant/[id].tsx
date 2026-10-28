@@ -372,38 +372,7 @@ export default function RestaurantScreen() {
                 <Text numberOfLines={1} style={[styles.compactName, !headerStuck && { opacity: 0 }]}>
                   {r.name}
                 </Text>
-                <View style={styles.compactActions}>
-                  <Pressable
-                    onPress={() => inputRef.current?.focus()}
-                    style={styles.compactBtn}
-                    hitSlop={6}
-                    accessibilityLabel={`Search in ${r.name}`}
-                  >
-                    <Search size={20} color={colors.ink[900]} />
-                  </Pressable>
-                  <Pressable
-                    onPress={() => setFav((v) => !v)}
-                    style={styles.compactBtn}
-                    hitSlop={6}
-                    accessibilityState={{ selected: fav }}
-                    accessibilityLabel={fav ? 'Remove from favourites' : 'Add to favourites'}
-                  >
-                    <Heart size={20} color={fav ? colors.food[600] : colors.ink[900]} fill={fav ? colors.food[600] : 'transparent'} />
-                  </Pressable>
-                  <Pressable
-                    onPress={() => router.push('/cart?type=food' as never)}
-                    style={styles.compactBtn}
-                    hitSlop={6}
-                    accessibilityLabel={`Cart, ${cartCount} items`}
-                  >
-                    <ShoppingCart size={20} color={colors.ink[900]} />
-                    {cartCount > 0 && (
-                      <View style={styles.overlayBadge}>
-                        <Text style={styles.overlayBadgeText}>{cartCount}</Text>
-                      </View>
-                    )}
-                  </Pressable>
-                </View>
+                <View style={styles.compactActions} />
               </View>
             </View>
           </View>

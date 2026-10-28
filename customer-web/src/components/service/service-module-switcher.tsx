@@ -16,15 +16,20 @@ export function ServiceModuleSwitcher({ activeService: activeProp, className }: 
   // so the owning module stays lit on every one of its screens.
   const { pathname, search, state } = useLocation();
   const setService = useAppStore((s) => s.setService);
+  const storedService = useAppStore((s) => s.service);
+  // `/orders` belongs to no single service: it is scoped by the switcher's own
+  // selection, so the chosen tab stays lit there and picking a module reloads
+  // the history list in place instead of navigating to that module's home.
+  const routeService = activeService(pathname, search, (state as { type?: string } | null)?.type);
+  const isHistoryScreen = pathname === '/orders';
 
   const active =
-    activeProp !== undefined
-      ? activeProp
-      : activeService(pathname, search, (state as { type?: string } | null)?.type);
+    activeProp !== undefined ? activeProp : routeService ?? (isHistoryScreen ? storedService : null);
 
   const go = (value: ServiceType) => {
     setService(value);
     if (pathname === SERVICE_ROUTES[value]) return;
+    if (isHistoryScreen) return;
     navigate(SERVICE_ROUTES[value]);
   };
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Bell,
@@ -23,6 +23,9 @@ import {
 import { repositories } from '@/repositories';
 import { useAuthStore } from '@/store/authStore';
 import { useAppStore } from '@/store/appStore';
+import { activeService } from '@/components/service/service-theme';
+import { GroceryProfile, type ProfileVariantProps } from '@/components/profile/grocery-profile';
+import { RidesProfile } from '@/components/profile/rides-profile';
 import { Avatar } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,7 +33,7 @@ import { Modal } from '@/components/ui/modal';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
-import { getBranding } from '@/lib/branding';
+import { useBranding } from '@/hooks/useBranding';
 import { formatCurrency } from '@/lib/utils';
 
 interface MenuItem {
@@ -93,81 +96,29 @@ function Row({
 }
 
 /**
- * Zomato's profile screen: the account card with "View activity", the black
- * membership banner, the money/coupons mini-cards, the preference rows and the
- * red-ruled section cards (Food Orders, More) down to Log out. Every row maps
- * to a real destination or action in this app.
+ * Zomato's profile screen — the Food module's variant: the account card with
+ * "View activity", the black membership banner, the money/coupons mini-cards,
+ * the preference rows and the red-ruled section cards down to Log out. Every
+ * row maps to a real destination or action in this app.
  */
-export function ProfilePage() {
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const navigate = useNavigate();
-  const [logoutOpen, setLogoutOpen] = useState(false);
-  const [logoutPending, setLogoutPending] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [couponsOpen, setCouponsOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
+function FoodProfile({
+  brand,
+  user,
+  completion,
+  walletBalance,
+  onBack,
+  onOpenNotifications,
+  onOpenCoupons,
+  onLogout,
+  onDeleteAccount,
+}: ProfileVariantProps) {
   // Veg Mode is a real persisted preference (same store the Food home reads).
   const vegMode = useAppStore((s) => s.vegMode);
   const setVegMode = useAppStore((s) => s.setVegMode);
 
-  const notifications = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => repositories.user.getNotifications(),
-    enabled: notifOpen && isAuthenticated,
-  });
-
-  const coupons = useQuery({
-    queryKey: ['profile-coupons'],
-    queryFn: () => repositories.user.getCoupons(),
-    enabled: couponsOpen && isAuthenticated,
-  });
-
-  const wallet = useQuery({
-    queryKey: ['wallet'],
-    queryFn: () => repositories.wallet.getWallet(),
-    enabled: isAuthenticated,
-  });
-
-  const handleLogout = async () => {
-    setLogoutPending(true);
-    await logout();
-    setLogoutPending(false);
-    setLogoutOpen(false);
-    toast('Signed out');
-    navigate('/');
-  };
-
-  // Profile completion from the fields the account really holds.
-  const completion = user
-    ? Math.round(
-        ([user.name, user.email, user.phone].filter((f) => f && String(f).trim()).length / 3) * 100
-      )
-    : 0;
-
-  const brand = getBranding().name;
-
-  if (!isAuthenticated) {
-    return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
-        <Avatar name="Guest" size="lg" />
-        <h1 className="text-xl font-extrabold text-neutral-900">You're not signed in</h1>
-        <p className="text-sm text-neutral-500">Sign in to manage orders, wallet and addresses.</p>
-        <div className="flex gap-2">
-          <Link to="/auth/login">
-            <Button>Sign in</Button>
-          </Link>
-          <Link to="/auth/register">
-            <Button variant="outline">Create account</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const moreMenu: MenuItem[] = [
     { icon: LifeBuoy, label: 'Help & support', to: '/support' },
-    { icon: Bell, label: 'Notifications', onClick: () => setNotifOpen(true) },
+    { icon: Bell, label: 'Notifications', onClick: onOpenNotifications },
     { icon: Languages, label: 'Language', onClick: () => toast('Language settings coming soon') },
     { icon: ShieldCheck, label: 'Privacy', onClick: () => toast('Privacy settings coming soon') },
     { icon: Lock, label: 'Security', onClick: () => toast('Security settings coming soon') },
@@ -175,11 +126,11 @@ export function ProfilePage() {
   ];
 
   return (
-    <div className="mx-auto max-w-md space-y-4">
+    <div className="space-y-4">
       {/* Back arrow — the reference leads the screen with it. */}
       <button
         type="button"
-        onClick={() => navigate(-1)}
+        onClick={onBack}
         aria-label="Go back"
         className="tap -ml-1 flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-200/70"
       >
@@ -227,14 +178,14 @@ export function ProfilePage() {
             <span className="min-w-0">
               <span className="block truncate text-[13px] font-bold text-neutral-800">{brand} Money</span>
               <span className="block text-[13px] font-bold text-success">
-                {wallet.data ? formatCurrency(Number(wallet.data.balance)) : '—'}
+                {walletBalance !== null ? formatCurrency(walletBalance) : '—'}
               </span>
             </span>
           </span>
         </Link>
         <button
           type="button"
-          onClick={() => setCouponsOpen(true)}
+          onClick={onOpenCoupons}
           className="rounded-2xl border border-neutral-100 bg-white p-3.5 text-left transition-colors hover:border-neutral-200"
         >
           <span className="flex items-center gap-2.5">
@@ -278,7 +229,7 @@ export function ProfilePage() {
       <SectionCard title="Food Orders">
         <Row icon={CircleUser} label="Your orders" to="/orders" />
         <Row icon={WalletIcon} label="Wallet" to="/wallet" />
-        <Row icon={Bell} label="Notifications" onClick={() => setNotifOpen(true)} />
+        <Row icon={Bell} label="Notifications" onClick={onOpenNotifications} />
       </SectionCard>
 
       <SectionCard title="More">
@@ -291,15 +242,117 @@ export function ProfilePage() {
         {moreMenu.slice(3).map((item) => (
           <Row key={item.label} icon={item.icon} label={item.label} to={item.to} onClick={item.onClick} tone={item.tone} />
         ))}
-        <Row icon={LogOut} label="Log out" tone="danger" onClick={() => setLogoutOpen(true)} />
+        <Row icon={LogOut} label="Log out" tone="danger" onClick={onLogout} />
       </SectionCard>
 
       <button
-        onClick={() => setDeleteOpen(true)}
+        onClick={onDeleteAccount}
         className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-semibold text-danger hover:bg-danger/10"
       >
         <Trash2 className="h-4 w-4" /> Delete account
       </button>
+    </div>
+  );
+}
+
+/**
+ * The account screen is cross-module, so it renders the profile layout of the
+ * module the switcher has selected: Food keeps the Zomato screen above, Grocery
+ * gets Blinkit's "Your account" screen and Rides gets Rapido's flat menu.
+ */
+export function ProfilePage() {
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [couponsOpen, setCouponsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // Same resolution the module switcher uses on the other cross-module
+  // screens: the route when it names a service (never `/profile`), otherwise
+  // the persisted module the customer last picked.
+  const storedService = useAppStore((s) => s.service);
+  const module = activeService(pathname) ?? storedService;
+
+  const notifications = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => repositories.user.getNotifications(),
+    enabled: notifOpen && isAuthenticated,
+  });
+
+  const coupons = useQuery({
+    queryKey: ['profile-coupons'],
+    queryFn: () => repositories.user.getCoupons(),
+    enabled: couponsOpen && isAuthenticated,
+  });
+
+  const wallet = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => repositories.wallet.getWallet(),
+    enabled: isAuthenticated,
+  });
+
+  const handleLogout = async () => {
+    setLogoutPending(true);
+    await logout();
+    setLogoutPending(false);
+    setLogoutOpen(false);
+    toast('Signed out');
+    navigate('/');
+  };
+
+  // Profile completion from the fields the account really holds.
+  const completion = user
+    ? Math.round(
+        ([user.name, user.email, user.phone].filter((f) => f && String(f).trim()).length / 3) * 100
+      )
+    : 0;
+
+  // Subscribes to the shared /app-config query, so the platform name is filled
+  // in even when branding resolves after the first paint.
+  const brand = useBranding().name;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
+        <Avatar name="Guest" size="lg" />
+        <h1 className="text-xl font-extrabold text-neutral-900">You're not signed in</h1>
+        <p className="text-sm text-neutral-500">Sign in to manage orders, wallet and addresses.</p>
+        <div className="flex gap-2">
+          <Link to="/auth/login">
+            <Button>Sign in</Button>
+          </Link>
+          <Link to="/auth/register">
+            <Button variant="outline">Create account</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const variant: ProfileVariantProps = {
+    brand,
+    user,
+    completion,
+    walletBalance: wallet.data ? Number(wallet.data.balance) : null,
+    onBack: () => navigate(-1),
+    onOpenNotifications: () => setNotifOpen(true),
+    onOpenCoupons: () => setCouponsOpen(true),
+    onLogout: () => setLogoutOpen(true),
+    onDeleteAccount: () => setDeleteOpen(true),
+  };
+
+  return (
+    <div className="mx-auto max-w-md">
+      {module === 'grocery' ? (
+        <GroceryProfile {...variant} />
+      ) : module === 'rides' ? (
+        <RidesProfile {...variant} />
+      ) : (
+        <FoodProfile {...variant} />
+      )}
 
       <Modal title="Sign out?" open={logoutOpen} onOpenChange={setLogoutOpen}>
         <p className="text-sm text-neutral-600">You will need to sign in again to access your orders and wallet.</p>

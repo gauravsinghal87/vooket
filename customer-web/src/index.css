@@ -124,30 +124,40 @@
        shadow, no border — so the page background shows through around the
        photo and the info area. The notch keeps its own white surface and
        still reads as a cut-out in the photo's bottom-left corner. */
-    --notch-radius: 18px; /* card + image top-corner radius */
-    --notch-curve: 14px; /* radius of the two inward curves of the notch */
-    --notch-aspect: 1.25; /* image aspect ratio (width / height) */
-    --notch-overhang: 6px; /* how far the rating pill dips below the image */
-    --notch-gap: 5px; /* breathing room around the rating pill, inside the cutout */
+    --notch-radius: 18px;
+    /* card + image top-corner radius */
+    --notch-curve: 14px;
+    /* radius of the two inward curves of the notch */
+    --notch-aspect: 1.25;
+    /* image aspect ratio (width / height) */
+    --notch-overhang: 6px;
+    /* how far the rating pill dips below the image */
+    --notch-gap: 5px;
+    /* breathing room around the rating pill, inside the cutout */
     --notch-surface: var(--color-white);
   }
+
   @media (min-width: 640px) {
     :root {
       --page-gutter: 1.5rem;
     }
   }
+
   html {
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
   }
+
   body {
     @apply bg-ink-50 text-neutral-900 antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
   }
+
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-brand-600;
   }
+
   img {
     -webkit-user-drag: none;
   }
@@ -157,36 +167,46 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
+
   .scroll-snap-x {
     scroll-snap-type: x mandatory;
   }
+
   .snap-start {
     scroll-snap-align: start;
   }
+
   .snap-center {
     scroll-snap-align: center;
   }
+
   .tap {
     @apply cursor-pointer select-none;
     -webkit-touch-callout: none;
   }
+
   .edge-bleed {
     margin-inline: calc(var(--page-gutter) * -1);
     padding-inline: var(--page-gutter);
   }
+
   /* Recommended rail: bleeds to the viewport edges with a left gutter only, so
      the last card is clipped at the true right edge while the first card keeps
      its gutter. Horizontally scrollable, vertically clipped (grid rows still
@@ -200,6 +220,7 @@
     overflow-y: hidden;
     overscroll-behavior-x: contain;
   }
+
   /* Two fixed rows, filled column-by-column (1&2 → column 1, 3&4 → column 2,
      …) so the rail is a horizontally scrollable pair of rows. Card width is
      derived from the container, never fixed; exactly 3 columns are visible on
@@ -214,11 +235,13 @@
     column-gap: var(--rec-gap);
     row-gap: var(--rec-gap);
   }
+
   @media (min-width: 640px) {
     .rec-grid {
       grid-auto-columns: calc((100% - 3 * var(--rec-gap)) / 4);
     }
   }
+
   @media (min-width: 1024px) {
     .rec-grid {
       grid-auto-columns: calc((100% - 4 * var(--rec-gap)) / 5);
@@ -275,11 +298,9 @@
 
 [data-service-theme='grocery'] {
   --hero-header-bg: linear-gradient(to bottom, var(--color-grocery-800), var(--color-grocery-900));
-  --hero-bg: linear-gradient(
-    to bottom,
-    var(--color-grocery-900),
-    color-mix(in srgb, var(--color-grocery-900) 60%, var(--color-ink-950))
-  );
+  --hero-bg: linear-gradient(to bottom,
+      var(--color-grocery-900),
+      color-mix(in srgb, var(--color-grocery-900) 60%, var(--color-ink-950)));
   --hero-surface: color-mix(in srgb, var(--color-grocery-100) 14%, transparent);
   --hero-active-color: var(--color-grocery-500);
   --hero-active-contrast: var(--color-ink-900);
@@ -310,6 +331,11 @@
     color: var(--hero-active-contrast);
   }
 
+  .hero-cta-dark {
+    background-color: black;
+    color: var(--hero-active-contrast);
+  }
+
   .hero-search-accent {
     background-color: var(--hero-search-accent);
     color: var(--hero-active-contrast);
@@ -332,12 +358,10 @@
      of surface never lands as a hard line. Fades to the page colour (`ink-50`)
      rather than to white, because that is what the content area is painted. */
   .hero-fade {
-    background-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      color-mix(in srgb, var(--color-ink-50) 45%, transparent) 55%,
-      var(--color-ink-50) 100%
-    );
+    background-image: linear-gradient(to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--color-ink-50) 45%, transparent) 55%,
+        var(--color-ink-50) 100%);
   }
 
   /* ------------------------------------------------------------------ */
@@ -456,11 +480,9 @@
     position: absolute;
     width: var(--notch-curve);
     height: var(--notch-curve);
-    background: radial-gradient(
-      circle at 100% 0,
-      transparent var(--notch-curve),
-      var(--notch-surface) calc(var(--notch-curve) + 0.5px)
-    );
+    background: radial-gradient(circle at 100% 0,
+        transparent var(--notch-curve),
+        var(--notch-surface) calc(var(--notch-curve) + 0.5px));
   }
 
   /* The curve above the notch: a concave bite out of the photo's
@@ -746,45 +768,123 @@
   --animate-image-in: image-in 0.35s ease-out;
 
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
+
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes scale-in {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
   }
+
   @keyframes sheet-up {
-    from { opacity: 0.4; transform: translateY(100%); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0.4;
+      transform: translateY(100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes slide-down {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.55;
+    }
   }
+
   @keyframes pop {
-    0% { transform: scale(0.6); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
+
   @keyframes wiggle {
-    0%, 100% { transform: rotate(0deg); }
-    30% { transform: rotate(-8deg); }
-    60% { transform: rotate(8deg); }
+
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+
+    30% {
+      transform: rotate(-8deg);
+    }
+
+    60% {
+      transform: rotate(8deg);
+    }
   }
+
   @keyframes image-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -812,12 +912,10 @@
        24px/180% so whatever scrolls beneath smears into a soft field rather
        than showing through as shapes. */
     background:
-      linear-gradient(
-        180deg,
+      linear-gradient(180deg,
         rgba(255, 255, 255, 0.74) 0%,
         rgba(255, 255, 255, 0.2) 58%,
-        rgba(255, 255, 255, 0.42) 100%
-      ),
+        rgba(255, 255, 255, 0.42) 100%),
       rgba(23, 20, 15, 0.07);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);

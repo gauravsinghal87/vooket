@@ -14,12 +14,15 @@ import {
   ChevronUp,
   Clock,
   CreditCard,
+  Crosshair,
   Gift,
+  House,
   Mail,
   MapPin,
   Pencil,
   Phone,
   Plus,
+  Search,
   Share2,
   Store as StoreIcon,
   Tag,
@@ -82,10 +85,7 @@ function FoodCartPage() {
   const router = useRouter();
   const setService = useAppStore((s) => s.setService);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  // The delivery-address picker is opened from two places — the header's
-  // location row and the delivery card — so the open state is shared here and
-  // the sheet itself is mounted once below.
-  const [addressOpen, setAddressOpen] = useState(false);
+  const openLocationSelector = useAppStore((s) => s.openLocationSelector);
 
   useEffect(() => {
     setService('food');
@@ -142,12 +142,12 @@ function FoodCartPage() {
     <Screen
       header={
         restaurant ? (
-          <FoodCartHeader restaurant={restaurant} cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => setAddressOpen(true)} />
+          <FoodCartHeader restaurant={restaurant} cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector()} />
         ) : (
           <AppHeader variant="dark" title="Cart" />
         )
       }
-      bottomBar={<FoodPaymentBar cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => setAddressOpen(true)} />}
+      bottomBar={<FoodPaymentBar cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector()} />}
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {savedAmount > 0 && (
@@ -178,7 +178,7 @@ function FoodCartPage() {
 
         <CompleteYourMeal products={menuProducts} inCartIds={new Set(items.map((i) => i.product_id))} />
 
-        <DeliveryBlock etaMin={restaurant?.avg_delivery_time_min ?? null} isAuthenticated={isAuthenticated} onChooseAddress={() => setAddressOpen(true)} />
+        <DeliveryBlock etaMin={restaurant?.avg_delivery_time_min ?? null} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector()} />
 
         <CouponsSection couponCode={cart.coupon_code} coupons={couponsQuery.data ?? []} loading={couponsQuery.isLoading} isAuthenticated={isAuthenticated} tone="food" />
 
@@ -192,7 +192,7 @@ function FoodCartPage() {
         </Text>
       </ScrollView>
 
-      <FoodAddressSheet cart={cart} isAuthenticated={isAuthenticated} open={addressOpen} onOpenChange={setAddressOpen} />
+      {/* Location selection now opens via LocationSelector modal (mounted in AppHeader/Screen flow) */}
     </Screen>
   );
 }
@@ -530,6 +530,7 @@ function FoodAddressSheet({
   const router = useRouter();
   const setDeliveryAddress = useSetDeliveryAddress();
   const [addOpen, setAddOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const addresses = useQuery({
     queryKey: ['addresses'],
     queryFn: () => repositories.user.getAddresses(),
@@ -538,9 +539,15 @@ function FoodAddressSheet({
 
   const handleError = (err: unknown) => toast(err instanceof Error ? err.message : 'Could not update delivery address.', 'error');
 
+  const q = query.trim().toLowerCase();
+  const match = (haystack: string) => haystack.toLowerCase().includes(q);
+  const saved = (addresses.data ?? []).filter(
+    (a) => !q || match(a.label) || match(`${a.address_line_1}${a.address_line_2 ? `, ${a.address_line_2}` : ''}`)
+  );
+
   return (
     <>
-      <BottomSheet visible={open} onClose={() => onOpenChange(false)} title="Select delivery address">
+      <BottomSheet visible={open} onClose={() => onOpenChange(false)} title="Select a location">
         {!isAuthenticated ? (
           <View style={{ gap: 12 }}>
             <Text style={styles.sheetPrompt}>Add a delivery address to continue</Text>
@@ -550,13 +557,51 @@ function FoodAddressSheet({
             </Pressable>
           </View>
         ) : (
-          <View style={{ gap: 8 }}>
+          <ScrollView style={{ maxHeight: 520 }} contentContainerStyle={{ gap: 12, paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
+            <View style={styles.searchCard}>
+              <Search size={18} color={colors.food[600]} />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search for area, street name..."
+                placeholderTextColor={colors.neutral[400]}
+                style={styles.searchInput}
+                autoCorrect={false}
+              />
+            </View>
+
+            <View style={styles.card}>
+              <Pressable style={styles.actionRow} onPress={() => { onOpenChange(false); setAddOpen(true); }} accessibilityLabel="Use current location">
+                <Crosshair size={20} color={colors.food[600]} />
+                <View style={styles.actionBody}>
+                  <Text style={styles.actionLabel}>Use current location</Text>
+                  <Text style={styles.actionSub}>Set your current location</Text>
+                </View>
+                <ChevronRight size={18} color={colors.neutral[400]} />
+              </Pressable>
+              <View style={styles.rowDivider} />
+              <Pressable style={styles.actionRow} onPress={() => { onOpenChange(false); setAddOpen(true); }} accessibilityLabel="Add address">
+                <Plus size={20} color={colors.food[600]} />
+                <View style={styles.actionBody}>
+                  <Text style={styles.actionLabel}>Add Address</Text>
+                </View>
+                <ChevronRight size={18} color={colors.neutral[400]} />
+              </Pressable>
+            </View>
+
+            <View style={styles.sectionLabel}>
+              <View style={styles.sectionLine} />
+              <Text style={styles.sectionText}>SAVED ADDRESSES</Text>
+              <View style={styles.sectionLine} />
+            </View>
+
             {addresses.isLoading && <Loader label="Loading addresses…" />}
-            {!addresses.isLoading && (addresses.data ?? []).length === 0 && (
-              <Text style={styles.emptyAddress}>No saved addresses. Add one first.</Text>
+            {!addresses.isLoading && saved.length === 0 && (
+              <Text style={styles.emptyAddress}>{q ? `No saved addresses match "${query.trim()}"` : 'No saved addresses yet'}</Text>
             )}
-            {(addresses.data ?? []).map((a) => {
+            {saved.map((a) => {
               const active = cart.address_id === a.id;
+              const isHome = /home/i.test(a.label);
               return (
                 <Pressable
                   key={a.id}
@@ -564,28 +609,26 @@ function FoodAddressSheet({
                     setDeliveryAddress.mutate({ addressId: a.id, type: 'food' }, { onError: handleError });
                     onOpenChange(false);
                   }}
-                  style={[styles.payOption, active ? styles.payOptionActive : styles.payOptionIdle]}
+                  style={styles.addrCard}
                 >
-                  <View style={[styles.payOptionRadio, active && { borderColor: colors.food[600] }]}>
-                    {active && <View style={styles.payOptionRadioDot} />}
+                  <View style={styles.addrIcon}>
+                    {isHome ? <House size={18} color={colors.ink[700]} /> : <MapPin size={18} color={colors.ink[700]} />}
                   </View>
-                  <View style={{ flex: 1, minWidth: 0 }}>
+                  <View style={styles.addrBody}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={styles.payOptionLabel}>{a.label}</Text>
+                      <Text style={styles.addrLabel}>{a.label}</Text>
                       {a.is_default && <View style={styles.defaultPill}><Text style={styles.defaultPillText}>Default</Text></View>}
                     </View>
-                    <Text style={styles.payOptionDesc} numberOfLines={1}>
-                      {a.address_line_1}{a.address_line_2 ? `, ${a.address_line_2}` : ''}, {a.city} {a.postal_code}
+                    <Text numberOfLines={2} style={styles.addrLine}>
+                      {a.address_line_1}{a.address_line_2 ? `, ${a.address_line_2}` : ''}
                     </Text>
+                    {a.contact_phone ? <Text style={styles.addrPhone}>Phone number: {a.contact_phone}</Text> : null}
                   </View>
+                  <ChevronRight size={18} color={colors.neutral[400]} />
                 </Pressable>
               );
             })}
-            <Pressable style={styles.sheetAddBtn} onPress={() => { onOpenChange(false); setAddOpen(true); }}>
-              <Plus size={16} color={colors.food[600]} />
-              <Text style={styles.sheetAddText}>Add new address</Text>
-            </Pressable>
-          </View>
+          </ScrollView>
         )}
       </BottomSheet>
 

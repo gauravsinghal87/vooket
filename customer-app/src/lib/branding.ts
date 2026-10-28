@@ -29,7 +29,10 @@ let cache: Branding = { ...FALLBACK_BRANDING };
 /** Publish branding fetched from `/app-config` into the shared module cache. */
 export function setBranding(branding?: Partial<Branding> | null): void {
   if (!branding) return;
-  cache = { ...cache, ...branding };
+  const next = { ...branding };
+  // A blank configured name must never blank the fallback out of the cache.
+  if (typeof next.name === 'string' && !next.name.trim()) delete next.name;
+  cache = { ...cache, ...next };
 }
 
 /** Read the currently known branding (never throws; falls back before load). */

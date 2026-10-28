@@ -21,10 +21,12 @@ interface AppState {
    * selector instead of each page mounting its own copy.
    */
   locationSelectorOpen: boolean;
+  locationSelectorContext: 'default' | 'food-cart' | 'grocery-cart';
+  locationSelectorCartType?: 'food' | 'grocery';
   setService: (service: ServiceType) => void;
   setLocation: (location: Location) => void;
   setVegMode: (vegMode: boolean) => void;
-  openLocationSelector: () => void;
+  openLocationSelector: (context?: 'default' | 'food-cart' | 'grocery-cart', cartType?: 'food' | 'grocery') => void;
   closeLocationSelector: () => void;
 }
 
@@ -35,11 +37,14 @@ export const useAppStore = create<AppState>()(
       location: null,
       vegMode: false,
       locationSelectorOpen: false,
+      locationSelectorContext: 'default',
+      locationSelectorCartType: undefined,
       setService: (service) => set({ service }),
       setLocation: (location) => set({ location }),
       setVegMode: (vegMode) => set({ vegMode }),
-      openLocationSelector: () => set({ locationSelectorOpen: true }),
-      closeLocationSelector: () => set({ locationSelectorOpen: false }),
+      openLocationSelector: (context = 'default', cartType) =>
+        set({ locationSelectorOpen: true, locationSelectorContext: context, locationSelectorCartType: cartType }),
+      closeLocationSelector: () => set({ locationSelectorOpen: false, locationSelectorContext: 'default', locationSelectorCartType: undefined }),
     }),
     {
       name: 'sb-app',

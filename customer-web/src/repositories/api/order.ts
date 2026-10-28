@@ -1,14 +1,21 @@
-import type { OrderRepository } from '../interfaces';
+import type { OrderHistoryPage, OrderRepository } from '../interfaces';
 import { apiClient } from '@/lib/apiClient';
 import type {
   Order,
   OrderTracking,
   PreparationInstructionsPayload,
+  ServiceType,
   UpdatePreparationInstructionsInput,
 } from '@/types/models';
 import type { Paginated } from '@/types/api';
 
 export class ApiOrderRepository implements OrderRepository {
+  async getHistory(module: ServiceType, page?: number): Promise<OrderHistoryPage> {
+    const qs = new URLSearchParams({ module });
+    if (page) qs.set('page', String(page));
+    return apiClient.get<OrderHistoryPage>(`/orders?${qs.toString()}`);
+  }
+
   async getOrders(params?: { status?: string; order_type?: string; page?: number }): Promise<Paginated<Order>> {
     const qs = new URLSearchParams();
     if (params?.status) qs.set('status', params.status);

@@ -12,13 +12,13 @@ export const colors = {
   accent: {
     50: '#fff4ed', 100: '#ffe6d5', 200: '#fec9aa', 300: '#fda274', 400: '#fb703c',
     500: '#f94d16', 600: '#ea320c', 700: '#c2230c', 800: '#9a1e12', 900: '#7c1c12',
-  },  food: {
+  }, food: {
     /* Food module palette — Zomato red, matching customer-web/src/index.css.
        Scoped to Food: Grocery and Rides read their own scales. The 600 step is
        the exact Zomato red. */
     50: '#fdecee', 100: '#fbdde0', 200: '#f7bcc1', 300: '#f19aa2', 400: '#ec6b78',
     500: '#e64252', 600: '#e23242', 700: '#c72232', 800: '#a81d2b', 900: '#8a1924',
-    950: '#4e0d11',
+    950: '#4e0d11', 1000: '#000000',
   },
   grocery: {
     50: '#fffdf5', 100: '#fff8e1', 200: '#fdf0c8', 300: '#fae39a', 400: '#f7cf4f',

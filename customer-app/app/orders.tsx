@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect, usePathname, useRouter } from 'expo-router';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   AlertTriangle,
   Car,
@@ -9,10 +9,8 @@ import {
   Eye,
   MapPin,
   MoreVertical,
-  ReceiptText,
   RefreshCw,
   Search,
-  SearchX,
   ShoppingBasket,
   Star,
   UtensilsCrossed,
@@ -20,23 +18,16 @@ import {
 } from 'lucide-react-native';
 import { repositories } from '@/api/repositories';
 import type { Order, Ride } from '@/types/models';
+import type { Paginated } from '@/types/api';
 import { Screen } from '@/components/Screen';
 import { AppHeader } from '@/components/AppHeader';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { EmptyState, Loader } from '@/components/ui/primitives';
 import { toast } from '@/stores/toastStore';
+import { useAppStore } from '@/stores/appStore';
 import { formatCurrency } from '@/lib/utils';
-import { colors, withAlpha } from '@/theme';
-
-type Tab = 'all' | 'food' | 'grocery' | 'rides';
-
-const TABS: { value: Tab; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'food', label: 'Food' },
-  { value: 'grocery', label: 'Grocery' },
-  { value: 'rides', label: 'Rides' },
-];
+import { activeService, colors, withAlpha } from '@/theme';
 
 const MAX_VISIBLE_ITEMS = 3;
 
@@ -83,20 +74,39 @@ function formatOrderPlaced(iso: string): string {
 
 export default function OrdersScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<Tab>('all');
   const [query, setQuery] = useState('');
   const [menuOrder, setMenuOrder] = useState<Order | null>(null);
   const [rateOrder, setRateOrder] = useState<Order | null>(null);
 
-  const ordersQuery = useQuery({
-    queryKey: ['orders'],
-    queryFn: () => repositories.orders.getOrders({}),
+  // Same resolution the bottom module switcher uses: the route when it names a
+  // service, otherwise the persisted module the customer last picked. `/orders`
+  // is cross-module, so the switcher's selection is what scopes this screen.
+  const storedService = useAppStore((s) => s.service);
+  const module = activeService(pathname) ?? storedService;
+  const isRides = module === 'rides';
+
+  // The module lives in the cache key, so switching modules starts a fresh
+  // fetch and food, grocery and rides pages can never bleed into each other.
+  // The backend filters by module inside the query (or reads the rides table),
+  // so only the requested module's records are ever transferred.
+  const history = useInfiniteQuery({
+    queryKey: ['orders', 'history', module],
+    queryFn: ({ pageParam }) => repositories.orders.getHistory(module, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.current_page < last.last_page ? last.current_page + 1 : undefined),
   });
-  const ridesQuery = useQuery({
-    queryKey: ['ride-history'],
-    queryFn: () => repositories.rides.getRideHistory(),
-  });
+
+  // Returning to this screen refreshes the current module's history. A cold
+  // mount already fetches, so only already-cached data is invalidated here.
+  useFocusEffect(
+    useCallback(() => {
+      if (queryClient.getQueryData(['orders', 'history', module])) {
+        void queryClient.invalidateQueries({ queryKey: ['orders', 'history', module] });
+      }
+    }, [module, queryClient])
+  );
 
   const reorder = useMutation({
     mutationFn: (id: number) => repositories.orders.reorder(id),
@@ -118,47 +128,43 @@ export default function OrdersScreen() {
     onError: () => toast('Could not cancel order', 'error'),
   });
 
-  const allOrders = useMemo(() => ordersQuery.data?.data ?? [], [ordersQuery.data]);
-  const rideList = useMemo(() => ridesQuery.data ?? [], [ridesQuery.data]);
+  // The active module's records only — narrowed from the pages the API
+  // returned for that module, never filtered out of a combined list.
+  const rows = useMemo(
+    () => (history.data?.pages ?? []).flatMap((p) => (p as Paginated<Order | Ride>).data),
+    [history.data]
+  );
+  const allOrders = useMemo(() => (isRides ? [] : (rows as Order[])), [isRides, rows]);
+  const rideList = useMemo(() => (isRides ? (rows as Ride[]) : []), [isRides, rows]);
 
   const trimmed = query.trim().toLowerCase();
 
-  const tabbedOrders = useMemo(() => {
-    if (tab === 'all') return allOrders;
-    if (tab === 'rides') return [];
-    return allOrders.filter((o) => o.order_type === tab);
-  }, [allOrders, tab]);
-
   const filteredOrders = useMemo(() => {
-    if (!trimmed) return tabbedOrders;
-    return tabbedOrders.filter((o) => {
+    if (!trimmed) return allOrders;
+    return allOrders.filter((o) => {
       const restaurant = o.restaurant?.name ?? o.store?.name ?? '';
       const items = (o.items ?? []).map((i) => i.product_name).join(' ');
       return `${o.order_number} ${restaurant} ${items}`.toLowerCase().includes(trimmed);
     });
-  }, [tabbedOrders, trimmed]);
-
-  const tabbedRides = useMemo(() => {
-    if (tab !== 'rides' && tab !== 'all') return [];
-    return tab === 'rides' ? rideList : rideList.slice(0, 3);
-  }, [tab, rideList]);
+  }, [allOrders, trimmed]);
 
   const filteredRides = useMemo(() => {
-    if (!trimmed) return tabbedRides;
-    return tabbedRides.filter((r) => {
+    if (!trimmed) return rideList;
+    return rideList.filter((r) => {
       const driver = r.driver?.name ?? r.driver?.user?.name ?? '';
       return `${r.ride_number} ${r.pickup_address ?? ''} ${r.destination_address ?? ''} ${driver}`
         .toLowerCase()
         .includes(trimmed);
     });
-  }, [tabbedRides, trimmed]);
+  }, [rideList, trimmed]);
 
-  const loading = tab === 'rides' ? ridesQuery.isLoading : ordersQuery.isLoading;
-  const isError = tab === 'rides' ? ridesQuery.isError : ordersQuery.isError;
-  const refetch = tab === 'rides' ? () => void ridesQuery.refetch() : () => void ordersQuery.refetch();
+  const loading = history.isLoading;
+  const isError = history.isError;
+  const refetch = () => void history.refetch();
 
-  const hasOrdersInTab = tab !== 'rides' && filteredOrders.length > 0;
-  const hasRidesInTab = filteredRides.length > 0;
+  const hasOrders = filteredOrders.length > 0;
+  const hasRides = filteredRides.length > 0;
+  const hasResults = hasOrders || hasRides;
   const searching = trimmed.length > 0;
 
   function handleMenuAction(order: Order, action: 'view' | 'menu' | 'rate' | 'reorder' | 'cancel') {
@@ -181,49 +187,34 @@ export default function OrdersScreen() {
   const loadingView = <Loader label="Loading…" />;
 
   const emptyTitle = searching
-    ? 'No matching orders found'
-    : tab === 'rides'
+    ? isRides
+      ? 'No matching rides found'
+      : 'No matching orders found'
+    : isRides
       ? 'No rides yet'
-      : tab === 'food'
-        ? 'No Food orders yet'
-        : tab === 'grocery'
-          ? 'No Grocery orders yet'
-          : 'No orders yet';
+      : module === 'grocery'
+        ? 'No Grocery orders yet'
+        : 'No Food orders yet';
   const emptyDesc = searching
-    ? 'Try a different restaurant, dish or order number.'
-    : tab === 'rides'
+    ? isRides
+      ? 'Try a different ride number, pickup or drop.'
+      : 'Try a different restaurant, dish or order number.'
+    : isRides
       ? 'Book a ride and it will show up here.'
-      : tab === 'food'
-        ? 'Start exploring restaurants and place your first order.'
-        : tab === 'grocery'
-          ? 'Order groceries from a store near you to see them here.'
-          : 'Your food orders, grocery orders and rides will appear here.';
-  const emptyAction = searching ? undefined : tab === 'rides' ? 'Book a ride' : 'Explore food';
+      : module === 'grocery'
+        ? 'Order groceries from a store near you to see them here.'
+        : 'Start exploring restaurants and place your first order.';
+  const emptyAction = searching ? undefined : isRides ? 'Book a ride' : module === 'grocery' ? 'Shop groceries' : 'Order food';
+  const emptyActionRoute = isRides ? '/rides' : module === 'grocery' ? '/stores' : '/restaurants';
 
   return (
-    <Screen header={<AppHeader variant="dark" title="Orders" />}>
+    <Screen header={<AppHeader variant="dark" title={isRides ? 'Your Rides' : 'Orders'} />}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View>
-          <Text style={styles.title}>Your Orders</Text>
-          <Text style={styles.subtitle}>Track, reorder and review everything you've ordered.</Text>
-        </View>
-
-        <View style={styles.pills}>
-          {TABS.map((t) => {
-            const active = tab === t.value;
-            return (
-              <Pressable
-                key={t.value}
-                onPress={() => {
-                  setTab(t.value);
-                  setQuery('');
-                }}
-                style={[styles.pill, active ? { backgroundColor: colors.ink[900] } : undefined]}
-              >
-                <Text style={[styles.pillText, active ? { color: '#fff' } : undefined]}>{t.label}</Text>
-              </Pressable>
-            );
-          })}
+          <Text style={styles.title}>{isRides ? 'Your Rides' : 'Your Orders'}</Text>
+          <Text style={styles.subtitle}>
+            {isRides ? 'Review your rides, fares and trip status.' : "Track, reorder and review everything you've ordered."}
+          </Text>
         </View>
 
         <View style={styles.searchRow}>
@@ -232,7 +223,7 @@ export default function OrdersScreen() {
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder="Search by restaurant or dish"
+              placeholder={isRides ? 'Search by ride or location' : 'Search by restaurant or dish'}
               placeholderTextColor={colors.neutral[400]}
               style={styles.searchInput}
               autoCapitalize="none"
@@ -257,21 +248,17 @@ export default function OrdersScreen() {
           />
         )}
 
-        {!loading && !isError && !hasOrdersInTab && !hasRidesInTab && (
-          <EmptyState title={emptyTitle} message={emptyDesc} actionLabel={emptyAction} onAction={emptyAction ? () => router.push('/restaurants' as never) : undefined} />
+        {!loading && !isError && !hasResults && (
+          <EmptyState
+            title={emptyTitle}
+            message={emptyDesc}
+            actionLabel={emptyAction}
+            onAction={emptyAction ? () => router.push(emptyActionRoute as never) : undefined}
+          />
         )}
 
-        {!loading && !isError && hasOrdersInTab && (
+        {!loading && !isError && hasOrders && (
           <View style={styles.list}>
-            {tab === 'all' && filteredRides.length > 0 && (
-              <View>
-                <Text style={styles.sectionTitle}>Ride history</Text>
-                {filteredRides.map((r) => (
-                  <RideCard key={r.id} ride={r} onClick={() => router.push(`/ride/${r.id}` as never)} />
-                ))}
-              </View>
-            )}
-
             {filteredOrders.map((o) => (
               <OrderCard
                 key={o.id}
@@ -287,13 +274,23 @@ export default function OrdersScreen() {
           </View>
         )}
 
-        {!loading && !isError && !hasOrdersInTab && hasRidesInTab && (
+        {!loading && !isError && hasRides && (
           <View style={styles.list}>
-            {tab === 'all' && <Text style={styles.sectionTitle}>Ride history</Text>}
             {filteredRides.map((r) => (
               <RideCard key={r.id} ride={r} onClick={() => router.push(`/ride/${r.id}` as never)} />
             ))}
           </View>
+        )}
+
+        {!loading && !isError && hasResults && history.hasNextPage && (
+          <Pressable
+            onPress={() => void history.fetchNextPage()}
+            disabled={history.isFetchingNextPage}
+            style={[styles.loadMore, history.isFetchingNextPage && { opacity: 0.6 }]}
+          >
+            {history.isFetchingNextPage && <ActivityIndicator size="small" color={colors.ink[900]} />}
+            <Text style={styles.loadMoreText}>Load more</Text>
+          </Pressable>
         )}
       </ScrollView>
 
@@ -525,6 +522,7 @@ function OrderCard({
 
 function RideCard({ ride, onClick }: { ride: Ride; onClick: () => void }) {
   const driver = ride.driver?.name ?? ride.driver?.user?.name ?? null;
+  const vehicle = ride.vehicle_type?.name ?? null;
   const fare = ride.final_fare ?? ride.estimated_fare;
   return (
     <Pressable onPress={onClick} style={styles.rideCard}>
@@ -539,9 +537,9 @@ function RideCard({ ride, onClick }: { ride: Ride; onClick: () => void }) {
           <Text style={styles.cardSubtitle} numberOfLines={1}>
             {ride.pickup_address ?? 'Pickup'} → {ride.destination_address ?? 'Drop'}
           </Text>
-          {driver && (
+          {(driver || vehicle) && (
             <Text style={styles.driverText} numberOfLines={1}>
-              Driver: {driver}
+              {[vehicle, driver && `Driver: ${driver}`].filter(Boolean).join(' · ')}
             </Text>
           )}
         </View>
@@ -626,21 +624,6 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
     marginTop: 2,
   },
-  pills: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  pill: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: colors.ink[50],
-  },
-  pillText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.neutral[500],
-  },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -665,9 +648,22 @@ const styles = StyleSheet.create({
   list: {
     gap: 16,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
+  loadMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    alignSelf: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '700',
     color: colors.ink[900],
   },
   card: {

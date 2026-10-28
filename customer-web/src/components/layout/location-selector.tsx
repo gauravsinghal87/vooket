@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
+  ArrowLeft,
   Briefcase,
   ChevronDown,
   ChevronRight,
@@ -11,10 +12,12 @@ import {
   LocateFixed,
   Loader2,
   MapPin,
+  MapIcon,
   MoreHorizontal,
   Plus,
   Search,
   Share2,
+  Trash2,
 } from 'lucide-react';
 import { repositories } from '@/repositories';
 import { useAppStore } from '@/store/appStore';
@@ -24,6 +27,12 @@ import { formatDistanceKm, haversineKm } from '@/lib/geo';
 import { toast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import type { Location } from '@/types/catalog';
+import { useSetDeliveryAddress } from '@/hooks/useCart';
+import { MapPicker } from '@/components/map/MapPicker';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
 
 interface LocationSelectorProps {
   open: boolean;
@@ -39,11 +48,41 @@ interface LocationSelectorProps {
  */
 export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const setLocation = useAppStore((s) => s.setLocation);
   const activeLocation = useAppStore((s) => s.location) ?? DEFAULT_LOCATION;
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const locationSelectorContext = useAppStore((s) => s.locationSelectorContext);
+  const locationSelectorCartType = useAppStore((s) => s.locationSelectorCartType);
+  const closeLocationSelector = useAppStore((s) => s.closeLocationSelector);
   const [locating, setLocating] = useState(false);
   const [query, setQuery] = useState('');
+  const [mode, setMode] = useState<'list' | 'add'>('list');
+  const [editing, setEditing] = useState<any | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<any | null>(null);
+
+  const [form, setForm] = useState({
+    label: 'Home',
+    contact_name: '',
+    contact_phone: '',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: 'India',
+    latitude: '',
+    longitude: '',
+    place_id: null as string | null,
+    formatted_address: null as string | null,
+  });
+  const [mapOpen, setMapOpen] = useState(false);
+  const [locationPicked, setLocationPicked] = useState(false);
+
+  const isCartSelection = locationSelectorContext === 'food-cart' || locationSelectorContext === 'grocery-cart';
+  const cartType = locationSelectorCartType || (locationSelectorContext === 'grocery-cart' ? 'grocery' : 'food');
+
+  const setDeliveryAddress = useSetDeliveryAddress();
 
   const addresses = useQuery({
     queryKey: ['location-addresses'],
@@ -65,8 +104,40 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
   });
 
   const pick = (loc: Location) => {
+    if (isCartSelection && isAuthenticated) {
+      // For cart selection, just set app location (some flows might want this)
+      // but requirement says selecting saved address must call setDeliveryAddress
+    }
     setLocation(loc);
     onOpenChange(false);
+  };
+
+  const selectSavedAddressForCart = (a: any) => {
+    if (!isCartSelection) {
+      pick({
+        label: a.label,
+        address: `${a.address_line_1}, ${a.city}`,
+        latitude: parseFloat(a.latitude ?? '0') || 0,
+        longitude: parseFloat(a.longitude ?? '0') || 0,
+        place_id: a.place_id ?? null,
+        formatted_address: a.formatted_address ?? null,
+      });
+      return;
+    }
+    setDeliveryAddress.mutate(
+      { addressId: a.id, type: cartType },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['cart'] });
+          queryClient.invalidateQueries({ queryKey: ['cart', cartType] });
+          toast('Delivery address updated');
+          onOpenChange(false);
+        },
+        onError: (err: unknown) => {
+          toast(err instanceof Error ? err.message : 'Could not update delivery address.', 'error');
+        },
+      }
+    );
   };
 
   const useGPS = async () => {
@@ -80,7 +151,7 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
     try {
       const reverse = await repositories.user.reverseGeocode(res.location.latitude, res.location.longitude);
       setLocating(false);
-      pick({
+      const loc: Location = {
         label: 'Current location',
         address: reverse.city ? `${reverse.street ?? reverse.address}, ${reverse.city}` : reverse.address,
         latitude: res.location.latitude,
@@ -88,16 +159,30 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
         formatted_address: reverse.formatted_address ?? reverse.address,
         locality: reverse.locality ?? null,
         area: reverse.area ?? null,
-      });
+      };
+      if (isCartSelection) {
+        setLocation(loc);
+        onOpenChange(false);
+        toast('Location updated');
+        return;
+      }
+      pick(loc);
       toast('Location updated');
     } catch {
       setLocating(false);
-      pick({
+      const loc: Location = {
         label: 'Current location',
         address: res.location.address,
         latitude: res.location.latitude,
         longitude: res.location.longitude,
-      });
+      };
+      if (isCartSelection) {
+        setLocation(loc);
+        onOpenChange(false);
+        toast('Location updated (no address details)');
+        return;
+      }
+      pick(loc);
       toast('Location updated (no address details)');
     }
   };
@@ -163,6 +248,124 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
   const serverResults = searchResults.data?.results ?? [];
   const isFallback = searchResults.data?.fallback === true;
 
+  const save = useMutation({
+    mutationFn: () => {
+      if (!locationPicked || !form.latitude || !form.longitude) {
+        throw new Error('Please pick your location on the map first.');
+      }
+      const payload = {
+        ...form,
+        contact_name: form.contact_name || null,
+        contact_phone: form.contact_phone || null,
+        address_line_2: form.address_line_2 || null,
+        state: form.state || null,
+        postal_code: form.postal_code || null,
+        country: form.country || 'India',
+        latitude: form.latitude,
+        longitude: form.longitude,
+        place_id: form.place_id,
+        formatted_address: form.formatted_address,
+      };
+      return editing
+        ? repositories.user.updateAddress(editing.id, payload)
+        : repositories.user.createAddress(payload);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['location-addresses'] });
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      toast(editing ? 'Address updated' : 'Address added');
+      if (isCartSelection && data?.id) {
+        setDeliveryAddress.mutate(
+          { addressId: data.id, type: cartType },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ['cart'] });
+              queryClient.invalidateQueries({ queryKey: ['cart', cartType] });
+              setMode('list');
+              onOpenChange(false);
+            },
+            onError: (err: unknown) => {
+              toast(err instanceof Error ? err.message : 'Could not update delivery address.', 'error');
+              setMode('list');
+            },
+          }
+        );
+        return;
+      }
+      setMode('list');
+      setEditing(null);
+      resetForm();
+      setLocationPicked(false);
+    },
+    onError: () => toast('Could not save address', 'error'),
+  });
+
+  const setDefault = useMutation({
+    mutationFn: (id: number) => repositories.user.setDefaultAddress(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['location-addresses'] });
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      toast('Default address updated');
+    },
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: number) => repositories.user.deleteAddress(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['location-addresses'] });
+      queryClient.invalidateQueries({ queryKey: ['addresses'] });
+      setConfirmDelete(null);
+      toast('Address deleted');
+    },
+  });
+
+  const resetForm = () =>
+    setForm({
+      label: 'Home',
+      contact_name: '',
+      contact_phone: '',
+      address_line_1: '',
+      address_line_2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'India',
+      latitude: '',
+      longitude: '',
+      place_id: null,
+      formatted_address: null,
+    });
+
+  const openAdd = () => {
+    setEditing(null);
+    resetForm();
+    setLocationPicked(false);
+    setMapOpen(true);
+    setMode('add');
+  };
+
+  const openEdit = (a: any) => {
+    setEditing(a);
+    setForm({
+      label: a.label,
+      contact_name: a.contact_name ?? '',
+      contact_phone: a.contact_phone ?? '',
+      address_line_1: a.address_line_1,
+      address_line_2: a.address_line_2 ?? '',
+      city: a.city,
+      state: a.state ?? '',
+      postal_code: a.postal_code ?? '',
+      country: a.country || 'India',
+      latitude: a.latitude ?? '',
+      longitude: a.longitude ?? '',
+      place_id: a.place_id ?? null,
+      formatted_address: a.formatted_address ?? null,
+    });
+    setLocationPicked(!!(a.latitude && a.longitude));
+    setMapOpen(false);
+    setMode('add');
+  };
+
   const sharePlace = async (p: (typeof places)[number]) => {
     const text = `${p.label}: ${p.address}`;
     try {
@@ -178,7 +381,16 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) {
+          setMode('list');
+          setQuery('');
+        }
+        onOpenChange(v);
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-fade-in" />
         <Dialog.Content
@@ -189,18 +401,90 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
         >
           {/* Header: chevron-down dismisses, the title leads. */}
           <div className="flex shrink-0 items-center gap-3 bg-ink-50 px-4 pb-3 pt-5">
-            <Dialog.Close
-              aria-label="Close location picker"
-              className="tap -ml-1 flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-200/70 focus:outline-2 focus:outline-brand-600"
-            >
-              <ChevronDown className="h-6 w-6" />
-            </Dialog.Close>
+            {mode === 'add' ? (
+              <button
+                aria-label="Back"
+                onClick={() => {
+                  setMode('list');
+                  setEditing(null);
+                  resetForm();
+                  setLocationPicked(false);
+                  setMapOpen(false);
+                }}
+                className="tap -ml-1 flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-200/70 focus:outline-2 focus:outline-brand-600"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+            ) : (
+              <Dialog.Close
+                aria-label="Close location picker"
+                className="tap -ml-1 flex h-9 w-9 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-neutral-200/70 focus:outline-2 focus:outline-brand-600"
+              >
+                <ChevronDown className="h-6 w-6" />
+              </Dialog.Close>
+            )}
             <Dialog.Title className="text-[20px] font-extrabold tracking-tight text-neutral-900">
-              Select a location
+              {mode === 'add' ? (editing ? 'Edit address' : 'Add address') : 'Select a location'}
             </Dialog.Title>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">
+            {mode === 'add' ? (
+              <div className="space-y-4">
+                <Card className="p-4 space-y-3">
+                  <div className="flex gap-2">
+                    {(['Home', 'Work', 'Other'] as const).map((l) => (
+                      <button
+                        key={l}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, label: l }))}
+                        className={cn(
+                          'rounded-full px-3 py-1 text-sm font-semibold',
+                          form.label === l ? 'bg-food-600 text-white' : 'bg-neutral-100 text-neutral-700'
+                        )}
+                      >
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <Input placeholder="Flat / House no. / Floor / Building" value={form.address_line_1} onChange={(e) => setForm((f) => ({ ...f, address_line_1: e.target.value }))} />
+                  <Input placeholder="Area / Sector / Landmark (optional)" value={form.address_line_2} onChange={(e) => setForm((f) => ({ ...f, address_line_2: e.target.value }))} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="City" value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+                    <Input placeholder="State (optional)" value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Pincode (optional)" value={form.postal_code} onChange={(e) => setForm((f) => ({ ...f, postal_code: e.target.value }))} />
+                    <Input placeholder="Country" value={form.country} onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))} />
+                  </div>
+                  <Input placeholder="Contact name (optional)" value={form.contact_name} onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))} />
+                  <Input placeholder="Contact phone (optional)" value={form.contact_phone} onChange={(e) => setForm((f) => ({ ...f, contact_phone: e.target.value }))} />
+                </Card>
+                <Card className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-neutral-900">Location on map</p>
+                    {locationPicked ? <span className="text-xs text-success">Picked</span> : <span className="text-xs text-neutral-500">Required</span>}
+                  </div>
+                  <Button type="button" variant="outline" onClick={() => setMapOpen(true)}>
+                    <MapIcon className="h-4 w-4" /> {locationPicked ? 'Change location on map' : 'Pick location on map'}
+                  </Button>
+                  {(form.latitude && form.longitude) && (
+                    <p className="text-xs text-neutral-500">
+                      {form.latitude}, {form.longitude}
+                    </p>
+                  )}
+                </Card>
+                <Button
+                  disabled={save.isPending || !locationPicked || !form.address_line_1 || !form.city}
+                  onClick={() => save.mutate()}
+                  className="w-full"
+                >
+                  {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {editing ? 'Save changes' : 'Save address'}
+                </Button>
+              </div>
+            ) : (
+              <>
             {/* Area search. */}
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-food-600" />
@@ -278,6 +562,13 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
 
               <button
                 onClick={() => {
+                  if (isCartSelection) {
+                    setMode('add');
+                    setEditing(null);
+                    resetForm();
+                    setLocationPicked(false);
+                    return;
+                  }
                   onOpenChange(false);
                   navigate('/profile/addresses');
                 }}
@@ -308,7 +599,16 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
                     return (
                       <div key={p.key} className="rounded-2xl bg-white p-4 shadow-[0_1px_2px_rgb(16_14_10/0.04)]">
                         <button
-                          onClick={() => pick(p.location)}
+                          onClick={() => {
+                            if (isCartSelection && isAuthenticated) {
+                              const addr = (addresses.data ?? []).find((a: any) => `address-${a.id}` === p.key);
+                              if (addr) {
+                                selectSavedAddressForCart(addr);
+                                return;
+                              }
+                            }
+                            pick(p.location);
+                          }}
                           className="tap flex w-full items-start gap-3.5 text-left"
                         >
                           <span className="flex w-12 shrink-0 flex-col items-center gap-1 text-neutral-600">
@@ -393,6 +693,8 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
               <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-neutral-400">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Locating…
               </p>
+            )}
+              </>
             )}
           </div>
         </Dialog.Content>

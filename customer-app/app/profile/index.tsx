@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   Bell,
@@ -28,9 +28,11 @@ import { AppHeader } from '@/components/AppHeader';
 import { Avatar } from '@/components/ui/Avatar';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Loader } from '@/components/ui/primitives';
-import { getBranding } from '@/lib/branding';
+import { useBranding } from '@/hooks/useBranding';
 import { formatCurrency } from '@/lib/utils';
-import { colors, withAlpha } from '@/theme';
+import { activeService, colors, withAlpha } from '@/theme';
+import { GroceryProfile, type ProfileVariantProps } from '@/components/profile/GroceryProfile';
+import { RidesProfile } from '@/components/profile/RidesProfile';
 
 interface MenuItem {
   icon: typeof CircleUser;
@@ -83,81 +85,30 @@ function Row({
   return <Pressable onPress={onClick}>{content}</Pressable>;
 }
 
-export default function ProfileScreen() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+/**
+ * Zomato's profile screen — the Food module's variant. Grocery and Rides get
+ * their own layouts from the components beside this screen (Blinkit's
+ * "Your account" and Rapido's flat menu).
+ */
+function FoodProfile({
+  brand,
+  user,
+  completion,
+  walletBalance,
+  onOpenNotifications,
+  onOpenCoupons,
+  onLogout,
+  onDeleteAccount,
+}: ProfileVariantProps) {
   const router = useRouter();
-  const [logoutOpen, setLogoutOpen] = useState(false);
-  const [logoutPending, setLogoutPending] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [couponsOpen, setCouponsOpen] = useState(false);
 
   // Veg Mode is a real persisted preference (same store the Food home reads).
   const vegMode = useAppStore((s) => s.vegMode);
   const setVegMode = useAppStore((s) => s.setVegMode);
 
-  const notifications = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => repositories.user.getNotifications(),
-    enabled: notifOpen && isAuthenticated,
-  });
-
-  const coupons = useQuery({
-    queryKey: ['profile-coupons'],
-    queryFn: () => repositories.user.getCoupons(),
-    enabled: couponsOpen && isAuthenticated,
-  });
-
-  const wallet = useQuery({
-    queryKey: ['wallet'],
-    queryFn: () => repositories.wallet.getWallet(),
-    enabled: isAuthenticated,
-  });
-
-  const handleLogout = async () => {
-    setLogoutPending(true);
-    await logout();
-    setLogoutPending(false);
-    setLogoutOpen(false);
-    toast('Signed out');
-    router.replace('/');
-  };
-
-  // Profile completion from the fields the account really holds.
-  const completion = user
-    ? Math.round(([user.name, user.email, user.phone].filter((f) => f && String(f).trim()).length / 3) * 100)
-    : 0;
-
-  const brand = getBranding().name;
-
-  if (!isAuthenticated) {
-    return (
-      <Screen
-        header={<AppHeader variant="dark" title="Profile" />}
-        bottomNav={false}
-        scrollProps={{ contentContainerStyle: { flexGrow: 1, justifyContent: 'center' } }}
-      >
-        <View style={styles.guest}>
-          <Avatar name="Guest" size="lg" />
-          <Text style={styles.guestTitle}>You&apos;re not signed in</Text>
-          <Text style={styles.guestDesc}>Sign in to manage orders, wallet and addresses.</Text>
-          <Pressable
-            style={styles.primaryBtn}
-            onPress={() => router.push({ pathname: '/auth/login', params: { redirect: '/profile' } } as never)}
-          >
-            <Text style={styles.primaryText}>Sign in</Text>
-          </Pressable>
-          <Pressable style={styles.outlineBtn} onPress={() => router.push('/auth/register' as never)}>
-            <Text style={styles.outlineText}>Create account</Text>
-          </Pressable>
-        </View>
-      </Screen>
-    );
-  }
-
   const moreMenu: MenuItem[] = [
     { icon: LifeBuoy, label: 'Help & support', onClick: () => toast('Support tickets coming soon') },
-    { icon: Bell, label: 'Notifications', onClick: () => setNotifOpen(true) },
+    { icon: Bell, label: 'Notifications', onClick: onOpenNotifications },
     { icon: Languages, label: 'Language', onClick: () => toast('Language settings coming soon') },
     { icon: ShieldCheck, label: 'Privacy', onClick: () => toast('Privacy settings coming soon') },
     { icon: Lock, label: 'Security', onClick: () => toast('Security settings coming soon') },
@@ -165,8 +116,7 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <Screen header={<AppHeader variant="dark" title="Profile" />} bottomNav={false} scroll={false}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <>
         {/* Account card: avatar, identity, view activity. */}
         <View style={styles.accountCard}>
           <Avatar name={user?.name ?? user?.email ?? 'User'} size="lg" />
@@ -198,10 +148,10 @@ export default function ProfileScreen() {
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.miniTitle} numberOfLines={1}>{brand} Money</Text>
-              <Text style={styles.miniValue}>{wallet.data ? formatCurrency(Number(wallet.data.balance)) : '—'}</Text>
+              <Text style={styles.miniValue}>{walletBalance !== null ? formatCurrency(walletBalance) : '—'}</Text>
             </View>
           </Pressable>
-          <Pressable style={styles.miniCard} onPress={() => setCouponsOpen(true)}>
+          <Pressable style={styles.miniCard} onPress={onOpenCoupons}>
             <View style={styles.miniIcon}>
               <Ticket size={18} color={colors.neutral[500]} />
             </View>
@@ -238,7 +188,7 @@ export default function ProfileScreen() {
         <SectionCard title="Food Orders">
           <Row icon={CircleUser} label="Your orders" to="/orders" />
           <Row icon={WalletIcon} label="Wallet" to="/wallet" />
-          <Row icon={Bell} label="Notifications" onClick={() => setNotifOpen(true)} />
+          <Row icon={Bell} label="Notifications" onClick={onOpenNotifications} />
         </SectionCard>
 
         <SectionCard title="More">
@@ -251,13 +201,126 @@ export default function ProfileScreen() {
           {moreMenu.slice(3).map((item) => (
             <Row key={item.label} icon={item.icon} label={item.label} to={item.to} onClick={item.onClick} tone={item.tone} />
           ))}
-          <Row icon={LogOut} label="Log out" tone="danger" onClick={() => setLogoutOpen(true)} />
+          <Row icon={LogOut} label="Log out" tone="danger" onClick={onLogout} />
         </SectionCard>
 
-        <Pressable style={styles.deleteBtn} onPress={() => setDeleteOpen(true)}>
+        <Pressable style={styles.deleteBtn} onPress={onDeleteAccount}>
           <Trash2 size={16} color={colors.danger} />
           <Text style={styles.deleteText}>Delete account</Text>
         </Pressable>
+    </>
+  );
+}
+
+/**
+ * The account screen is cross-module: it renders the profile layout of the
+ * module the switcher selected — Food (Zomato), Grocery (Blinkit) or Rides
+ * (Rapido). The shared sheets and modals stay here so every variant reuses them.
+ */
+export default function ProfileScreen() {
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [couponsOpen, setCouponsOpen] = useState(false);
+
+  // Same resolution the module switcher uses on the other cross-module
+  // screens: `/profile` never names a service, so the persisted module the
+  // customer last picked decides which layout renders.
+  const storedService = useAppStore((s) => s.service);
+  const module = activeService(pathname) ?? storedService;
+
+  const notifications = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => repositories.user.getNotifications(),
+    enabled: notifOpen && isAuthenticated,
+  });
+
+  const coupons = useQuery({
+    queryKey: ['profile-coupons'],
+    queryFn: () => repositories.user.getCoupons(),
+    enabled: couponsOpen && isAuthenticated,
+  });
+
+  const wallet = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => repositories.wallet.getWallet(),
+    enabled: isAuthenticated,
+  });
+
+  const handleLogout = async () => {
+    setLogoutPending(true);
+    await logout();
+    setLogoutPending(false);
+    setLogoutOpen(false);
+    toast('Signed out');
+    router.replace('/');
+  };
+
+  // Profile completion from the fields the account really holds.
+  const completion = user
+    ? Math.round(([user.name, user.email, user.phone].filter((f) => f && String(f).trim()).length / 3) * 100)
+    : 0;
+
+  // Subscribes to the shared /app-config query, so the platform name is filled
+  // in even when branding resolves after the first paint.
+  const brand = useBranding().name;
+
+  if (!isAuthenticated) {
+    return (
+      <Screen
+        header={<AppHeader variant="dark" title="Profile" />}
+        bottomNav={false}
+        scrollProps={{ contentContainerStyle: { flexGrow: 1, justifyContent: 'center' } }}
+      >
+        <View style={styles.guest}>
+          <Avatar name="Guest" size="lg" />
+          <Text style={styles.guestTitle}>You&apos;re not signed in</Text>
+          <Text style={styles.guestDesc}>Sign in to manage orders, wallet and addresses.</Text>
+          <Pressable
+            style={styles.primaryBtn}
+            onPress={() => router.push({ pathname: '/auth/login', params: { redirect: '/profile' } } as never)}
+          >
+            <Text style={styles.primaryText}>Sign in</Text>
+          </Pressable>
+          <Pressable style={styles.outlineBtn} onPress={() => router.push('/auth/register' as never)}>
+            <Text style={styles.outlineText}>Create account</Text>
+          </Pressable>
+        </View>
+      </Screen>
+    );
+  }
+
+  const variant: ProfileVariantProps = {
+    brand,
+    user,
+    completion,
+    walletBalance: wallet.data ? Number(wallet.data.balance) : null,
+    onBack: () => router.back(),
+    onOpenNotifications: () => setNotifOpen(true),
+    onOpenCoupons: () => setCouponsOpen(true),
+    onLogout: () => setLogoutOpen(true),
+    onDeleteAccount: () => setDeleteOpen(true),
+  };
+
+  return (
+    <Screen
+      header={module === 'food' ? <AppHeader variant="dark" title="Profile" /> : null}
+      bottomNav={false}
+      scroll={false}
+      background={module === 'grocery' ? colors.grocery[50] : module === 'rides' ? '#fff' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {module === 'grocery' ? (
+          <GroceryProfile {...variant} />
+        ) : module === 'rides' ? (
+          <RidesProfile {...variant} />
+        ) : (
+          <FoodProfile {...variant} />
+        )}
       </ScrollView>
 
       <BottomSheet title="Sign out?" visible={logoutOpen} onClose={() => setLogoutOpen(false)}>

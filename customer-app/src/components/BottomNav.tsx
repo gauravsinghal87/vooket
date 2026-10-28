@@ -1,41 +1,62 @@
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import { ServiceModuleSwitcher } from '@/components/ServiceModuleSwitcher';
 
-/**
- * The bar pinned to the bottom of every screen: the Food / Grocery / Rides
- * module switcher.
- *
- * This slot used to hold the five-item page nav (Home / Orders / Rides /
- * Wallet / You). The app is organised by module, so what belongs at the bottom
- * is the control that moves between modules — the page links now live on the
- * Profile screen.
- *
- * It is a full-width light frosted band instead of the solid black plate it
- * was, so no dark colour shows around the switcher. Content never scrolls
- * beneath it (Screen lays it out in normal flow), so a backdrop blur would have
- * nothing to blur — the glass read comes from layered translucency, the
- * switcher's gradient sheen and its hairline highlight, without needing a
- * native blur module. The white is near-opaque so the surface always resolves
- * to one flat colour and nothing behind it can show through as a band.
- * `Screen` gives the scroll body its space; the dock itself owns the safe-area
- * inset so it runs flush to the physical bottom edge.
- */
 export function BottomNav() {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-      <ServiceModuleSwitcher />
+    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      {Platform.OS === 'web' ? (
+        <View style={styles.glassFallback}>
+          <ServiceModuleSwitcher />
+        </View>
+      ) : (
+        <BlurView intensity={30} tint="dark" style={styles.blurContainer}>
+          <View style={styles.overlay}>
+            <ServiceModuleSwitcher />
+          </View>
+        </BlurView>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(23, 20, 15, 0.08)',
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    paddingTop: 4,
+  wrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  blurContainer: {
+    borderRadius: 999,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  overlay: {
+    backgroundColor: 'rgba(25, 25, 25, 0.38)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.28)',
+    borderRadius: 999,
+  },
+  glassFallback: {
+    backgroundColor: 'rgba(25, 25, 25, 0.48)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.32)',
+    borderRadius: 999,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
   },
 });

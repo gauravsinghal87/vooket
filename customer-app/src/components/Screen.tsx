@@ -67,7 +67,7 @@ export function Screen({
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={[
-            padded && { paddingBottom: 24 + (bottomBar ? 88 : 0) },
+            padded && { paddingBottom: 24 + (bottomBar ? 88 : 0) + (bottomNav ? 90 : 0) },
             contentStyle,
           ]}
           showsVerticalScrollIndicator={false}
@@ -98,7 +98,11 @@ export function Screen({
           {overlay}
         </View>
       ) : null}
-      {bottomBar ? <View style={styles.bottomBarWrap}>{bottomBar}</View> : null}
+      {bottomBar ? (
+        <View style={[styles.bottomBarWrap, bottomNav && { paddingBottom: 16 + 90 }]}>
+          {bottomBar}
+        </View>
+      ) : null}
       {bottomNav ? <BottomNav /> : null}
     </KeyboardAvoidingView>
   );

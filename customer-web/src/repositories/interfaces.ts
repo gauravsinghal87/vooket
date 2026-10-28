@@ -26,7 +26,7 @@ import type {
   PreparationInstructionsPayload,
   UpdatePreparationInstructionsInput,
 } from '@/types/models';
-import type { Paginated, Serviceability } from '@/types/api';
+import type { Paginated, Serviceability, ServiceType } from '@/types/api';
 
 /**
  * A paginated list plus the backend's serviceability verdict for the location
@@ -215,7 +215,19 @@ export interface RideRepository {
   deleteSavedPlace(id: number): Promise<void>;
 }
 
+/**
+ * One page of module history: `food` / `grocery` pages carry orders, `rides`
+ * pages carry ride bookings. The caller narrows with the module it asked for.
+ */
+export type OrderHistoryPage = Paginated<Order> | Paginated<Ride>;
+
 export interface OrderRepository {
+  /**
+   * History for exactly one module. The module is sent to the API, which
+   * filters in SQL (`orders.order_type`) or reads the rides table — the client
+   * never receives another module's records to filter itself.
+   */
+  getHistory(module: ServiceType, page?: number): Promise<OrderHistoryPage>;
   getOrders(params?: { status?: string; order_type?: string; page?: number }): Promise<Paginated<Order>>;
   getOrder(id: number): Promise<Order>;
   createOrder(data: {

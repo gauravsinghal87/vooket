@@ -1,14 +1,16 @@
-import type { OrderRepository } from '../interfaces';
+import type { OrderHistoryPage, OrderRepository } from '../interfaces';
 import type {
   Order,
   OrderTracking,
   PreparationInstructions,
   PreparationInstructionsPayload,
+  ServiceType,
   UpdatePreparationInstructionsInput,
 } from '@/types/models';
 import type { Paginated } from '@/types/api';
 import { getOrCreateCart, createOrderFromCart, mockState } from './mockState';
 import { mockDeliverySlots, mockProducts } from './data';
+import { MockRideRepository } from './ride';
 
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 
@@ -57,6 +59,32 @@ function mockPreparationInstructions(
 }
 
 export class MockOrderRepository implements OrderRepository {
+  /**
+   * Mirrors the API: food/grocery read the order list filtered by type, rides
+   * read the ride bookings — never one combined, client-filtered list.
+   */
+  async getHistory(module: ServiceType, page?: number): Promise<OrderHistoryPage> {
+    if (module === 'rides') {
+      const rides = await new MockRideRepository().getRideHistory();
+      return {
+        current_page: 1,
+        data: rides,
+        first_page_url: null,
+        from: rides.length ? 1 : null,
+        last_page: 1,
+        last_page_url: null,
+        next_page_url: null,
+        path: '/orders',
+        per_page: rides.length,
+        prev_page_url: null,
+        to: rides.length,
+        total: rides.length,
+      } as unknown as OrderHistoryPage;
+    }
+
+    return this.getOrders({ order_type: module, page });
+  }
+
   async getOrders(params?: { status?: string; order_type?: string; page?: number }): Promise<Paginated<Order>> {
     await delay();
     let list = [...mockState.orders];

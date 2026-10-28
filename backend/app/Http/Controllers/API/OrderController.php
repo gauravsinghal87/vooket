@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\Restaurant;
 use App\Models\Review;
+use App\Models\Ride;
 use App\Models\Store;
 use App\Models\SupportTicket;
 use App\Services\DeliveryOtpService;
@@ -30,20 +31,57 @@ class OrderController extends BaseController
         private DeliveryOtpService $deliveryOtpService,
     ) {}
 
+    /**
+     * Module-scoped order history for the signed-in customer.
+     *
+     * `module` is the switch the customer apps send: `food` / `grocery` page the
+     * orders table filtered on `order_type` inside the SQL query, `rides` pages
+     * the separate ride-bookings table, so a module can never receive another
+     * module's records. The legacy `order_type` filter is still honoured (and
+     * now validated) for older clients, and with neither parameter the response
+     * keeps the original "every order" behaviour. Sorting, pagination and the
+     * per-user scope are unchanged.
+     */
     public function index(Request $request)
     {
+        $validator = Validator::make($request->query(), [
+            'module' => 'sometimes|nullable|in:food,grocery,rides',
+            'order_type' => 'sometimes|nullable|in:food,grocery',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validation failed', $validator->errors(), 422);
+        }
+
+        $module = $request->query('module');
+
+        if ($module === 'rides') {
+            return $this->success($this->rideHistory($request));
+        }
+
         $query = Order::where('user_id', $request->user()->id);
 
         if ($request->has('status')) {
             $query->where('status', $request->get('status'));
         }
 
-        if ($request->has('order_type')) {
-            $query->where('order_type', $request->get('order_type'));
+        // The module filter belongs in the query, never in the client: only
+        // rows of the requested module are ever retrieved.
+        $orderType = $module ?? $request->query('order_type');
+        if ($orderType !== null && $orderType !== '') {
+            $query->where('order_type', $orderType);
         }
 
+        // The delivered-at timestamp powers the history card's "Arrived in X
+        // minutes" copy. Only the DELIVERED row is eager-loaded so the extra
+        // query stays bounded to one small row per order at most.
         $orders = $query
-            ->with(['items', 'restaurant.vendor', 'store.vendor'])
+            ->with([
+                'items',
+                'restaurant.vendor',
+                'store.vendor',
+                'statusHistory' => fn ($q) => $q->where('status', 'DELIVERED'),
+            ])
             ->latest()
             ->paginate($request->get('per_page', 15));
 
@@ -51,6 +89,19 @@ class OrderController extends BaseController
         $orders->getCollection()->each(fn (Order $order) => $order->hideInternalPricingSnapshot());
 
         return $this->success($orders);
+    }
+
+    /**
+     * Ride bookings for `?module=rides`: the `rides` table itself rather than
+     * restaurant orders, still scoped to the caller and paginated the same way,
+     * eager-loading the driver and vehicle the ride history card renders.
+     */
+    private function rideHistory(Request $request)
+    {
+        return Ride::where('user_id', $request->user()->id)
+            ->with(['driver.user', 'vehicleType'])
+            ->latest()
+            ->paginate($request->get('per_page', 15));
     }
 
     public function store(Request $request)

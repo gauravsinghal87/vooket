@@ -1,6 +1,6 @@
 import { useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   UtensilsCrossed,
   ShoppingBasket,
@@ -21,27 +21,28 @@ import {
 } from 'lucide-react';
 import { repositories } from '@/repositories';
 import type { Order, Ride } from '@/types/models';
+import type { Paginated } from '@/types/api';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Price } from '@/components/ui/price';
 import { Image } from '@/components/ui/image';
 import { Button } from '@/components/ui/button';
-import { Tabs } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/state';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { SelectedOptionsList } from '@/components/product/selected-options';
 import { toast } from '@/components/ui/toast';
+import { useAppStore } from '@/store/appStore';
+import { activeService } from '@/components/service/service-theme';
 import { cn, formatCurrency } from '@/lib/utils';
 
-type Tab = 'all' | 'food' | 'grocery' | 'rides';
 type StatusVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand' | 'accent';
 
 const statusVariant: Record<string, StatusVariant> = {
   DELIVERED: 'success',
   TRIP_COMPLETED: 'success',
-  PAID: 'success',
   COMPLETED: 'success',
+  PAID: 'success',
   PLACED: 'brand',
   CONFIRMED: 'brand',
   PREPARING: 'warning',
@@ -74,19 +75,28 @@ function formatOrderPlaced(iso: string): string {
 
 export function OrdersPage() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<Tab>('all');
   const [query, setQuery] = useState('');
   const [menuOrder, setMenuOrder] = useState<Order | null>(null);
   const [rateOrder, setRateOrder] = useState<Order | null>(null);
 
-  const { data: ordersData, isLoading: ordersLoading, isError: ordersError, refetch: refetchOrders } = useQuery({
-    queryKey: ['orders'],
-    queryFn: () => repositories.orders.getOrders({}),
-  });
-  const { data: rides, isLoading: ridesLoading, isError: ridesError, refetch: refetchRides } = useQuery({
-    queryKey: ['ride-history'],
-    queryFn: () => repositories.rides.getRideHistory(),
+  // Same resolution the module switcher uses: the route when it names a
+  // service, otherwise the persisted module the customer last picked. `/orders`
+  // is cross-module, so the switcher's selection is what scopes this screen.
+  const storedService = useAppStore((s) => s.service);
+  const module = activeService(pathname) ?? storedService;
+  const isRides = module === 'rides';
+
+  // The module lives in the cache key, so switching modules starts a fresh
+  // fetch and food, grocery and rides pages can never bleed into each other.
+  // The backend filters by module inside the query (or reads the rides table),
+  // so only the requested module's records are ever transferred.
+  const history = useInfiniteQuery({
+    queryKey: ['orders', 'history', module],
+    queryFn: ({ pageParam }) => repositories.orders.getHistory(module, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.current_page < last.last_page ? last.current_page + 1 : undefined),
   });
 
   const reorder = useMutation({
@@ -109,47 +119,43 @@ export function OrdersPage() {
     onError: () => toast('Could not cancel order', 'error'),
   });
 
-  const allOrders = useMemo(() => ordersData?.data ?? [], [ordersData]);
-  const rideList = useMemo(() => rides ?? [], [rides]);
+  // The active module's records only — narrowed from the pages the API
+  // returned for that module, never filtered out of a combined list.
+  const rows = useMemo(
+    () => (history.data?.pages ?? []).flatMap((p) => (p as Paginated<Order | Ride>).data),
+    [history.data]
+  );
+  const allOrders = useMemo(() => (isRides ? [] : (rows as Order[])), [isRides, rows]);
+  const rideList = useMemo(() => (isRides ? (rows as Ride[]) : []), [isRides, rows]);
 
   const trimmed = query.trim().toLowerCase();
 
-  const tabbedOrders = useMemo(() => {
-    if (tab === 'all') return allOrders;
-    if (tab === 'rides') return [];
-    return allOrders.filter((o) => o.order_type === tab);
-  }, [allOrders, tab]);
-
   const filteredOrders = useMemo(() => {
-    if (!trimmed) return tabbedOrders;
-    return tabbedOrders.filter((o) => {
+    if (!trimmed) return allOrders;
+    return allOrders.filter((o) => {
       const restaurant = o.restaurant?.name ?? o.store?.name ?? '';
       const items = (o.items ?? []).map((i) => i.product_name).join(' ');
       return `${o.order_number} ${restaurant} ${items}`.toLowerCase().includes(trimmed);
     });
-  }, [tabbedOrders, trimmed]);
-
-  const tabbedRides = useMemo(() => {
-    if (tab !== 'rides' && tab !== 'all') return [];
-    return tab === 'rides' ? rideList : rideList.slice(0, 3);
-  }, [tab, rideList]);
+  }, [allOrders, trimmed]);
 
   const filteredRides = useMemo(() => {
-    if (!trimmed) return tabbedRides;
-    return tabbedRides.filter((r) => {
+    if (!trimmed) return rideList;
+    return rideList.filter((r) => {
       const driver = r.driver?.name ?? r.driver?.user?.name ?? '';
       return `${r.ride_number} ${r.pickup_address ?? ''} ${r.destination_address ?? ''} ${driver}`
         .toLowerCase()
         .includes(trimmed);
     });
-  }, [tabbedRides, trimmed]);
+  }, [rideList, trimmed]);
 
-  const loading = tab === 'rides' ? ridesLoading : ordersLoading;
-  const error = tab === 'rides' ? ridesError : ordersError;
-  const refetch = tab === 'rides' ? refetchRides : refetchOrders;
+  const loading = history.isLoading;
+  const error = history.isError;
+  const refetch = () => void history.refetch();
 
-  const hasOrdersInTab = tab !== 'rides' && filteredOrders.length > 0;
-  const hasRidesInTab = filteredRides.length > 0;
+  const hasOrders = filteredOrders.length > 0;
+  const hasRides = filteredRides.length > 0;
+  const hasResults = hasOrders || hasRides;
   const searching = trimmed.length > 0;
 
   function handleMenuAction(order: Order, action: 'view' | 'menu' | 'rate' | 'reorder' | 'cancel') {
@@ -173,34 +179,22 @@ export function OrdersPage() {
     <div className="mx-auto max-w-3xl space-y-4">
       <div>
         <h1 className="flex items-center gap-2 text-xl font-extrabold text-neutral-900">
-          <ReceiptText className="h-5 w-5 text-brand-600" /> Your Orders
+          {isRides ? <Car className="h-5 w-5 text-brand-600" /> : <ReceiptText className="h-5 w-5 text-brand-600" />}
+          {isRides ? 'Your Rides' : 'Your Orders'}
         </h1>
-        <p className="text-sm text-neutral-500">Track, reorder and review everything you've ordered.</p>
+        <p className="text-sm text-neutral-500">
+          {isRides
+            ? 'Review your rides, fares and trip status.'
+            : "Track, reorder and review everything you've ordered."}
+        </p>
       </div>
-
-      <Tabs<Tab>
-        value={tab}
-        onChange={(v) => {
-          setTab(v);
-          setQuery('');
-        }}
-        variant="pill"
-        getActiveClass={(v) => (v === 'food' ? 'bg-food-50 text-food-600' : undefined)}
-        options={[
-          { value: 'all', label: 'All' },
-          { value: 'food', label: 'Food' },
-          { value: 'grocery', label: 'Grocery' },
-          { value: 'rides', label: 'Rides' },
-        ]}
-        className="max-w-sm"
-      />
 
       <div className="relative">
         <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by restaurant or dish"
+          placeholder={isRides ? 'Search by ride or location' : 'Search by restaurant or dish'}
           aria-label="Search orders"
           className="h-11 w-full rounded-full border border-neutral-200 bg-white pl-10 pr-8 text-sm text-neutral-900 shadow-sm placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
         />
@@ -227,25 +221,18 @@ export function OrdersPage() {
         <ErrorState title="Couldn't load activity" action={{ label: 'Retry', onClick: () => refetch() }} />
       )}
 
-      {!loading && !error && !hasOrdersInTab && !hasRidesInTab && (
+      {!loading && !error && !hasResults && (
         <div className="space-y-4">
           {searching ? (
-            <NoOrdersEmptyState />
-          ) : tab === 'rides' ? (
+            <NoHistoryEmptyState isRides={isRides} />
+          ) : isRides ? (
             <EmptyState
               icon={Car}
               title="No rides yet"
               description="Book a ride and it will show up here."
               action={{ label: 'Book a ride', onClick: () => navigate('/rides') }}
             />
-          ) : tab === 'food' ? (
-            <EmptyState
-              icon={UtensilsCrossed}
-              title="No Food orders yet"
-              description="Start exploring restaurants and place your first order."
-              action={{ label: 'Order food', onClick: () => navigate('/restaurants') }}
-            />
-          ) : tab === 'grocery' ? (
+          ) : module === 'grocery' ? (
             <EmptyState
               icon={ShoppingBasket}
               title="No Grocery orders yet"
@@ -254,26 +241,17 @@ export function OrdersPage() {
             />
           ) : (
             <EmptyState
-              icon={ReceiptText}
-              title="No orders yet"
-              description="Your food orders, grocery orders and rides will appear here."
-              action={{ label: 'Explore food', onClick: () => navigate('/restaurants') }}
+              icon={UtensilsCrossed}
+              title="No Food orders yet"
+              description="Start exploring restaurants and place your first order."
+              action={{ label: 'Order food', onClick: () => navigate('/restaurants') }}
             />
           )}
         </div>
       )}
 
-      {!loading && !error && hasOrdersInTab && (
+      {!loading && !error && hasOrders && (
         <div className="space-y-4">
-          {tab === 'all' && filteredRides.length > 0 && (
-            <>
-              <h2 className="text-sm font-bold text-neutral-900">Ride history</h2>
-              {filteredRides.map((r) => (
-                <RideCard key={r.id} ride={r} onClick={() => navigate(`/ride/${r.id}`)} />
-              ))}
-            </>
-          )}
-
           {filteredOrders.map((o) => (
             <OrderCard
               key={o.id}
@@ -301,12 +279,24 @@ export function OrdersPage() {
         </div>
       )}
 
-      {!loading && !error && !hasOrdersInTab && hasRidesInTab && (
+      {!loading && !error && hasRides && (
         <div className="space-y-4">
-          {tab === 'all' && <h2 className="text-sm font-bold text-neutral-900">Ride history</h2>}
           {filteredRides.map((r) => (
             <RideCard key={r.id} ride={r} onClick={() => navigate(`/ride/${r.id}`)} />
           ))}
+        </div>
+      )}
+
+      {!loading && !error && hasResults && history.hasNextPage && (
+        <div className="flex justify-center pt-1">
+          <Button
+            variant="outline"
+            onClick={() => void history.fetchNextPage()}
+            disabled={history.isFetchingNextPage}
+          >
+            {history.isFetchingNextPage && <Loader2 className="h-4 w-4 animate-spin" />}
+            Load more
+          </Button>
         </div>
       )}
 
@@ -393,15 +383,19 @@ function MenuAction({
   );
 }
 
-function NoOrdersEmptyState() {
+function NoHistoryEmptyState({ isRides }: { isRides: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-8 py-14 text-center animate-fade-in">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-500">
         <SearchX className="h-8 w-8" />
       </div>
       <div>
-        <h3 className="text-base font-semibold text-neutral-900">No matching orders found</h3>
-        <p className="mt-1 max-w-sm text-sm text-neutral-500">Try a different restaurant, dish or order number.</p>
+        <h3 className="text-base font-semibold text-neutral-900">
+          No matching {isRides ? 'rides' : 'orders'} found
+        </h3>
+        <p className="mt-1 max-w-sm text-sm text-neutral-500">
+          {isRides ? 'Try a different ride number, pickup or drop.' : 'Try a different restaurant, dish or order number.'}
+        </p>
       </div>
     </div>
   );
@@ -583,6 +577,7 @@ function OrderCard({
 
 function RideCard({ ride, onClick }: { ride: Ride; onClick: () => void }) {
   const driver = ride.driver?.name ?? ride.driver?.user?.name ?? null;
+  const vehicle = ride.vehicle_type?.name ?? null;
   return (
     <Card onClick={onClick} className="group overflow-hidden">
       <div className="flex items-center gap-3 p-4 pb-3">
@@ -594,7 +589,11 @@ function RideCard({ ride, onClick }: { ride: Ride; onClick: () => void }) {
           <p className="truncate text-xs text-neutral-500">
             {ride.pickup_address ?? 'Pickup'} → {ride.destination_address ?? 'Drop'}
           </p>
-          {driver && <p className="truncate text-[11px] text-neutral-400">Driver: {driver}</p>}
+          {(driver || vehicle) && (
+            <p className="truncate text-[11px] text-neutral-400">
+              {[vehicle, driver && `Driver: ${driver}`].filter(Boolean).join(' · ')}
+            </p>
+          )}
         </div>
         <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
       </div>

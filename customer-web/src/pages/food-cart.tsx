@@ -53,6 +53,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState, ErrorState } from '@/components/ui/state';
 import { Rail } from '@/components/home/section-header';
 import { toast } from '@/components/ui/toast';
+import { LocationSelector } from '@/components/layout/location-selector';
 import { completeOrderPayment, createUsableCheckout } from '@/lib/razorpay';
 import { getBranding } from '@/lib/branding';
 import { deliveryEtaText } from '@/lib/delivery-eta';
@@ -78,11 +79,11 @@ function firstRestaurantId(cart: FoodCart | null | undefined): number | null {
 export function FoodCartPage() {
   const navigate = useNavigate();
   const setService = useAppStore((s) => s.setService);
+  const locOpen = useAppStore((s) => s.locationSelectorOpen);
+  const openLocationSelector = useAppStore((s) => s.openLocationSelector);
+  const closeLocationSelector = useAppStore((s) => s.closeLocationSelector);
+  const setLocOpen = (open: boolean) => (open ? openLocationSelector() : closeLocationSelector());
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  // The delivery-address picker is opened from two places — the header's
-  // location row and the delivery card — so the open state is shared here and
-  // the sheet itself is mounted once below.
-  const [addressOpen, setAddressOpen] = useState(false);
 
   useEffect(() => {
     setService('food');
@@ -145,7 +146,7 @@ export function FoodCartPage() {
         <CartHeader
           restaurant={restaurant}
           cart={cart}
-          onChooseAddress={() => setAddressOpen(true)}
+          onChooseAddress={() => openLocationSelector()}
         />
       )}
 
@@ -185,7 +186,7 @@ export function FoodCartPage() {
           etaMin={restaurant.avg_delivery_time_min ?? null}
           cart={cart}
           isAuthenticated={isAuthenticated}
-          onChooseAddress={() => setAddressOpen(true)}
+          onChooseAddress={() => openLocationSelector()}
         />
       )}
 
@@ -213,17 +214,10 @@ export function FoodCartPage() {
       )}
 
       {hasItems && cart && (
-        <PaymentBar cart={cart} onChooseAddress={() => setAddressOpen(true)} />
+        <PaymentBar cart={cart} onChooseAddress={() => openLocationSelector()} />
       )}
 
-      {hasItems && cart && (
-        <AddressSheet
-          cart={cart}
-          isAuthenticated={isAuthenticated}
-          open={addressOpen}
-          onOpenChange={setAddressOpen}
-        />
-      )}
+      <LocationSelector open={locOpen} onOpenChange={setLocOpen} />
     </div>
   );
 }
@@ -828,6 +822,7 @@ function AddressSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const navigate = useNavigate();
   const setDeliveryAddress = useSetDeliveryAddress();
   const addresses = useQuery({
     queryKey: ['addresses'],
@@ -839,7 +834,7 @@ function AddressSheet({
     toast(err instanceof Error ? err.message : 'Could not update delivery address.', 'error');
 
   return (
-    <BottomSheet title="Select delivery address" open={open} onOpenChange={onOpenChange}>
+    <BottomSheet title="Select a location" open={open} onOpenChange={onOpenChange}>
       {!isAuthenticated ? (
         <div className="space-y-3">
           <p className="text-sm font-semibold text-neutral-900">Add a delivery address to continue</p>
@@ -851,57 +846,105 @@ function AddressSheet({
           </Link>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-food-600" />
+            <input
+              placeholder="Search for area, street name..."
+              aria-label="Search location"
+              className="h-12 w-full rounded-2xl border border-neutral-200 bg-white pl-11 pr-4 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-food-400"
+              readOnly
+              onClick={() => {
+                onOpenChange(false);
+                navigate('/profile/addresses');
+              }}
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-2xl bg-white">
+            <button
+              onClick={() => {
+                onOpenChange(false);
+                navigate('/profile/addresses');
+              }}
+              className="tap flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-neutral-50"
+            >
+              <LocateFixed className="h-5 w-5 shrink-0 text-food-600" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-bold text-food-600">Use current location</span>
+                <span className="mt-0.5 block truncate text-[13px] text-neutral-500">
+                  Set your current location
+                </span>
+              </span>
+              <ChevronRight className="h-4.5 w-4.5 shrink-0 text-neutral-300" />
+            </button>
+
+            <button
+              onClick={() => {
+                onOpenChange(false);
+                navigate('/profile/addresses');
+              }}
+              className="tap flex w-full items-center gap-3 border-t border-neutral-100 px-4 py-3.5 text-left transition-colors hover:bg-neutral-50"
+            >
+              <Plus className="h-5 w-5 shrink-0 text-food-600" />
+              <span className="min-w-0 flex-1 text-[15px] font-bold text-food-600">Add Address</span>
+              <ChevronRight className="h-4.5 w-4.5 shrink-0 text-neutral-300" />
+            </button>
+          </div>
+
           {addresses.isLoading && <Skeleton className="h-16 w-full rounded-2xl" />}
+
+          {!addresses.isLoading && (addresses.data ?? []).length > 0 && (
+            <section className="mt-2">
+              <div className="mb-3 flex items-center gap-3">
+                <span aria-hidden className="h-px flex-1 bg-neutral-300" />
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-neutral-500">
+                  Saved Addresses
+                </h3>
+                <span aria-hidden className="h-px flex-1 bg-neutral-300" />
+              </div>
+
+              <div className="max-h-[40vh] space-y-2 overflow-y-auto pr-1">
+                {(addresses.data ?? []).map((a) => {
+                  const active = cart.address_id === a.id;
+                  const Icon = a.label === 'Work' ? Briefcase : Home;
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => {
+                        setDeliveryAddress.mutate({ addressId: a.id, type: 'food' }, { onError: handleError });
+                        onOpenChange(false);
+                      }}
+                      className={cn(
+                        'flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors',
+                        active ? 'border-food-600 bg-food-50' : 'border-neutral-200 bg-white hover:border-neutral-300'
+                      )}
+                    >
+                      <span className="flex w-8 shrink-0 flex-col items-center text-neutral-600">
+                        <Icon className="h-5 w-5" strokeWidth={1.6} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="mb-0.5 flex items-center gap-2">
+                          <span className="text-sm font-bold text-neutral-900">{a.label}</span>
+                          {a.is_default && (
+                            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">Default</span>
+                          )}
+                        </span>
+                        <span className="block text-xs leading-snug text-neutral-600">
+                          {a.address_line_1}
+                          {a.address_line_2 ? `, ${a.address_line_2}` : ''}, {a.city} {a.postal_code}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {!addresses.isLoading && (addresses.data ?? []).length === 0 && (
             <p className="px-1 text-sm text-neutral-500">No saved addresses. Add one first.</p>
           )}
-
-          {(addresses.data ?? []).map((a) => {
-            const active = cart.address_id === a.id;
-            return (
-              <button
-                key={a.id}
-                onClick={() => {
-                  setDeliveryAddress.mutate({ addressId: a.id, type: 'food' }, { onError: handleError });
-                  onOpenChange(false);
-                }}
-                className={cn(
-                  'flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors',
-                  active ? 'border-food-600 bg-food-50' : 'border-neutral-200 bg-white hover:border-neutral-300'
-                )}
-              >
-                <span
-                  className={cn(
-                    'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
-                    active ? 'border-food-600' : 'border-neutral-300'
-                  )}
-                >
-                  {active && <span className="h-2.5 w-2.5 rounded-full bg-food-600" />}
-                </span>
-                <span className="min-w-0">
-                  <span className="mb-0.5 flex items-center gap-2">
-                    <span className="text-sm font-bold text-neutral-900">{a.label}</span>
-                    {a.is_default && (
-                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">Default</span>
-                    )}
-                  </span>
-                  <span className="block truncate text-xs text-neutral-500">
-                    {a.address_line_1}
-                    {a.address_line_2 ? `, ${a.address_line_2}` : ''}, {a.city} {a.postal_code}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-
-          <Link
-            to="/profile/addresses"
-            className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-neutral-300 p-3 text-sm font-semibold text-brand-600 transition-colors hover:border-brand-300 hover:text-brand-700"
-          >
-            <Plus className="h-4 w-4" /> Add new address
-          </Link>
         </div>
       )}
     </BottomSheet>

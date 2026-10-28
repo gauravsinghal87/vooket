@@ -14,7 +14,7 @@ import type { Banner } from '@/types/catalog';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 /* Compact, immersive height — tall enough for the overlaid header + copy, but
    leaving the first content section visible without scrolling. */
-const HERO_MIN_HEIGHT = Math.round(Math.min(Math.max(SCREEN_HEIGHT * 0.4, 260), 320)) + 135;
+const HERO_MIN_HEIGHT = Math.round(Math.min(Math.max(SCREEN_HEIGHT * 0.4, 260), 320)) + 70;
 
 const SCRIM = ['rgba(16,14,10,0.72)', 'rgba(16,14,10,0.32)', 'rgba(16,14,10,0.85)'] as const;
 
@@ -109,7 +109,7 @@ export function FoodHero({
 
   return (
     <View style={styles.hero}>
-      <View style={StyleSheet.absoluteFill}>
+      <View style={styles.mediaLayer}>
         {/* Poster / image sits behind the video so it also serves as the
             fallback when playback fails or no video is configured. */}
         {posterUri ? (
@@ -118,11 +118,17 @@ export function FoodHero({
           <LinearGradient colors={HERO_THEMES.food.headerBg} style={StyleSheet.absoluteFill} />
         )}
 
-        {videoUri ? <HeroVideo uri={videoUri} /> : null}
-
+        {/* Readability scrim for the image / gradient fallback only. It paints
+            *under* the video — the web reference lifts the video above it with
+            `z-index: 1` — so a playing video is never darkened or graded and
+            the copy still sits on a scrim when no video is available. */}
         <LinearGradient colors={SCRIM} style={StyleSheet.absoluteFill} />
+
+        {videoUri ? <HeroVideo uri={videoUri} /> : null}
       </View>
 
+      {/* Explicit stacking (RN `zIndex`, not CSS): media below, every hero
+          control above the video. */}
       <View style={styles.content}>
         <AppHeader variant="overlay" />
 
@@ -138,18 +144,18 @@ export function FoodHero({
             style={({ pressed }) => [styles.copy, pressed && { opacity: 0.94 }]}
             accessibilityLabel={banner.title}
           >
-            {banner.cta_text ? (
-              <View style={styles.cta}>
-                <Text style={styles.ctaText}>{banner.cta_text}</Text>
-              </View>
-            ) : null}
             <Text style={styles.title} numberOfLines={2}>
-              {banner.title}
+              {/* {banner.title} */}
             </Text>
             {banner.subtitle ? (
               <Text style={styles.subtitle} numberOfLines={2}>
                 {banner.subtitle}
               </Text>
+            ) : null}
+            {banner.cta_text ? (
+              <View style={styles.cta}>
+                <Text style={styles.ctaText}>{banner.cta_text}</Text>
+              </View>
             ) : null}
           </Pressable>
         ) : null}
@@ -166,6 +172,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.food[900],
     overflow: 'hidden',
   },
+  mediaLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+  },
   media: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -174,6 +184,7 @@ const styles = StyleSheet.create({
     minHeight: HERO_MIN_HEIGHT,
     justifyContent: 'space-between',
     paddingBottom: 20,
+    zIndex: 1,
   },
   spacer: {
     flex: 1,
@@ -183,12 +194,15 @@ const styles = StyleSheet.create({
     maxWidth: 520,
   },
   cta: {
-    alignSelf: 'flex-start',
-    marginBottom: 8,
+    /* The web hero shrink-wraps the pill's button to the pill and centres it
+       with `justify-items-center`; `alignSelf` is RN's equivalent here. The
+       rest of the copy stays left-aligned. */
+    alignSelf: 'center',
+    marginBottom: 5,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: colors.food[600],
+    backgroundColor: colors.food[1000],
   },
   ctaText: {
     fontFamily: 'Outfit_800ExtraBold',
