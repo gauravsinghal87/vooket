@@ -221,7 +221,11 @@ export function FoodCartPage() {
       )}
 
       {hasItems && cart && (
-        <PaymentBar cart={cart} onChooseAddress={() => openLocationSelector()} />
+        // Context `food-cart` is what the picker needs to know this is a cart
+        // address: it opens straight on the add-address screen (the client's
+        // request) and, on save, writes the new address to the cart instead of
+        // only to the header.
+        <PaymentBar cart={cart} onChooseAddress={() => openLocationSelector('food-cart')} />
       )}
 
       <LocationSelector open={locOpen} onOpenChange={setLocOpen} />

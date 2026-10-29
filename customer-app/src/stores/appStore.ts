@@ -29,10 +29,18 @@ interface AppState {
    * sheet instead of mounting its own copy. Transient, so it is never persisted.
    */
   locationSelectorOpen: boolean;
+  /**
+   * What the shared selector should show when it opens. `default` is the normal
+   * picker list; `food-cart` is the cart's "Choose address" button asking
+   * straight for the add-address screen, and for the saved address to become
+   * the cart's delivery address. Transient like `locationSelectorOpen`, so it
+   * is never persisted and always starts back at `default`.
+   */
+  locationSelectorContext: 'default' | 'food-cart';
   setService: (service: ServiceType) => void;
   setLocation: (location: Location, addressId?: number | null) => void;
   setVegMode: (vegMode: boolean) => void;
-  openLocationSelector: () => void;
+  openLocationSelector: (context?: 'default' | 'food-cart') => void;
   closeLocationSelector: () => void;
 }
 
@@ -44,11 +52,14 @@ export const useAppStore = create<AppState>()(
       locationAddressId: null,
       vegMode: false,
       locationSelectorOpen: false,
+      locationSelectorContext: 'default',
       setService: (service) => set({ service }),
       setLocation: (location, addressId = null) => set({ location, locationAddressId: addressId }),
       setVegMode: (vegMode) => set({ vegMode }),
-      openLocationSelector: () => set({ locationSelectorOpen: true }),
-      closeLocationSelector: () => set({ locationSelectorOpen: false }),
+      openLocationSelector: (context = 'default') =>
+        set({ locationSelectorOpen: true, locationSelectorContext: context }),
+      closeLocationSelector: () =>
+        set({ locationSelectorOpen: false, locationSelectorContext: 'default' }),
     }),
     {
       name: 'sb-app',

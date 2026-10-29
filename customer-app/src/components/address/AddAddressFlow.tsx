@@ -43,8 +43,12 @@ interface Props {
   initialLongitude?: number;
   /** Leave the flow and return to the picker's list. */
   onBack: () => void;
-  /** Called after a successful save so the picker can show the new address. */
-  onDone: () => void;
+  /**
+   * Called after a successful save with the address that was just created, so
+   * the picker can show it — and, when the cart asked for it, make it the
+   * delivery address straight away.
+   */
+  onDone: (address: Address) => void;
 }
 
 /**
@@ -245,10 +249,10 @@ export function AddAddressFlow({ module, initialLatitude, initialLongitude, onBa
       };
       return repositories.user.createAddress(payload);
     },
-    onSuccess: () => {
+    onSuccess: (saved: Address) => {
       queryClient.invalidateQueries({ queryKey: ['addresses'] });
       toast('Address added');
-      onDone();
+      onDone(saved);
     },
     onError: (err) => toast(err instanceof Error ? err.message : "Couldn't save address", 'error'),
   });

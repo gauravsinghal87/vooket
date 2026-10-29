@@ -106,6 +106,7 @@ export function LocationSelector({ open, onOpenChange, onSelected }: LocationSel
   const [query, setQuery] = useState('');
   const setLocation = useAppStore((s) => s.setLocation);
   const locationState = useAppStore((s) => s.location);
+  const openContext = useAppStore((s) => s.locationSelectorContext);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const activeLoc = locationState ?? DEFAULT_LOCATION;
 
@@ -127,6 +128,18 @@ export function LocationSelector({ open, onOpenChange, onSelected }: LocationSel
     onOpenChange(false);
     router.push('/rides/destination?field=drop' as never);
   }, [open, service, router, onOpenChange]);
+
+  // Opened from the cart's "Choose address", the customer is here to add the
+  // delivery address rather than browse the picker, so the sheet starts on the
+  // module's add-address screen — and it always returns to the plain list the
+  // next time it closes, so no other screen inherits that starting point.
+  useEffect(() => {
+    if (open) {
+      if (openContext === 'food-cart') setMode('foodAdd');
+      return;
+    }
+    setMode('list');
+  }, [open, openContext]);
 
   const [recentLocations, setRecentLocations] = useState<RecentLocation[]>([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -542,7 +555,16 @@ export function LocationSelector({ open, onOpenChange, onSelected }: LocationSel
               initialLatitude={activeLoc.latitude}
               initialLongitude={activeLoc.longitude}
               onBack={() => setMode('list')}
-              onDone={() => setMode('list')}
+              onDone={(saved) => {
+                // Saved from the cart's "Choose address": make it the delivery
+                // address immediately — `pick` writes it to the header, and the
+                // cart follows it through `useSyncCartAddress`.
+                if (openContext === 'food-cart') {
+                  pick(locationFromAddress(saved), saved.id);
+                  return;
+                }
+                setMode('list');
+              }}
             />
           </>
         )}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -427,31 +427,52 @@ export function LocationSelector({ open, onOpenChange }: LocationSelectorProps) 
     },
   });
 
-  const resetForm = () =>
-    setForm({
-      label: 'Home',
-      contact_name: '',
-      contact_phone: '',
-      address_line_1: '',
-      address_line_2: '',
-      landmark: '',
-      city: '',
-      state: '',
-      postal_code: '',
-      country: 'India',
-      latitude: '',
-      longitude: '',
-      place_id: null,
-      formatted_address: null,
-    });
+  const resetForm = useCallback(
+    () =>
+      setForm({
+        label: 'Home',
+        contact_name: '',
+        contact_phone: '',
+        address_line_1: '',
+        address_line_2: '',
+        landmark: '',
+        city: '',
+        state: '',
+        postal_code: '',
+        country: 'India',
+        latitude: '',
+        longitude: '',
+        place_id: null,
+        formatted_address: null,
+      }),
+    []
+  );
 
-  const openAdd = () => {
+  const openAdd = useCallback(() => {
     setEditing(null);
     resetForm();
     setLocationPicked(false);
     setMapOpen(true);
     setMode('add');
-  };
+  }, [resetForm]);
+
+  // Opened from the cart's "Choose address", the customer is here to *add* the
+  // delivery address, not to browse the picker — so the sheet starts on the
+  // module's add-address screen (Food: map + delivery details, Grocery: pin the
+  // map) instead of the list they would otherwise have to tap through. The back
+  // arrow in the header still returns to that list.
+  useEffect(() => {
+    if (!open || !isCartSelection) return;
+    if (locationSelectorContext === 'grocery-cart') {
+      setEditing(null);
+      resetForm();
+      setLocationPicked(false);
+      setPickedPlace(null);
+      setMode('groceryMap');
+      return;
+    }
+    openAdd();
+  }, [open, isCartSelection, locationSelectorContext, openAdd, resetForm]);
 
   const openEdit = (a: any) => {
     setEditing(a);

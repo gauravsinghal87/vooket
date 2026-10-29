@@ -152,7 +152,7 @@ function FoodCartPage() {
           <AppHeader variant="dark" title="Cart" />
         )
       }
-      bottomBar={<FoodPaymentBar cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector()} />}
+      bottomBar={<FoodPaymentBar cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector('food-cart')} />}
     >
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {savedAmount > 0 && (
