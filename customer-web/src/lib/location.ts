@@ -1,4 +1,20 @@
-import type { Location } from '@/types/catalog';
+import type { Address, Location } from '@/types/catalog';
+
+/**
+ * The header's `label + address` pair for a saved address — the single mapping
+ * every picker uses, so the home header and the cart's "to … | …" line read the
+ * same text for the same address, and the address id travels with the pick.
+ */
+export function locationFromAddress(a: Address): Location {
+  return {
+    label: a.label,
+    address: `${a.address_line_1}${a.address_line_2 ? `, ${a.address_line_2}` : ''}, ${a.city}`,
+    latitude: parseFloat(String(a.latitude ?? 0)) || 0,
+    longitude: parseFloat(String(a.longitude ?? 0)) || 0,
+    place_id: a.place_id ?? null,
+    formatted_address: a.formatted_address ?? null,
+  };
+}
 
 export const DEFAULT_LOCATION: Location = {
   label: 'Home',

@@ -12,8 +12,19 @@ import { AddAddressSheet } from '@/components/address/AddAddressSheet';
 import { Loader } from '@/components/ui/primitives';
 import { colors, withAlpha } from '@/theme';
 
-export default function AddressesScreen() {
+type AddressesService = 'food' | 'grocery' | null;
+
+/**
+ * Saved addresses. `service` marks which module opened it (the prefixed
+ * routes under `food/` and `grocery/` pass it): Food keeps the blue accents of
+ * the neutral screen, Grocery paints them green to match its own UI. The list,
+ * edit, delete and set-default behaviour is identical in both.
+ */
+export default function AddressesScreen({ service = null }: { service?: AddressesService }) {
   const queryClient = useQueryClient();
+  const accent = service === 'grocery' ? colors.success : colors.brand[700];
+  const accentSoft =
+    service === 'grocery' ? withAlpha(colors.success, 0.08) : withAlpha(colors.brand[700], 0.08);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
@@ -66,8 +77,8 @@ export default function AddressesScreen() {
           {addresses.data.map((a) => (
             <View key={a.id} style={styles.card}>
               <View style={styles.cardHead}>
-                <View style={styles.labelBadge}>
-                  <Text style={styles.labelBadgeText}>{a.label.toUpperCase()}</Text>
+                <View style={[styles.labelBadge, { backgroundColor: accentSoft }]}>
+                  <Text style={[styles.labelBadgeText, { color: accent }]}>{a.label.toUpperCase()}</Text>
                 </View>
                 {a.is_default && (
                   <View style={styles.defaultBadge}>
@@ -102,9 +113,12 @@ export default function AddressesScreen() {
               </View>
             </View>
           ))}
-          <Pressable style={styles.addRow} onPress={() => openForm()}>
-            <Plus size={16} color={colors.brand[700]} />
-            <Text style={styles.addRowText}>Add new address</Text>
+          <Pressable
+            style={[styles.addRow, { borderColor: accent }]}
+            onPress={() => openForm()}
+          >
+            <Plus size={16} color={accent} />
+            <Text style={[styles.addRowText, { color: accent }]}>Add new address</Text>
           </Pressable>
         </ScrollView>
       )}

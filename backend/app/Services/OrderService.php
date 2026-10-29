@@ -23,6 +23,7 @@ use App\Support\Money;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
@@ -166,11 +167,36 @@ class OrderService
                 }
             }
 
+            // One delivery destination for the order. The id in the payload
+            // must be an address the customer owns — a foreign id is a hard
+            // validation error, never a silently dropped reference. When the
+            // payload carries none (a stale cart, an older client) fall back to
+            // the same default-address rule the cart uses, so a valid saved
+            // address is not thrown away at the last step. With no usable
+            // address at all the order keeps whatever validation the zone
+            // configuration applies below.
+            $addressId = empty($data['address_id']) ? null : (int) $data['address_id'];
             $addressSnapshot = null;
-            if (! empty($data['address_id'])) {
-                $address = $user->addresses()->find($data['address_id']);
-                if ($address) {
-                    $addressSnapshot = $address->toArray();
+
+            if ($addressId !== null) {
+                $address = $user->addresses()->find($addressId);
+
+                if (! $address) {
+                    throw ValidationException::withMessages([
+                        'address_id' => 'The selected delivery address is invalid.',
+                    ]);
+                }
+
+                $addressSnapshot = $address->toArray();
+            } else {
+                $fallback = $user->addresses()
+                    ->where('is_default', true)
+                    ->first()
+                    ?? $user->addresses()->first();
+
+                if ($fallback) {
+                    $addressId = $fallback->id;
+                    $addressSnapshot = $fallback->toArray();
                 }
             }
 
@@ -269,8 +295,8 @@ class OrderService
                 'status' => $deliverySlot ? 'SCHEDULED' : 'PENDING',
                 'payment_status' => $walletUsed > 0 ? 'partial_paid' : 'pending',
                 'payment_method' => $data['payment_method'] ?? 'cash_on_delivery',
-                'address_id' => $data['address_id'] ?? null,
-                'pickup_zone_id' => $pickupZone?->id,
+            'address_id' => $addressId,
+            'pickup_zone_id' => $pickupZone?->id,
                 'drop_zone_id' => $dropZone?->id,
                 'delivery_address_snapshot' => $addressSnapshot,
                 'subtotal' => $subtotal,

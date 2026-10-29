@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { repositories } from '@/repositories';
 import { useCartStore } from '@/store/cartStore';
+import { useAppStore } from '@/store/appStore';
 import type { CartItem, OrderType } from '@/types/models';
 
 export const cartKeys = {
@@ -81,6 +83,52 @@ export function useSetDeliveryAddress() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
   });
+}
+
+/**
+ * Keep the cart's delivery address in step with the location the customer chose
+ * on the home header.
+ *
+ * Every address picker writes both sides — `setLocation(loc, addressId)` for the
+ * header and the cart's `address_id` for checkout — so the two only disagree
+ * when the location was picked while the cart did not exist yet: the backend
+ * then seeds a new cart with the default address. This re-applies the chosen
+ * address as soon as the cart has items, once per address, so it reconciles
+ * that case without ever overriding a later pick (which always updates both
+ * sides, making the values equal).
+ */
+export function useSyncCartAddress(
+  type: OrderType,
+  cart: { address_id?: number | null; items?: unknown[] } | null | undefined
+) {
+  const locationAddressId = useAppStore((s) => s.locationAddressId);
+  const setDeliveryAddress = useSetDeliveryAddress();
+  const appliedTo = useRef<number | null>(null);
+
+  const addressId = cart?.address_id ?? null;
+  const itemsCount = cart?.items?.length ?? 0;
+
+  useEffect(() => {
+    if (itemsCount === 0 || locationAddressId === null) return;
+
+    if (addressId === locationAddressId) {
+      appliedTo.current = locationAddressId;
+      return;
+    }
+
+    if (appliedTo.current === locationAddressId) return;
+    appliedTo.current = locationAddressId;
+
+    // Background reconciliation: a rejected call (cart emptied underneath us,
+    // address since deleted) just leaves the cart's own address in place.
+    setDeliveryAddress.mutate(
+      { addressId: locationAddressId, type },
+      { onError: () => undefined }
+    );
+    // `mutate` is stable across renders (react-query), so it is read fresh each
+    // run without being a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationAddressId, addressId, itemsCount, type]);
 }
 
 export function useUpdateCartItem() {

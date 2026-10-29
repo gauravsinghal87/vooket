@@ -142,7 +142,7 @@ export function GroceryProfile({
       </View>
 
       <Group title="Your information">
-        <GRow icon={MapPin} label="Address book" to="/profile/addresses" />
+        <GRow icon={MapPin} label="Address book" to="/grocery/profile/addresses" />
         <GRow
           icon={CircleUser}
           label="Your profile"

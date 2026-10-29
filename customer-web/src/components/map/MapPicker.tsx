@@ -30,6 +30,13 @@ interface MapPickerProps {
   countryCode?: string;
   onSelected: (place: SelectedPlace) => void;
   onCancel: () => void;
+  /**
+   * Live feed of the place the pin currently resolves to, so a host screen (the
+   * module add-address sheets) can show the picked address and stay in sync
+   * while the pin moves — without waiting for the confirm button. Fires only
+   * when the resolved place actually changes.
+   */
+  onPlaceChange?: (place: SelectedPlace | null) => void;
 }
 
 const GEOLOCATION_ERRORS: Record<number, string> = {
@@ -47,6 +54,7 @@ export function MapPicker({
   countryCode,
   onSelected,
   onCancel,
+  onPlaceChange,
 }: MapPickerProps) {
   const [query, setQuery] = useState(initialAddressLine1 ?? '');
   const [results, setResults] = useState<{
@@ -347,12 +355,9 @@ export function MapPicker({
     }
   };
 
-  const confirm = () => {
-    if (!coords) {
-      toast('Pick a location on the map or use your current location', 'error');
-      return;
-    }
-    onSelected({
+  const buildPlace = useCallback((): SelectedPlace | null => {
+    if (!coords) return null;
+    return {
       label: resolved?.street || resolved?.address || initialAddressLine1 || 'Delivered here',
       address_line_1: resolved?.street || resolved?.address || initialAddressLine1 || 'Selected location',
       city: resolved?.city ?? initialCity ?? '',
@@ -366,7 +371,30 @@ export function MapPicker({
       locality: resolved?.locality ?? null,
       area: resolved?.area ?? null,
       provider: resolved?.provider ?? null,
-    });
+    };
+  }, [coords, resolved, placeInfo, initialAddressLine1, initialCity]);
+
+  // Emit the current place only when it really changes; keeping the callback in
+  // a ref stops a fresh parent closure from retriggering this effect (and a
+  // parent setState loop) on every render.
+  const onPlaceChangeRef = useRef(onPlaceChange);
+  onPlaceChangeRef.current = onPlaceChange;
+  const lastPlaceRef = useRef('');
+  useEffect(() => {
+    const place = buildPlace();
+    const key = place ? JSON.stringify(place) : '';
+    if (key === lastPlaceRef.current) return;
+    lastPlaceRef.current = key;
+    onPlaceChangeRef.current?.(place);
+  }, [buildPlace]);
+
+  const confirm = () => {
+    const place = buildPlace();
+    if (!place) {
+      toast('Pick a location on the map or use your current location', 'error');
+      return;
+    }
+    onSelected(place);
   };
 
   const clearSearch = () => {
@@ -381,6 +409,7 @@ export function MapPicker({
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
         <input
+          id="address-map-search"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Search for an address…"

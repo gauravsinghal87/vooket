@@ -477,18 +477,33 @@ class CartController extends BaseController
 
         $deliveryDistance = null;
         $deliveryZone = null;
-        $deliveryAddress = null;
 
-        if ($cart->vendor?->latitude !== null && $cart->vendor?->longitude !== null) {
-            $deliveryAddress = $cart->address_id
-                ? $cart->user?->addresses()->find($cart->address_id)
-                : null;
+        // One delivery destination per cart: the address the customer picked,
+        // or — while nothing is selected — the default saved address falling
+        // back to any saved address. Pricing has always used that rule, but the
+        // resolved address was never written back, so `cart.address_id` stayed
+        // null: the cart then asked the customer to "Choose address" forever
+        // and the order payload carried no destination. Persist the resolution
+        // here so the cart row, the quote and the order request all agree.
+        $deliveryAddress = $cart->address_id
+            ? $cart->user?->addresses()->find($cart->address_id)
+            : null;
 
-            $deliveryAddress ??= $cart->user?->addresses()
+        if ($deliveryAddress === null && $cart->user) {
+            $deliveryAddress = $cart->user->addresses()
                 ->where('is_default', true)
                 ->first()
-                ?? $cart->user?->addresses()->first();
+                ?? $cart->user->addresses()->first();
 
+            $resolvedAddressId = $deliveryAddress?->id ?? null;
+
+            // Also clears a stale id whose address has since been deleted.
+            if ($cart->address_id !== $resolvedAddressId) {
+                $cart->update(['address_id' => $resolvedAddressId]);
+            }
+        }
+
+        if ($cart->vendor?->latitude !== null && $cart->vendor?->longitude !== null) {
             if ($deliveryAddress?->latitude !== null && $deliveryAddress?->longitude !== null) {
                 $deliveryDistance = $this->deliveryFeeService->distanceKm(
                     (float) $cart->vendor->latitude,

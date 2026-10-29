@@ -22,7 +22,7 @@ import type { Product } from '@/types/catalog';
 import type { Address } from '@/types/catalog';
 import { useAuthStore } from '@/store/authStore';
 import { useAppStore } from '@/store/appStore';
-import { DEFAULT_LOCATION } from '@/lib/location';
+import { DEFAULT_LOCATION, locationFromAddress } from '@/lib/location';
 import { coordsKey } from '@/lib/geo';
 import { useStoreCatalogue } from '@/hooks/useStoreCatalogue';
 import {
@@ -31,6 +31,7 @@ import {
   useRemoveCartItem,
   useRemoveCoupon,
   useSetDeliveryAddress,
+  useSyncCartAddress,
   useUpdateCartItem,
 } from '@/hooks/useCart';
 import { AddToCartControl } from '@/components/product/add-to-cart';
@@ -45,6 +46,7 @@ import { EmptyState, ErrorState } from '@/components/ui/state';
 import { Image } from '@/components/ui/image';
 import { Rail, SectionHeader } from '@/components/home/section-header';
 import { toast } from '@/components/ui/toast';
+import { DeliveryInstructions } from '@/components/order/delivery-instructions';
 import { estimateDeliveryMinutes, haversineKm } from '@/lib/geo';
 import { getBranding } from '@/lib/branding';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -95,9 +97,14 @@ export function GroceryCartPage() {
   const cartQuery = useCart('grocery');
   const cart = cartQuery.data;
 
+  // The cart follows the location chosen on the home header (see the hook).
+  useSyncCartAddress('grocery', cart);
+
   const updateItem = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
   const setDeliveryAddress = useSetDeliveryAddress();
+  const setLocation = useAppStore((s) => s.setLocation);
+  const activeLocation = useAppStore((s) => s.location) ?? DEFAULT_LOCATION;
 
   const [addressOpen, setAddressOpen] = useState(false);
 
@@ -232,6 +239,8 @@ export function GroceryCartPage() {
 
           <BillDetails cart={cart} feePending={feePending} />
 
+          <DeliveryInstructions type="grocery" />
+
           <DeliverToRow
             cart={cart}
             address={selectedAddress}
@@ -239,7 +248,19 @@ export function GroceryCartPage() {
             busy={feePending}
             onOpen={() => setAddressOpen(true)}
             onClear={() =>
-              setDeliveryAddress.mutate({ addressId: null, type: 'grocery' }, { onError: handleAddressError })
+              setDeliveryAddress.mutate(
+                { addressId: null, type: 'grocery' },
+                {
+                  onError: handleAddressError,
+                  onSuccess: (updated) => {
+                    // Clearing falls back to the same default-address rule the
+                    // backend applies, so the header follows the address the
+                    // cart actually ended up with.
+                    const next = (addresses.data ?? []).find((x) => x.id === updated.address_id);
+                    setLocation(next ? locationFromAddress(next) : activeLocation, next?.id ?? null);
+                  },
+                }
+              )
             }
           />
 
@@ -257,6 +278,9 @@ export function GroceryCartPage() {
                   <button
                     key={a.id}
                     onClick={() => {
+                      // Picking an address here is the same choice the home
+                      // header displays, so both sides move together.
+                      setLocation(locationFromAddress(a), a.id);
                       setDeliveryAddress.mutate(
                         { addressId: a.id, type: 'grocery' },
                         { onError: handleAddressError }
@@ -295,7 +319,7 @@ export function GroceryCartPage() {
               })}
 
               <Link
-                to="/profile/addresses"
+                to="/grocery/profile/addresses"
                 className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-neutral-300 p-3 text-sm font-semibold text-grocery-700 transition-colors hover:border-grocery-300"
               >
                 <Plus className="h-4 w-4" /> Add new address
@@ -956,6 +980,10 @@ function GroceryCheckoutBar({
   feePending: boolean;
   onCheckout: () => void;
 }) {
+  // A cart that already carries a valid delivery address goes straight to
+  // checkout; only a cart without one still needs to pick an address.
+  const hasAddress = !!cart.address_id;
+
   return (
     <div className="fixed inset-x-0 bottom-[calc(var(--bottom-dock-h)+env(safe-area-inset-bottom))] z-30 border-t border-grocery-200 bg-white/95 pb-2 pt-1.5 backdrop-blur md:shadow-[0_-4px_24px_rgb(0_0_0/0.06)]">
       <div className="mx-auto max-w-5xl px-[var(--page-gutter)]">
@@ -976,7 +1004,8 @@ function GroceryCheckoutBar({
           onClick={onCheckout}
           className="mt-1.5 h-11 w-full gap-1.5 rounded-xl bg-grocery-500 text-[13px] font-extrabold text-ink-900 shadow-sm hover:bg-grocery-400"
         >
-          Choose address at next step <ChevronRight className="h-4 w-4" />
+          {hasAddress ? 'Proceed to checkout' : 'Choose address at next step'}{' '}
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

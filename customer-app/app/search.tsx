@@ -45,7 +45,16 @@ export default function SearchScreen() {
 
   const [query, setQuery] = useState(qParam);
   const [submitted, setSubmitted] = useState(qParam);
-  const [scope, setScope] = useState<Scope>(typeParam);
+  // Same rule as web: a search opened from inside a module
+  // (/search?type=food|grocery) already knows its module, so the scope is
+  // locked to the route param and the All / Food / Grocery pills are dropped.
+  // Only a genuinely global /search (no type) shows them, and only there is
+  // `globalScope` used. Deriving `scope` from the param on every render also
+  // means re-opening search after switching modules picks up the new module
+  // even when expo-router reuses this screen instance with new params.
+  const moduleScoped = typeParam !== 'all';
+  const [globalScope, setGlobalScope] = useState<Scope>('all');
+  const scope: Scope = moduleScoped ? typeParam : globalScope;
   const [sort, setSort] = useState<Sort>('relevance');
   const [recent, setRecent] = useState<string[]>([]);
   const [sortOpen, setSortOpen] = useState(false);
@@ -155,16 +164,21 @@ export default function SearchScreen() {
   return (
     <Screen header={<SearchTopBar query={query} setQuery={setQuery} onSubmit={() => runSearch(query)} onClear={() => { setQuery(''); setSubmitted(''); }} />} contentStyle={styles.content}>
       <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <View style={styles.pills}>
-          {SCOPES.map((s) => {
-            const active = scope === s.value;
-            return (
-              <Pressable key={s.value} onPress={() => setScope(s.value)} style={[styles.pill, active && styles.pillActive]}>
-                <Text style={[styles.pillText, active && styles.pillTextActive]}>{s.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {/* Module-scoped searches skip the pills: the route already says Food
+            or Grocery. The node is removed, not hidden, so the inner
+            ScrollView's `gap: 16` leaves no hole where the row was. */}
+        {!moduleScoped && (
+          <View style={styles.pills}>
+            {SCOPES.map((s) => {
+              const active = scope === s.value;
+              return (
+                <Pressable key={s.value} onPress={() => setGlobalScope(s.value)} style={[styles.pill, active && styles.pillActive]}>
+                  <Text style={[styles.pillText, active && styles.pillTextActive]}>{s.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
 
         {hasTyped && !resultsBlocked && results && totalResults > 0 && (
           <View style={styles.metaRow}>
@@ -322,14 +336,17 @@ function WhatsOnYourMind({ scope, onPick }: { scope: Scope; onPick: (q: string) 
   const { data } = useQuery({
     queryKey: ['search-categories', scope, coordsKey(location)],
     queryFn: async () => {
+      // Ask only the active module for its categories: a module-scoped search
+      // never requests the other module's list just to discard it.
+      if (scope === 'grocery') {
+        const g = await repositories.grocery.getCategories({
+          latitude: location.latitude,
+          longitude: location.longitude,
+        });
+        return { list: g.categories, kind: 'grocery' as const };
+      }
       const f = await repositories.food.getCategories();
-      const g = await repositories.grocery.getCategories({
-        latitude: location.latitude,
-        longitude: location.longitude,
-      });
-      return scope === 'grocery'
-        ? { list: g.categories, kind: 'grocery' as const }
-        : { list: f, kind: 'food' as const };
+      return { list: f, kind: 'food' as const };
     },
   });
   const cats: Category[] = (data?.list ?? []).slice(0, 18);
@@ -582,7 +599,6 @@ const styles = StyleSheet.create({
     aspectRatio: 4 / 3,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: colors.ink[50],
   },
   mindImg: {
     width: '100%',

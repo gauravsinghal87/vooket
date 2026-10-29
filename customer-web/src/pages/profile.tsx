@@ -223,7 +223,7 @@ function FoodProfile({
           }
         />
         <Row icon={WalletIcon} label="Payment settings" to="/profile/payments" />
-        <Row icon={MapPin} label="Saved addresses" to="/profile/addresses" />
+        <Row icon={MapPin} label="Saved addresses" to="/food/profile/addresses" />
       </Card>
 
       <SectionCard title="Food Orders">

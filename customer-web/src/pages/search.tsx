@@ -55,7 +55,16 @@ export function SearchPage() {
 
   const [query, setQuery] = useState(qParam);
   const [submitted, setSubmitted] = useState(qParam);
-  const [scope, setScope] = useState<Scope>(typeParam);
+  // A search opened from inside a module (`/search?type=food|grocery`) already
+  // knows which module owns it, so the scope is locked to the route param and
+  // the All / Food / Grocery selector is dropped. Only the genuinely global
+  // `/search` (no type) keeps the selector, and only there is `globalScope`
+  // ever used. Deriving `scope` from the param every render also means a
+  // module switch that re-opens this route picks up the new module even when
+  // the same component instance is reused.
+  const moduleScoped = typeParam !== 'all';
+  const [globalScope, setGlobalScope] = useState<Scope>('all');
+  const scope: Scope = moduleScoped ? typeParam : globalScope;
   const [sort, setSort] = useState<'relevance' | 'rating' | 'price_low' | 'price_high'>('relevance');
   const [recent, setRecent] = useState<string[]>([]);
 
@@ -186,8 +195,8 @@ export function SearchPage() {
 
   const totalResults = results
     ? results.restaurants.length +
-      (storeScopedGrocery ? 0 : results.stores.length) +
-      results.products.length
+    (storeScopedGrocery ? 0 : results.stores.length) +
+    results.products.length
     : 0;
 
   // The backend resolves the delivery location for every search too. When it
@@ -266,17 +275,22 @@ export function SearchPage() {
         )}
       </form>
 
-      <Tabs<Scope>
-        value={scope}
-        onChange={setScope}
-        variant="pill"
-        options={[
-          { value: 'all', label: 'All' },
-          { value: 'food', label: 'Food' },
-          { value: 'grocery', label: 'Grocery' },
-        ]}
-        className="max-w-sm"
-      />
+      {/* Module-scoped searches skip the selector entirely: the route already
+          says Food or Grocery, and dropping the node (rather than hiding it)
+          collapses the container's `space-y-5` gap so no hole is left behind. */}
+      {!moduleScoped && (
+        <Tabs<Scope>
+          value={scope}
+          onChange={setGlobalScope}
+          variant="pill"
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'food', label: 'Food' },
+            { value: 'grocery', label: 'Grocery' },
+          ]}
+          className="max-w-sm"
+        />
+      )}
 
       {hasTyped && !resultsBlocked && results && totalResults > 0 && (
         <div className="flex flex-wrap items-center gap-2">
@@ -403,12 +417,17 @@ function WhatsOnYourMind({ scope, onPick }: { scope: Scope; onPick: (q: string) 
   const { data } = useQuery({
     queryKey: ['categories', scope, coordsKey(location)],
     queryFn: async () => {
+      // Ask only the active module for its categories: a module-scoped search
+      // never requests the other module's list just to discard it.
+      if (scope === 'grocery') {
+        const g = await repositories.grocery.getCategories({
+          latitude: location.latitude,
+          longitude: location.longitude,
+        });
+        return { list: g.categories, kind: 'grocery' as const };
+      }
       const f = await repositories.food.getCategories();
-      const g = await repositories.grocery.getCategories({
-        latitude: location.latitude,
-        longitude: location.longitude,
-      });
-      return scope === 'grocery' ? { list: g.categories, kind: 'grocery' as const } : { list: f, kind: 'food' as const };
+      return { list: f, kind: 'food' as const };
     },
   });
   const cats = (data?.list ?? []).slice(0, scope === 'all' ? 18 : 18);
@@ -420,7 +439,7 @@ function WhatsOnYourMind({ scope, onPick }: { scope: Scope; onPick: (q: string) 
     <div className="grid grid-cols-3 gap-x-3 gap-y-5">
       {cats.map((c) => (
         <button key={`${kind}-${c.id}`} type="button" onClick={() => onPick(c.name)} className="group text-center">
-          <span className="block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-neutral-100">
+          <span className="block aspect-[4/3] w-full overflow-hidden rounded-2xl">
             {c.image ? (
               <img
                 src={c.image}

@@ -17,10 +17,10 @@ import {
 import { repositories } from '@/api/repositories';
 import type { DeliverySlot } from '@/types/slots';
 import type { Cart, OrderType } from '@/types/models';
-import { useSetDeliveryAddress } from '@/hooks/useCart';
+import { useSetDeliveryAddress, useSyncCartAddress } from '@/hooks/useCart';
 import { useCartStore } from '@/stores/cartStore';
 import { useAppStore } from '@/stores/appStore';
-import { DEFAULT_LOCATION } from '@/lib/location';
+import { DEFAULT_LOCATION, locationFromAddress } from '@/lib/location';
 import { coordsKey } from '@/lib/geo';
 import { toast } from '@/stores/toastStore';
 import { useBranding } from '@/hooks/useBranding';
@@ -60,8 +60,16 @@ export default function CheckoutScreen() {
   const foodRestaurantNote = useCartStore((s) => s.foodRestaurantNote);
   const foodNoCutlery = useCartStore((s) => s.foodNoCutlery);
   const clearFoodInstructions = useCartStore((s) => s.clearFoodInstructions);
+  const foodDeliveryNote = useCartStore((s) => s.foodDeliveryNote);
+  const groceryDeliveryNote = useCartStore((s) => s.groceryDeliveryNote);
+  const clearDeliveryNote = useCartStore((s) => s.clearDeliveryNote);
+  const deliveryNote = type === 'grocery' ? groceryDeliveryNote : foodDeliveryNote;
 
   const cartQuery = useQuery({ queryKey: ['cart', type], queryFn: () => repositories.cart.getByType(type) });
+
+  // The checkout pays for the address the home header shows, so the two are
+  // reconciled before anything is placed.
+  useSyncCartAddress(type, cartQuery.data);
   const cart = cartQuery.data;
   const addresses = useQuery({ queryKey: ['addresses'], queryFn: () => repositories.user.getAddresses() });
   const wallet = useQuery({ queryKey: ['wallet'], queryFn: () => repositories.wallet.getWallet() });
@@ -101,6 +109,7 @@ export default function CheckoutScreen() {
     },
   });
   const setDeliveryAddress = useSetDeliveryAddress();
+  const setLocation = useAppStore((s) => s.setLocation);
 
   const addressId = selectedAddressId ?? cart?.address_id ?? undefined;
 
@@ -112,6 +121,7 @@ export default function CheckoutScreen() {
         order_type: type,
         address_id: addressId,
         payment_method: payMethod,
+        customer_note: deliveryNote.trim() || undefined,
         ...(deliveryMode === 'scheduled' && selectedSlot ? { delivery_slot_id: selectedSlot.id } : {}),
         ...(type === 'food'
           ? {
@@ -136,6 +146,7 @@ export default function CheckoutScreen() {
     },
     onSuccess: async ({ order, checkout }) => {
       if (type === 'food') clearFoodInstructions();
+      clearDeliveryNote(type);
 
       if (!checkout) {
         toast('Order placed successfully!');
@@ -228,6 +239,8 @@ export default function CheckoutScreen() {
                 key={a.id}
                 onPress={() => {
                   setSelectedAddressId(a.id);
+                  // Same choice the home header displays — keep both sides.
+                  setLocation(locationFromAddress(a), a.id);
                   setDeliveryAddress.mutate({
                     addressId: a.id,
                     type,
@@ -301,6 +314,28 @@ export default function CheckoutScreen() {
 
         <BillSummary cart={cart} feePending={feePending} scheduledDelivery={type === 'grocery' && deliveryMode === 'scheduled'} />
 
+        {!addressId && (
+          <View
+            style={{
+              borderRadius: 12,
+              backgroundColor: type === 'grocery' ? colors.grocery[100] : colors.food[50],
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: 'Outfit_600SemiBold',
+                fontSize: 13,
+                color: type === 'grocery' ? colors.grocery[800] : colors.food[700],
+                textAlign: 'center',
+              }}
+            >
+              Add a delivery address to place your order.
+            </Text>
+          </View>
+        )}
+
         <View style={styles.placeBar}>
           <View>
             <Text style={styles.placeLabel}>Total to pay</Text>
@@ -346,6 +381,7 @@ export default function CheckoutScreen() {
         onClose={() => setAddAddressOpen(false)}
         onCreated={(created) => {
           setSelectedAddressId(created.id);
+          setLocation(locationFromAddress(created), created.id);
           setDeliveryAddress.mutate({
             addressId: created.id,
             type,

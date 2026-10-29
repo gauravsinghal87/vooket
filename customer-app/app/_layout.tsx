@@ -89,6 +89,8 @@ export default function RootLayout() {
           <Stack.Screen name="profile/edit" />
           <Stack.Screen name="profile/payments" />
           <Stack.Screen name="profile/addresses" />
+          <Stack.Screen name="food/profile/addresses" />
+          <Stack.Screen name="grocery/profile/addresses" />
           <Stack.Screen name="map-picker" />
           <Stack.Screen name="auth/login" />
           <Stack.Screen name="auth/register" />

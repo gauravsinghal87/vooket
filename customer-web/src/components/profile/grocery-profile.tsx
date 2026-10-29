@@ -162,7 +162,7 @@ export function GroceryProfile({
       </div>
 
       <Group title="Your information">
-        <GRow icon={BookOpen} label="Address book" to="/profile/addresses" />
+        <GRow icon={BookOpen} label="Address book" to="/grocery/profile/addresses" />
         <GRow
           icon={CircleUser}
           label="Your profile"

@@ -19,6 +19,7 @@ import {
   House,
   Mail,
   MapPin,
+  MessageSquare,
   Pencil,
   Phone,
   Plus,
@@ -39,17 +40,18 @@ import {
   useRemoveCartItem,
   useRemoveCoupon,
   useSetDeliveryAddress,
+  useSyncCartAddress,
   useUpdateCartItem,
 } from '@/hooks/useCart';
 import { useAppStore } from '@/stores/appStore';
 import { useAuthStore } from '@/stores/authStore';
-import { useCartStore } from '@/stores/cartStore';
+import { useCartStore, DELIVERY_NOTE_MAX_LENGTH } from '@/stores/cartStore';
 import { toast } from '@/stores/toastStore';
 import { hasActiveOptionGroups, optionSignature } from '@/lib/productOptions';
 import { createUsableCheckout, completeOrderPayment } from '@/lib/payments';
 import { deliveryEtaText } from '@/lib/deliveryEta';
 import { coordsKey, haversineKm, estimateDeliveryMinutes } from '@/lib/geo';
-import { DEFAULT_LOCATION } from '@/lib/location';
+import { DEFAULT_LOCATION, locationFromAddress } from '@/lib/location';
 import { formatCurrency } from '@/lib/utils';
 import { getBranding } from '@/lib/branding';
 import { Screen } from '@/components/Screen';
@@ -94,6 +96,9 @@ function FoodCartPage() {
   const cartQuery = useCart('food');
   const retryCart = () => void cartQuery.refetch();
   const cart = cartQuery.data;
+
+  // The cart follows the location chosen on the home header (see the hook).
+  useSyncCartAddress('food', cart);
 
   const restaurantId = cart?.items[0]?.product?.restaurant_id ?? null;
   const restaurantQuery = useQuery({
@@ -176,9 +181,11 @@ function FoodCartPage() {
 
         <PreparationSection />
 
+        <DeliveryInstructions type="food" />
+
         <CompleteYourMeal products={menuProducts} inCartIds={new Set(items.map((i) => i.product_id))} />
 
-        <DeliveryBlock etaMin={restaurant?.avg_delivery_time_min ?? null} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector()} />
+        <DeliveryBlock etaMin={restaurant?.avg_delivery_time_min ?? null} cart={cart} isAuthenticated={isAuthenticated} onChooseAddress={() => openLocationSelector()} />
 
         <CouponsSection couponCode={cart.coupon_code} coupons={couponsQuery.data ?? []} loading={couponsQuery.isLoading} isAuthenticated={isAuthenticated} tone="food" />
 
@@ -260,10 +267,12 @@ function FoodCartHeader({
  */
 function DeliveryBlock({
   etaMin,
+  cart,
   isAuthenticated,
   onChooseAddress,
 }: {
   etaMin: string | null;
+  cart: Cart;
   isAuthenticated: boolean;
   onChooseAddress: () => void;
 }) {
@@ -274,8 +283,11 @@ function DeliveryBlock({
     enabled: isAuthenticated,
   });
 
-  const selected =
-    (addresses.data ?? []).find((a) => a.is_default) ?? (addresses.data ?? [])[0] ?? null;
+  // The cart's own address first — that is what the order will deliver to —
+  // falling back to the default only while the cart carries none.
+  const selected = cart.address_id
+    ? (addresses.data ?? []).find((a) => a.id === cart.address_id)
+    : (addresses.data ?? []).find((a) => a.is_default) ?? (addresses.data ?? [])[0] ?? null;
 
   const label = selected?.label ?? (isAuthenticated ? 'address' : activeLocation.label);
   const addressText = selected
@@ -343,6 +355,8 @@ function FoodPaymentBar({
   const foodRestaurantNote = useCartStore((s) => s.foodRestaurantNote);
   const foodNoCutlery = useCartStore((s) => s.foodNoCutlery);
   const clearFoodInstructions = useCartStore((s) => s.clearFoodInstructions);
+  const foodDeliveryNote = useCartStore((s) => s.foodDeliveryNote);
+  const clearDeliveryNote = useCartStore((s) => s.clearDeliveryNote);
 
   const [payMethod, setPayMethod] = useState<FoodPayMethod>(readFoodPayMethod);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -369,6 +383,7 @@ function FoodPaymentBar({
         order_type: 'food',
         address_id: cart.address_id ?? undefined,
         payment_method: payMethod,
+        customer_note: foodDeliveryNote.trim() || undefined,
         restaurant_note: foodRestaurantNote.trim() || undefined,
         send_cutlery: !foodNoCutlery,
       });
@@ -387,6 +402,7 @@ function FoodPaymentBar({
     },
     onSuccess: async ({ order, checkout }) => {
       clearFoodInstructions();
+      clearDeliveryNote('food');
 
       if (!checkout) {
         toast('Order placed successfully!');
@@ -459,6 +475,21 @@ function FoodPaymentBar({
             </Text>
             <Text style={styles.payBarAdd}>• Add money</Text>
           </Pressable>
+        )}
+
+        {isAuthenticated && !hasAddress && (
+          <Text
+            style={{
+              paddingHorizontal: 16,
+              paddingBottom: 6,
+              fontFamily: 'Outfit_500Medium',
+              fontSize: 12,
+              color: colors.neutral[500],
+              textAlign: 'center',
+            }}
+          >
+            Add a delivery address to place your order.
+          </Text>
         )}
 
         <View style={styles.payBarRow}>
@@ -830,6 +861,77 @@ function PreparationSection() {
   );
 }
 
+/**
+ * Delivery instructions typed straight into the cart — floor, gate, landmark,
+ * "leave at the door" — submitted with the order as `customer_note` (the
+ * backend's 500-character rule). Kept per module in the cart store, so the
+ * text survives the trip to checkout and back.
+ */
+function DeliveryInstructions({ type }: { type: OrderType }) {
+  const note = useCartStore((s) => (type === 'food' ? s.foodDeliveryNote : s.groceryDeliveryNote));
+  const setDeliveryNote = useCartStore((s) => s.setDeliveryNote);
+  const accent = type === 'grocery' ? colors.grocery[600] : colors.neutral[500];
+
+  return (
+    <View style={noteStyles.card}>
+      <View style={noteStyles.head}>
+        <View style={[noteStyles.iconWrap, { backgroundColor: type === 'grocery' ? colors.grocery[100] : colors.neutral[100] }]}>
+          <MessageSquare size={16} color={accent} />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={noteStyles.title}>Delivery instructions</Text>
+          <Text style={noteStyles.sub}>For the delivery partner — optional</Text>
+        </View>
+      </View>
+
+      <TextInput
+        value={note}
+        onChangeText={(value) => setDeliveryNote(type, value.slice(0, DELIVERY_NOTE_MAX_LENGTH))}
+        maxLength={DELIVERY_NOTE_MAX_LENGTH}
+        multiline
+        numberOfLines={3}
+        placeholder="e.g. Ring the bell, leave at the gate, avoid calling"
+        placeholderTextColor={colors.neutral[400]}
+        style={noteStyles.input}
+        textAlignVertical="top"
+        autoCorrect={false}
+      />
+
+      <Text style={noteStyles.count}>
+        {note.length}/{DELIVERY_NOTE_MAX_LENGTH}
+      </Text>
+    </View>
+  );
+}
+
+const noteStyles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e9e7e3',
+    backgroundColor: '#fff',
+    padding: 14,
+    gap: 8,
+  },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  iconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  title: { fontFamily: 'Outfit_700Bold', fontSize: 15, color: colors.ink[900] },
+  sub: { fontFamily: 'Outfit_400Regular', fontSize: 12, color: colors.neutral[500] },
+  input: {
+    minHeight: 68,
+    borderWidth: 1,
+    borderColor: '#d6d3cc',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    fontFamily: 'Outfit_400Regular',
+    color: colors.ink[900],
+    backgroundColor: '#fff',
+  },
+  count: { fontFamily: 'Outfit_400Regular', fontSize: 11, color: colors.neutral[400], textAlign: 'right' },
+});
+
 function CompleteYourMeal({ products, inCartIds }: { products: Product[]; inCartIds: Set<number> }) {
   const suggestions = useMemo(
     () =>
@@ -873,9 +975,14 @@ function GroceryCartPage() {
   const cartQuery = useCart('grocery');
   const retryCart = () => void cartQuery.refetch();
   const cart = cartQuery.data;
+
+  // The cart follows the location chosen on the home header (see the hook).
+  useSyncCartAddress('grocery', cart);
+
   const updateItem = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
   const setDeliveryAddress = useSetDeliveryAddress();
+  const setLocation = useAppStore((st) => st.setLocation);
 
   const [addressOpen, setAddressOpen] = useState(false);
   const [addAddressOpen, setAddAddressOpen] = useState(false);
@@ -998,7 +1105,9 @@ function GroceryCartPage() {
             accessibilityRole="button"
             style={styles.groceryBarBtn}
           >
-            <Text style={styles.groceryBarBtnText}>Choose address at next step</Text>
+            <Text style={styles.groceryBarBtnText}>
+              {cart.address_id ? 'Proceed to checkout' : 'Choose address at next step'}
+            </Text>
             <ChevronRight size={16} color={colors.ink[900]} />
           </Pressable>
         </View>
@@ -1052,12 +1161,30 @@ function GroceryCartPage() {
 
         <BillCard cart={cart} tone="grocery" />
 
+        <DeliveryInstructions type="grocery" />
+
         <View style={styles.deliverToCard}>
           <View style={styles.deliverToHead}>
             <Text style={styles.deliverLabel}>Delivering to</Text>
             <View style={{ flexDirection: 'row', gap: 12 }}>
               {cart.address_id && (
-                <Pressable onPress={() => setDeliveryAddress.mutate({ addressId: null, type: 'grocery' }, { onError: handleAddressError })}>
+                <Pressable
+                  onPress={() =>
+                    setDeliveryAddress.mutate(
+                      { addressId: null, type: 'grocery' },
+                      {
+                        onError: handleAddressError,
+                        onSuccess: (updated) => {
+                          // Clearing falls back to the same default-address
+                          // rule the backend applies, so the header follows
+                          // the address the cart actually ended up with.
+                          const next = (addresses.data ?? []).find((x) => x.id === updated.address_id);
+                          setLocation(next ? locationFromAddress(next) : appLocation, next?.id ?? null);
+                        },
+                      }
+                    )
+                  }
+                >
                   <Text style={styles.deliverToClear}>Clear</Text>
                 </Pressable>
               )}
@@ -1099,7 +1226,13 @@ function GroceryCartPage() {
         cartType="grocery"
         addresses={addresses}
         activeId={cart.address_id}
-        onSelect={(addressId) => setDeliveryAddress.mutate({ addressId, type: 'grocery' }, { onError: handleAddressError })}
+        onSelect={(addressId) => {
+          // Picking an address here is the same choice the home header
+          // displays, so both sides move together.
+          const picked = (addresses.data ?? []).find((x) => x.id === addressId);
+          if (picked) setLocation(locationFromAddress(picked), picked.id);
+          setDeliveryAddress.mutate({ addressId, type: 'grocery' }, { onError: handleAddressError });
+        }}
         onAddNew={() => {
           setAddressOpen(false);
           setAddAddressOpen(true);
@@ -1109,9 +1242,10 @@ function GroceryCartPage() {
       <AddAddressSheet
         visible={addAddressOpen}
         onClose={() => setAddAddressOpen(false)}
-        onCreated={(created) =>
-          setDeliveryAddress.mutate({ addressId: created.id, type: 'grocery' }, { onError: handleAddressError })
-        }
+        onCreated={(created) => {
+          setLocation(locationFromAddress(created), created.id);
+          setDeliveryAddress.mutate({ addressId: created.id, type: 'grocery' }, { onError: handleAddressError });
+        }}
       />
     </Screen>
   );

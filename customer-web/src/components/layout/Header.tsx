@@ -61,6 +61,13 @@ export function Header({ variant = 'default' }: HeaderProps) {
   const isTop = TOP_ROUTES.includes(pathname);
   const isGrocery = pathname === '/grocery';
 
+  // The Rides home owns a full-height map + booking sheet, and destination
+  // search lives inside that flow (`/rides/destination`), so its band drops
+  // the shared search row — location, wallet and avatar stay exactly as they
+  // are. Every other top route keeps the search field.
+  const isRidesHome = pathname === '/rides';
+  const showBandSearch = isTop && !overlay && !isRidesHome;
+
   // A Food order tracking screen publishes its service so the band runs into
   // the Food order hero as one continuous red section. Every other route
   // (including grocery orders) keeps the header it had before.
@@ -99,7 +106,9 @@ export function Header({ variant = 'default' }: HeaderProps) {
               )
         )}
       >
-        <div className="mx-auto max-w-5xl px-[var(--page-gutter)] pt-2.5">
+        {/* `pb-3` matches the padding the search row used to carry, so the
+            band ends with the same breathing room once that row is gone. */}
+        <div className={cn('mx-auto max-w-5xl px-[var(--page-gutter)] pt-2.5', isRidesHome && 'pb-3')}>
           <div className="flex items-center gap-2">
             {/* No brand mark in the band: the location leads the row, exactly
                 as the reference does, so the two action icons keep their room. */}
@@ -172,7 +181,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
           {/* The module switcher now lives at the bottom of the screen (see
               `BottomNav`), so the top of a service route reads location →
               search. There is deliberately only one switcher per screen. */}
-          {isTop && !overlay && (
+          {showBandSearch && (
             <div className="relative z-30 pb-3">
               <SearchBar variant="brand" />
             </div>

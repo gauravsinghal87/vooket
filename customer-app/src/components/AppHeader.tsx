@@ -70,6 +70,12 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
   const overlay = variant === 'overlay';
   const useDark = variant === 'dark' || (variant === 'auto' && !isTop);
   const isGrocery = pathname === '/grocery';
+  // The Rides home owns a full-height map + booking sheet and its destination
+  // search lives inside that flow (`/rides/destination`), so its band drops the
+  // shared search row — location, wallet and avatar stay exactly as they are.
+  // Every other top route keeps the search field.
+  const isRidesHome = pathname === '/rides';
+  const showBandSearch = isTop && !overlay && !isRidesHome;
 
   if (useDark) {
     // The Grocery order gradient is light gold, so its back/title must flip to
@@ -109,85 +115,85 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
 
   const content = (
     <>
-        <View style={styles.bandRow}>
-          {/* No brand mark in the band: the location leads the row, exactly as
+      <View style={styles.bandRow}>
+        {/* No brand mark in the band: the location leads the row, exactly as
               the reference does, so the action icon keeps its room. */}
-          <Pressable
-            style={({ pressed }) => [styles.locBtn, pressed && { opacity: 0.7 }]}
-            onPress={() => setLocOpen(true)}
-            accessibilityRole="button"
-          >
-            {isGrocery ? (
-              <View style={styles.groceryPin}>
-                <MapPin size={16} color={colors.grocery[700]} strokeWidth={0} fill={colors.grocery[700]} />
-              </View>
-            ) : (
-              <MapPin size={20} color={isTop ? colors.white : theme.strong} strokeWidth={0} fill={isTop ? colors.white : theme.strong} />
-            )}
-            <View style={styles.locText}>
-              {isGrocery ? (
-                <>
-                  {/* Real nearest-store ETA, mounted only on the Grocery route. */}
-                  <GroceryEtaRow />
-                  <View style={styles.groceryAddrRow}>
-                    <Text style={styles.groceryAddrLabel} numberOfLines={1}>
-                      {activeLoc.label}
-                    </Text>
-                    <Text style={styles.groceryAddrText} numberOfLines={1}>
-                      · {activeLoc.address}
-                    </Text>
-                    <ChevronDown size={13} color="rgba(255,255,255,0.5)" />
-                  </View>
-                </>
-              ) : (
-                <>
-                  <View style={styles.locLabelRow}>
-                    <Text style={styles.locLabel} numberOfLines={1}>
-                      {activeLoc.label}
-                    </Text>
-                    <ChevronDown size={14} color="rgba(255,255,255,0.5)" />
-                  </View>
-                  <Text style={[styles.locAddr, { color: isTop ? hero.muted : 'rgba(255,255,255,0.55)' }]} numberOfLines={1}>
-                    {activeLoc.address}
-                  </Text>
-                </>
-              )}
+        <Pressable
+          style={({ pressed }) => [styles.locBtn, pressed && { opacity: 0.7 }]}
+          onPress={() => setLocOpen(true)}
+          accessibilityRole="button"
+        >
+          {isGrocery ? (
+            <View style={styles.groceryPin}>
+              <MapPin size={16} color={colors.grocery[700]} strokeWidth={0} fill={colors.grocery[700]} />
             </View>
-          </Pressable>
+          ) : (
+            <MapPin size={20} color={isTop ? colors.white : theme.strong} strokeWidth={0} fill={isTop ? colors.white : theme.strong} />
+          )}
+          <View style={styles.locText}>
+            {isGrocery ? (
+              <>
+                {/* Real nearest-store ETA, mounted only on the Grocery route. */}
+                <GroceryEtaRow />
+                <View style={styles.groceryAddrRow}>
+                  <Text style={styles.groceryAddrLabel} numberOfLines={1}>
+                    {activeLoc.label}
+                  </Text>
+                  <Text style={styles.groceryAddrText} numberOfLines={1}>
+                    · {activeLoc.address}
+                  </Text>
+                  <ChevronDown size={13} color="rgba(255,255,255,0.5)" />
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.locLabelRow}>
+                  <Text style={styles.locLabel} numberOfLines={1}>
+                    {activeLoc.label}
+                  </Text>
+                  <ChevronDown size={14} color="rgba(255,255,255,0.5)" />
+                </View>
+                <Text style={[styles.locAddr, { color: isTop ? hero.muted : 'rgba(255,255,255,0.55)' }]} numberOfLines={1}>
+                  {activeLoc.address}
+                </Text>
+              </>
+            )}
+          </View>
+        </Pressable>
 
-          <View style={styles.actions}>
-            {/* Wallet replaces the old cart + notification pair: the balance is
+        <View style={styles.actions}>
+          {/* Wallet replaces the old cart + notification pair: the balance is
                 one tap away, and the reference band carries no cart or bell. */}
-            <Pressable
-              onPress={() => router.push('/wallet' as never)}
-              style={styles.iconBtn}
-              accessibilityLabel="Wallet"
-            >
-              <Wallet size={20} color="#fff" />
-            </Pressable>
-            <Pressable
-              onPress={() => router.push((user ? '/profile' : '/auth/login') as never)}
-              style={styles.avatarWrap}
-              accessibilityLabel="Account"
-            >
-              <Avatar name={user?.name ?? 'Guest'} size="sm" />
-            </Pressable>
-          </View>
+          <Pressable
+            onPress={() => router.push('/wallet' as never)}
+            style={styles.iconBtn}
+            accessibilityLabel="Wallet"
+          >
+            <Wallet size={20} color="#fff" />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push((user ? '/profile' : '/auth/login') as never)}
+            style={styles.avatarWrap}
+            accessibilityLabel="Account"
+          >
+            <Avatar name={user?.name ?? 'Guest'} size="md" />
+          </Pressable>
         </View>
+      </View>
 
-        {customHeader ? (
-          <View style={styles.customWrap}>{customHeader}</View>
-        ) : isTop && !overlay ? (
-          /* The module switcher now lives at the bottom of the screen (see
-             `BottomNav`), so the top of a service route reads location →
-             search, and there is deliberately only one switcher per screen.
-             On the Food hero overlay the search moves into the page's own
-             sticky search + Veg Mode row (below the hero), so the header
-             renders neither. */
-          <View style={styles.searchWrap}>
-            <SearchBar variant="brand" />
-          </View>
-        ) : null}
+      {customHeader ? (
+        <View style={styles.customWrap}>{customHeader}</View>
+      ) : showBandSearch ? (
+        /* The module switcher now lives at the bottom of the screen (see
+           `BottomNav`), so the top of a service route reads location →
+           search, and there is deliberately only one switcher per screen.
+           On the Food hero overlay the search moves into the page's own
+           sticky search + Veg Mode row (below the hero), so the header
+           renders neither. */
+        <View style={styles.searchWrap}>
+          <SearchBar variant="brand" />
+        </View>
+      ) : null}
     </>
   );
 
@@ -198,7 +204,16 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
         // video shows through and the header reads as part of the hero.
         <View style={[styles.overlay, { paddingTop: insets.top + 6 }]}>{content}</View>
       ) : (
-        <LinearGradient colors={hero.headerBg} style={[styles.band, { paddingTop: insets.top + 6 }]}>
+        <LinearGradient
+          colors={hero.headerBg}
+          style={[
+            styles.band,
+            { paddingTop: insets.top + 6 },
+            // Same 14px the search row's wrapper carried, so the band keeps its
+            // bottom breathing room after that row is gone.
+            isRidesHome && { paddingBottom: 14 },
+          ]}
+        >
           {content}
         </LinearGradient>
       )}

@@ -124,6 +124,24 @@ export default function App() {
             </RequireAuth>
           }
         />
+        {/* Module-scoped addresses: same screen, URL carries the module so the
+            band, colours and back-navigation stay inside it. */}
+        <Route
+          path="food/profile/addresses"
+          element={
+            <RequireAuth>
+              <AddressesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="grocery/profile/addresses"
+          element={
+            <RequireAuth>
+              <AddressesPage />
+            </RequireAuth>
+          }
+        />
         <Route
           path="profile/payments"
           element={

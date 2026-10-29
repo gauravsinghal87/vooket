@@ -4,11 +4,11 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Loader2, ChevronRight, MapPin, Plus, Wallet as WalletIcon, Banknote, CreditCard } from 'lucide-react';
 import { repositories } from '@/repositories';
 import { useAppStore } from '@/store/appStore';
-import { DEFAULT_LOCATION } from '@/lib/location';
+import { DEFAULT_LOCATION, locationFromAddress } from '@/lib/location';
 import { coordsKey } from '@/lib/geo';
 import type { DeliverySlot } from '@/repositories/interfaces';
 import type { OrderType } from '@/types/models';
-import { useApplyCoupon, useRemoveCoupon, useSetDeliveryAddress } from '@/hooks/useCart';
+import { useApplyCoupon, useRemoveCoupon, useSetDeliveryAddress, useSyncCartAddress } from '@/hooks/useCart';
 import { Card } from '@/components/ui/card';
 import { Price } from '@/components/ui/price';
 import { Button } from '@/components/ui/button';
@@ -36,14 +36,23 @@ export function CheckoutPage() {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('asap');
   const [selectedSlot, setSelectedSlot] = useState<DeliverySlot | undefined>(undefined);
 
-  // Food preparation instructions are collected in the cart, before placement.
+  // Instructions: food's preparation note is collected in the cart; the
+  // delivery note is collected per module and travels as `customer_note`.
   const foodRestaurantNote = useCartStore((s) => s.foodRestaurantNote);
   const foodNoCutlery = useCartStore((s) => s.foodNoCutlery);
   const clearFoodInstructions = useCartStore((s) => s.clearFoodInstructions);
+  const foodDeliveryNote = useCartStore((s) => s.foodDeliveryNote);
+  const groceryDeliveryNote = useCartStore((s) => s.groceryDeliveryNote);
+  const clearDeliveryNote = useCartStore((s) => s.clearDeliveryNote);
+  const deliveryNote = type === 'grocery' ? groceryDeliveryNote : foodDeliveryNote;
 
   const cart = useQuery({ queryKey: ['cart', type], queryFn: () => repositories.cart.getByType(type) });
   const addresses = useQuery({ queryKey: ['addresses'], queryFn: () => repositories.user.getAddresses() });
   const wallet = useQuery({ queryKey: ['wallet'], queryFn: () => repositories.wallet.getWallet() });
+
+  // The checkout pays for the address the home header shows, so the two are
+  // reconciled before anything is placed.
+  useSyncCartAddress(type, cart.data);
 
   const storeId = cart.data?.items.find((item) => item.product?.store_id)?.product?.store_id ?? undefined;
 
@@ -64,6 +73,7 @@ export function CheckoutPage() {
   const applyCoupon = useApplyCoupon();
   const removeCoupon = useRemoveCoupon();
   const setDeliveryAddress = useSetDeliveryAddress();
+  const setLocation = useAppStore((s) => s.setLocation);
 
   const addressId = selectedAddressId ?? cart.data?.address_id ?? undefined;
 
@@ -75,6 +85,7 @@ export function CheckoutPage() {
         order_type: type,
         address_id: addressId,
         payment_method: payMethod,
+        customer_note: deliveryNote.trim() || undefined,
         ...(deliveryMode === 'scheduled' && selectedSlot ? { delivery_slot_id: selectedSlot.id } : {}),
         ...(type === 'food'
           ? {
@@ -99,6 +110,7 @@ export function CheckoutPage() {
     },
     onSuccess: async ({ order, checkout }) => {
       if (type === 'food') clearFoodInstructions();
+      clearDeliveryNote(type);
 
       if (!checkout) {
         toast('Order placed successfully!');
@@ -177,7 +189,10 @@ export function CheckoutPage() {
           <section>
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-bold text-neutral-900">Delivery address</h2>
-              <Link to="/profile/addresses" className="flex items-center gap-0.5 text-xs font-semibold text-brand-600">
+              <Link
+                to={`/${type}/profile/addresses`}
+                className="flex items-center gap-0.5 text-xs font-semibold text-brand-600"
+              >
                 <Plus className="h-3.5 w-3.5" /> Add new
               </Link>
             </div>
@@ -197,6 +212,8 @@ export function CheckoutPage() {
                     key={a.id}
                     onClick={() => {
                       setSelectedAddressId(a.id);
+                      // Same choice the home header displays — keep both sides.
+                      setLocation(locationFromAddress(a), a.id);
                       setDeliveryAddress.mutate({
                         addressId: a.id,
                         type,
@@ -277,6 +294,11 @@ export function CheckoutPage() {
 
           <div className="sticky bottom-[calc(var(--bottom-dock-h)+var(--spacing)*4)] z-30">
             <div className="mx-auto max-w-2xl">
+              {!addressId && (
+                <p className="mb-2 rounded-xl bg-brand-50 px-3 py-2 text-center text-[13px] font-semibold text-brand-700">
+                  Add a delivery address to place your order.
+                </p>
+              )}
               <Card className="flex items-center justify-between gap-4 border-brand-200 bg-white p-3 shadow-lg">
                 <div>
                   <p className="text-xs text-neutral-500">Total to pay</p>

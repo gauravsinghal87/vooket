@@ -36,6 +36,7 @@ import {
   useRemoveCoupon,
   useRemoveCartItem,
   useSetDeliveryAddress,
+  useSyncCartAddress,
   useUpdateCartItem,
 } from '@/hooks/useCart';
 import { hasActiveOptionGroups } from '@/lib/productOptions';
@@ -43,6 +44,7 @@ import { ProductConfigurator, type ProductConfiguratorAddPayload } from '@/compo
 import { SelectedOptionsList } from '@/components/product/selected-options';
 import { AddToCartControl } from '@/components/product/add-to-cart';
 import { FoodPreparationChips } from '@/components/order/food-preparation-chips';
+import { DeliveryInstructions } from '@/components/order/delivery-instructions';
 import { Image } from '@/components/ui/image';
 import { Card } from '@/components/ui/card';
 import { Price } from '@/components/ui/price';
@@ -91,6 +93,9 @@ export function FoodCartPage() {
 
   const cartQuery = useCart('food');
   const cart = cartQuery.data;
+
+  // The cart follows the location chosen on the home header (see the hook).
+  useSyncCartAddress('food', cart);
 
   const restaurantId = firstRestaurantId(cart);
   const restaurantQuery = useQuery({
@@ -173,6 +178,8 @@ export function FoodCartPage() {
       {hasItems && (
         <PreparationSection />
       )}
+
+      {hasItems && <DeliveryInstructions type="food" />}
 
       {hasItems && menuProducts.length > 0 && (
         <CompleteYourMeal
@@ -856,7 +863,7 @@ function AddressSheet({
               readOnly
               onClick={() => {
                 onOpenChange(false);
-                navigate('/profile/addresses');
+                navigate('/food/profile/addresses');
               }}
             />
           </div>
@@ -865,7 +872,7 @@ function AddressSheet({
             <button
               onClick={() => {
                 onOpenChange(false);
-                navigate('/profile/addresses');
+                navigate('/food/profile/addresses');
               }}
               className="tap flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-neutral-50"
             >
@@ -882,7 +889,7 @@ function AddressSheet({
             <button
               onClick={() => {
                 onOpenChange(false);
-                navigate('/profile/addresses');
+                navigate('/food/profile/addresses');
               }}
               className="tap flex w-full items-center gap-3 border-t border-neutral-100 px-4 py-3.5 text-left transition-colors hover:bg-neutral-50"
             >
@@ -1121,6 +1128,8 @@ function PaymentBar({ cart, onChooseAddress }: { cart: FoodCart; onChooseAddress
   const foodRestaurantNote = useCartStore((s) => s.foodRestaurantNote);
   const foodNoCutlery = useCartStore((s) => s.foodNoCutlery);
   const clearFoodInstructions = useCartStore((s) => s.clearFoodInstructions);
+  const foodDeliveryNote = useCartStore((s) => s.foodDeliveryNote);
+  const clearDeliveryNote = useCartStore((s) => s.clearDeliveryNote);
 
   const [payMethod, setPayMethod] = useState<PayMethod>(readPayMethod);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -1147,6 +1156,7 @@ function PaymentBar({ cart, onChooseAddress }: { cart: FoodCart; onChooseAddress
         order_type: 'food',
         address_id: cart.address_id ?? undefined,
         payment_method: payMethod,
+        customer_note: foodDeliveryNote.trim() || undefined,
         restaurant_note: foodRestaurantNote.trim() || undefined,
         send_cutlery: !foodNoCutlery,
       });
@@ -1165,6 +1175,7 @@ function PaymentBar({ cart, onChooseAddress }: { cart: FoodCart; onChooseAddress
     },
     onSuccess: async ({ order, checkout }) => {
       clearFoodInstructions();
+      clearDeliveryNote('food');
 
       if (!checkout) {
         toast('Order placed successfully!');
@@ -1201,6 +1212,10 @@ function PaymentBar({ cart, onChooseAddress }: { cart: FoodCart; onChooseAddress
         : 'Card / UPI';
   const MethodIcon = payMethod === 'wallet' ? WalletIcon : payMethod === 'cash_on_delivery' ? Banknote : CreditCard;
 
+  // With a valid address on the cart (the backend resolves the default one
+  // when nothing is picked), the button is straight to Place Order. Only a
+  // cart with no usable address at all asks for one — and tapping it opens the
+  // existing Food location/address flow rather than a bare selector.
   const cta = !isAuthenticated ? 'Sign in to order' : !hasAddress ? 'Choose address' : 'Place Order';
   const onCta = () => {
     if (pending) return;
@@ -1246,6 +1261,12 @@ function PaymentBar({ cart, onChooseAddress }: { cart: FoodCart; onChooseAddress
             </span>
             <span className="ml-auto shrink-0 font-bold text-food-600">• Add money</span>
           </button>
+        )}
+
+        {isAuthenticated && !hasAddress && (
+          <p className="border-b border-neutral-100 px-[var(--page-gutter)] py-2 text-center text-[13px] font-medium text-neutral-600">
+            Add a delivery address to place your order.
+          </p>
         )}
 
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-[var(--page-gutter)] py-2.5">
