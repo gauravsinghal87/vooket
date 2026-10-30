@@ -2947,4 +2947,99 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.food[600],
   },
+
+  /* ---- Address picker sheet (FoodAddressSheet) ---- */
+  searchCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    height: 46,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 0,
+    fontSize: 14,
+    color: colors.ink[900],
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+  },
+  actionBody: {
+    flex: 1,
+    gap: 2,
+  },
+  actionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.ink[900],
+  },
+  actionSub: {
+    fontSize: 12,
+    color: colors.neutral[500],
+  },
+  rowDivider: {
+    height: 1,
+    backgroundColor: colors.neutral[100],
+  },
+  sectionLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  sectionLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.neutral[200],
+  },
+  sectionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: colors.neutral[400],
+  },
+  addrCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.neutral[100],
+    backgroundColor: '#fff',
+    padding: 12,
+  },
+  addrIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.neutral[100],
+  },
+  addrBody: {
+    flex: 1,
+    gap: 4,
+  },
+  addrLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.ink[900],
+  },
+  addrLine: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.neutral[500],
+  },
+  addrPhone: {
+    fontSize: 12,
+    color: colors.neutral[500],
+  },
 });

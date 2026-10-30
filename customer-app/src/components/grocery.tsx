@@ -69,13 +69,13 @@ export function GroceryEtaRow() {
 
   return (
     <View style={styles.etaRow}>
-      {activeStore && eta !== null ? <Clock size={15} color={colors.grocery[200]} /> : null}
+      {activeStore && eta !== null ? <Clock size={15} color={colors.grocery[800]} /> : null}
       <Text style={styles.etaText} numberOfLines={1}>
         {etaText}
       </Text>
       {distance ? (
         <View style={styles.etaDistance}>
-          <Navigation size={11} color={colors.grocery[200]} />
+          <Navigation size={11} color={colors.grocery[800]} />
           <Text style={styles.etaDistanceText}>{distance}</Text>
         </View>
       ) : null}
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 15,
     fontWeight: '800',
-    color: '#fff',
+    color: colors.ink[900],
   },
   etaDistance: {
     flexDirection: 'row',
@@ -816,13 +816,13 @@ const styles = StyleSheet.create({
   etaDistanceText: {
     fontSize: 12,
     fontWeight: '700',
-    color: colors.grocery[200],
+    color: colors.grocery[800],
   },
   etaSkeleton: {
     height: 16,
     width: 120,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(23,20,15,0.12)',
   },
 
   /* shared section chrome */
@@ -1347,9 +1347,9 @@ const styles = StyleSheet.create({
   catHeader: {
     paddingHorizontal: GUTTER,
     paddingBottom: 10,
-    backgroundColor: colors.grocery[100],
+    backgroundColor: colors.grocery[200],
     borderBottomWidth: 1,
-    borderBottomColor: colors.grocery[200],
+    borderBottomColor: colors.grocery[300],
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 10,

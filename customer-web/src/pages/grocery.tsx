@@ -433,7 +433,7 @@ export function GroceryPage() {
 /** Compact tab-shaped skeletons for the horizontal category strip. */
 function CategoryCarouselSkeleton() {
   return (
-    <div className="edge-bleed flex items-stretch gap-1 overflow-hidden bg-grocery-50 pt-1.5">
+    <div className="edge-bleed flex items-stretch gap-1 overflow-hidden bg-grocery-200 pt-1.5">
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="flex w-[68px] shrink-0 flex-col items-center gap-1 px-1 pb-3 pt-0.5">
           <Skeleton className="h-7 w-7 rounded-md" />

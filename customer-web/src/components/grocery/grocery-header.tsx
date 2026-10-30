@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
  * there is no hard-coded value. The component is only mounted on `/grocery` so
  * the store-discovery query never fires for the other services.
  *
- * Text is light so it stays legible on the Grocery's dark bronze band.
+ * Text is dark so it stays legible on Grocery's pale-yellow band.
  */
 export function GroceryEtaRow() {
   const { activeStore, distanceKm, isLoading } = useActiveGroceryStore();
@@ -28,15 +28,15 @@ export function GroceryEtaRow() {
   const etaText = activeStore && eta !== null ? `Delivery in ${eta} min` : 'Delivery times';
 
   return (
-    <span className="flex items-center gap-1 text-[15px] font-extrabold leading-tight text-white">
+    <span className="flex items-center gap-1 text-[15px] font-extrabold leading-tight text-ink-900">
       {isLoading && !activeStore ? (
-        <span className="h-4 w-28 animate-pulse rounded bg-white/70" />
+        <span className="h-4 w-28 animate-pulse rounded bg-ink-900/10" />
       ) : (
         <>
-          {activeStore && eta !== null && <Clock className="h-4 w-4 shrink-0 text-grocery-200" />}
+          {activeStore && eta !== null && <Clock className="h-4 w-4 shrink-0 text-grocery-800" />}
           <span className="truncate">{etaText}</span>
           {distance && (
-            <span className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-bold text-grocery-200">
+            <span className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-bold text-grocery-800">
               <Navigation className="h-3 w-3" /> {distance}
             </span>
           )}
@@ -85,20 +85,20 @@ export function GroceryCategoryHeader({
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-grocery-200 bg-grocery-100/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-grocery-300 bg-grocery-200/95 backdrop-blur">
       <div className="mx-auto max-w-5xl px-[var(--page-gutter)]">
         <div className="flex items-center gap-1.5 pt-2">
           <button
             onClick={goBack}
             aria-label="Back"
-            className="tap -ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-800 transition-colors hover:bg-grocery-200/60"
+            className="tap -ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-800 transition-colors hover:bg-grocery-300/70"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
 
           <h1 className="min-w-0 flex-1 truncate text-[15px] font-extrabold leading-tight text-ink-900">
             {isLoading && !category ? (
-              <span className="inline-block h-4 w-32 animate-pulse rounded bg-white/70" />
+              <span className="inline-block h-4 w-32 animate-pulse rounded bg-ink-900/10" />
             ) : (
               (category?.name ?? 'Grocery')
             )}
@@ -108,7 +108,7 @@ export function GroceryCategoryHeader({
           <Link
             to="/search?type=grocery"
             aria-label={theme.searchPlaceholder}
-            className="tap flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-800 transition-colors hover:bg-grocery-200/60"
+            className="tap flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-800 transition-colors hover:bg-grocery-300/70"
           >
             <Search className="h-5 w-5" />
           </Link>
@@ -121,7 +121,7 @@ export function GroceryCategoryHeader({
                   .catch(() => undefined)
               }
               aria-label="Share"
-              className="tap flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-800 transition-colors hover:bg-grocery-200/60"
+              className="tap flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-800 transition-colors hover:bg-grocery-300/70"
             >
               <Share2 className="h-5 w-5" />
             </button>

@@ -32,7 +32,10 @@ export function CategoryCarousel({ categories, selectedId, onSelect, stuck }: Ca
   const allActive = selectedId === null;
 
   const scrollerClass = cn(
-    'edge-bleed flex items-stretch gap-1 overflow-x-auto bg-grocery-50 pt-1.5 no-scrollbar scroll-snap-x [touch-action:pan-x_pan-y] transition-shadow',
+    // Painted with `grocery-200` — the exact stop the header band above ends on,
+    // so the strip continues the band's pale yellow instead of breaking to a
+    // different cream underneath it.
+    'edge-bleed flex items-stretch gap-1 overflow-x-auto bg-grocery-200 pt-1.5 no-scrollbar scroll-snap-x [touch-action:pan-x_pan-y] transition-shadow',
     stuck && 'shadow-[0_8px_16px_-14px_rgb(16_14_10/0.4)]'
   );
 

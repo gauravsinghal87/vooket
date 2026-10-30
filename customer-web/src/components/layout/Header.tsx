@@ -79,6 +79,12 @@ export function Header({ variant = 'default' }: HeaderProps) {
   const categoryId = Number(params.get('category'));
   const inCategory = Number.isFinite(categoryId) && categoryId > 0;
 
+  /* Grocery's band is Blinkit's pale yellow, not the dark bronze the other top
+     routes use, so every glyph, icon and hover surface on it flips from white to
+     ink. Gated on the route (and on `overlay`, which Grocery never renders) so
+     Food and Rides keep their white-on-dark treatment untouched. */
+  const lightBand = isGrocery && !overlay;
+
   if (isGrocery && inCategory) {
     return (
       <>
@@ -93,13 +99,19 @@ export function Header({ variant = 'default' }: HeaderProps) {
       <header
         data-app-header
         className={cn(
-          'text-white',
+          lightBand ? 'text-ink-900' : 'text-white',
           overlay
             ? // Sits on the Food hero media: no band, no shadow, no sticky so the
               // video shows through and the header is part of the hero itself.
               'relative z-30'
             : cn(
-                'sticky top-0 z-40 shadow-[0_2px_16px_rgb(0_0_0/0.28)]',
+                'sticky top-0 z-40',
+                // The dark bands carry a deep drop to separate them from the
+                // page; on Grocery's light band that same shadow reads as a hard
+                // seam, so it is only a soft lift there.
+                lightBand
+                  ? 'shadow-[0_2px_12px_rgb(16_14_10/0.10)]'
+                  : 'shadow-[0_2px_16px_rgb(0_0_0/0.28)]',
                 // The themed band covers all four top-level routes; every other
                 // route that uses this header keeps its existing dark background.
                 isTop ? HERO_HEADER_BG : 'bg-ink-900'
@@ -114,7 +126,10 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 as the reference does, so the two action icons keep their room. */}
             <button
               onClick={() => setLocOpen(true)}
-              className="tap flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1.5 py-1 text-left transition-colors hover:bg-white/5"
+              className={cn(
+                'tap flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1.5 py-1 text-left transition-colors',
+                lightBand ? 'hover:bg-ink-900/5' : 'hover:bg-white/5'
+              )}
               aria-label={`Change delivery location. Currently ${activeLoc.label}, ${activeLoc.address}`}
             >
               {/* On the themed band the pin takes whatever the band paints. On
@@ -136,10 +151,10 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 <span className="min-w-0 flex-1">
                   {/* Real nearest-store ETA, mounted only on the Grocery route. */}
                   <GroceryEtaRow />
-                  <span className="mt-0.5 flex items-center gap-1 text-[12px] font-medium leading-tight text-white/70">
-                    <span className="shrink-0 font-bold text-white">{activeLoc.label}</span>
+                  <span className="mt-0.5 flex items-center gap-1 text-[12px] font-medium leading-tight text-ink-900/70">
+                    <span className="shrink-0 font-bold text-ink-900">{activeLoc.label}</span>
                     <span className="truncate">· {activeLoc.address}</span>
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/50" />
+                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-900/40" />
                   </span>
                 </span>
               ) : (
@@ -167,12 +182,22 @@ export function Header({ variant = 'default' }: HeaderProps) {
                   one tap away, and the reference band carries no cart or bell. */}
               <Link
                 to="/wallet"
-                className="tap flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-white/10"
+                className={cn(
+                  'tap flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+                  lightBand ? 'hover:bg-ink-900/10' : 'hover:bg-white/10'
+                )}
                 aria-label="Wallet"
               >
                 <Wallet className="h-5 w-5" />
               </Link>
-              <Link to={user ? '/profile' : '/auth/login'} className="shrink-0 rounded-full ring-2 ring-white/20 transition-transform hover:scale-105" aria-label="Account">
+              <Link
+                to={user ? '/profile' : '/auth/login'}
+                className={cn(
+                  'shrink-0 rounded-full ring-2 transition-transform hover:scale-105',
+                  lightBand ? 'ring-ink-900/15' : 'ring-white/20'
+                )}
+                aria-label="Account"
+              >
                 <Avatar name={user?.name ?? 'Guest'} size="sm" />
               </Link>
             </div>

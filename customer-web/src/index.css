@@ -297,15 +297,20 @@
 }
 
 [data-service-theme='grocery'] {
-  --hero-header-bg: linear-gradient(to bottom, var(--color-grocery-800), var(--color-grocery-900));
-  --hero-bg: linear-gradient(to bottom,
-      var(--color-grocery-900),
-      color-mix(in srgb, var(--color-grocery-900) 60%, var(--color-ink-950)));
+  /* Blinkit's Grocery top: one pale-yellow surface running from the very top
+     down through the category strip, not the old dark bronze band. The gradient
+     lands on exactly `grocery-200`, the colour the strip is painted with, so
+     header and navigation row read as one continuous surface instead of a dark
+     bar with an unrelated cream row under it. */
+  --hero-header-bg: linear-gradient(to bottom, var(--color-grocery-300), var(--color-grocery-200));
+  --hero-bg: linear-gradient(to bottom, var(--color-grocery-200), var(--color-grocery-100));
   --hero-surface: color-mix(in srgb, var(--color-grocery-100) 14%, transparent);
   --hero-active-color: var(--color-grocery-500);
   --hero-active-contrast: var(--color-ink-900);
   --hero-search-accent: var(--color-grocery-600);
-  --hero-muted-text: color-mix(in srgb, var(--color-grocery-200) 72%, transparent);
+  /* Text on the light band goes dark — the old pale-yellow-on-brown value
+     would be invisible here. */
+  --hero-muted-text: color-mix(in srgb, var(--color-ink-900) 70%, transparent);
   --hero-module-dark: var(--color-grocery-900);
 }
 

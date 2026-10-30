@@ -489,7 +489,7 @@ export default function RestaurantScreen() {
               {/* Distance · area — tapping opens the shared full-screen location
                   selector (the reference's dropdown). */}
               <Pressable
-                onPress={openLocationSelector}
+                onPress={() => openLocationSelector()}
                 accessibilityLabel="Change delivery location"
                 style={styles.locationRow}
               >

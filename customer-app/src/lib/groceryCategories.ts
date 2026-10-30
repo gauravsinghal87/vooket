@@ -34,7 +34,7 @@ export function showsInMainContent(placement: string | null | undefined): boolea
  * them tint or recolour the image asset itself. Mirrors customer-web.
  */
 const CATEGORY_TILE_COLORS = {
-  mint: '#e7f4e9',
+  mint: '#E4F3F3',
   cream: '#fdf6e3',
   sand: '#f4ead9',
   blush: '#fce8ef',

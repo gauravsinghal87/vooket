@@ -142,7 +142,7 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
                   <Text style={styles.groceryAddrText} numberOfLines={1}>
                     · {activeLoc.address}
                   </Text>
-                  <ChevronDown size={13} color="rgba(255,255,255,0.5)" />
+                  <ChevronDown size={13} color="rgba(23,20,15,0.55)" />
                 </View>
               </>
             ) : (
@@ -169,11 +169,11 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
             style={styles.iconBtn}
             accessibilityLabel="Wallet"
           >
-            <Wallet size={20} color="#fff" />
+            <Wallet size={20} color={isGrocery ? colors.ink[900] : '#fff'} />
           </Pressable>
           <Pressable
             onPress={() => router.push((user ? '/profile' : '/auth/login') as never)}
-            style={styles.avatarWrap}
+            style={[styles.avatarWrap, isGrocery && styles.avatarWrapGrocery]}
             accessibilityLabel="Account"
           >
             <Avatar name={user?.name ?? 'Guest'} size="md" />
@@ -209,6 +209,10 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
           style={[
             styles.band,
             { paddingTop: insets.top + 6 },
+            // The dark band needs a deep drop to separate it from the page; on
+            // Grocery's light band that same shadow would read as a hard seam,
+            // so it is only a soft lift there.
+            isGrocery && { shadowOpacity: 0.1 },
             // Same 14px the search row's wrapper carried, so the band keeps its
             // bottom breathing room after that row is gone.
             isRidesHome && { paddingBottom: 14 },
@@ -291,14 +295,14 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     fontSize: 12,
     fontWeight: '800',
-    color: '#fff',
+    color: colors.ink[900],
   },
   groceryAddrText: {
     flex: 1,
     minWidth: 0,
     fontSize: 12,
     fontWeight: '500',
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(23,20,15,0.7)',
   },
   actions: {
     flexDirection: 'row',
@@ -316,6 +320,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.2)',
+  },
+  /* Grocery's band is pale yellow, so the avatar ring has to go dark to stay
+     visible on it (the white ring would disappear into the cream). */
+  avatarWrapGrocery: {
+    borderColor: 'rgba(23,20,15,0.2)',
   },
   searchWrap: {
     paddingBottom: 14,

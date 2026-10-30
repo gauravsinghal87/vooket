@@ -376,10 +376,11 @@ const styles = StyleSheet.create({
     gap: 22,
   },
   /* The coordinated sticky category strip, docked between the fixed header and
-     the page scroll body. A solid page backing keeps the rail visually
-     continuous on the ink-50 canvas. */
+     the page scroll body. It is painted with `grocery-200` — the exact stop the
+     header band's gradient lands on — so the strip continues the band's pale
+     yellow as one surface instead of breaking to a different colour under it. */
   stickyHeader: {
-    backgroundColor: colors.ink[50],
+    backgroundColor: colors.grocery[200],
     paddingTop: 8,
     paddingBottom: 6,
   },

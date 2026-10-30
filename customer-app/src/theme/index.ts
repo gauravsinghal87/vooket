@@ -229,13 +229,20 @@ export const HERO_THEMES: Record<'neutral' | 'food' | 'grocery' | 'rides', HeroT
     moduleDark: colors.food[700],
   },
   grocery: {
-    headerBg: [colors.grocery[800], colors.grocery[900]],
-    heroBg: [colors.grocery[900], colors.grocery[950]],
+    /* Blinkit's Grocery top: a pale-yellow surface running from the very top
+       down through the category strip (`grocery-200` is exactly the stop the
+       gradient lands on, so header and navigation row read as one surface).
+       Replaces the old dark bronze band, which made the cream strip underneath
+       look unrelated to it. */
+    headerBg: [colors.grocery[300], colors.grocery[200]],
+    heroBg: [colors.grocery[200], colors.grocery[100]],
     surface: withAlpha(colors.grocery[100], 0.14),
     activeColor: colors.grocery[500],
     activeContrast: colors.ink[900],
     searchAccent: colors.grocery[600],
-    muted: withAlpha(colors.grocery[200], 0.72),
+    /* Text on the light band goes dark — the old pale-yellow-on-brown value
+       would be invisible here. */
+    muted: withAlpha(colors.ink[900], 0.7),
     moduleDark: colors.grocery[900],
   },
   rides: {
