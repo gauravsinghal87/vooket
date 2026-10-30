@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   Banknote,
-  CalendarClock,
   Check,
   ChevronRight,
   CreditCard,
@@ -12,17 +11,13 @@ import {
   Plus,
   ShoppingBag,
   Wallet as WalletIcon,
-  Zap,
 } from 'lucide-react-native';
 import { repositories } from '@/api/repositories';
-import type { DeliverySlot } from '@/types/slots';
 import type { Cart, OrderType } from '@/types/models';
 import { useSetDeliveryAddress, useSyncCartAddress } from '@/hooks/useCart';
 import { useCartStore } from '@/stores/cartStore';
 import { useAppStore } from '@/stores/appStore';
-import { DEFAULT_LOCATION, locationFromAddress } from '@/lib/location';
-import { coordsKey } from '@/lib/geo';
-import { toast } from '@/stores/toastStore';
+import { locationFromAddress } from '@/lib/location';import { toast } from '@/stores/toastStore';
 import { useBranding } from '@/hooks/useBranding';
 import { createUsableCheckout, completeOrderPayment } from '@/lib/payments';
 import { formatCurrency } from '@/lib/utils';
@@ -54,8 +49,13 @@ export default function CheckoutScreen() {
   const [couponOpen, setCouponOpen] = useState(false);
   const [addAddressOpen, setAddAddressOpen] = useState(false);
   const [code, setCode] = useState('');
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('asap');
-  const [selectedSlot, setSelectedSlot] = useState<DeliverySlot | undefined>(undefined);
+
+  // The grocery delivery timing is chosen on the cart (see DeliverySlotPicker
+  // on `/cart?type=grocery`) and read here, so checkout can never disagree
+  // with what the customer already picked.
+  const deliveryMode = useCartStore((s) => s.groceryDeliveryMode);
+  const selectedSlot = useCartStore((s) => s.groceryDeliverySlot);
+  const resetGroceryDelivery = useCartStore((s) => s.resetGroceryDelivery);
 
   const foodRestaurantNote = useCartStore((s) => s.foodRestaurantNote);
   const foodNoCutlery = useCartStore((s) => s.foodNoCutlery);
@@ -73,21 +73,6 @@ export default function CheckoutScreen() {
   const cart = cartQuery.data;
   const addresses = useQuery({ queryKey: ['addresses'], queryFn: () => repositories.user.getAddresses() });
   const wallet = useQuery({ queryKey: ['wallet'], queryFn: () => repositories.wallet.getWallet() });
-
-  const storeId = cart?.items.find((item) => item.product?.store_id)?.product?.store_id ?? undefined;
-  // Delivery slots belong to the store's delivery promise, so they are
-  // requested for the same delivery location the rest of grocery is resolved
-  // against (the backend refuses a store this location cannot reach).
-  const location = useAppStore((s) => s.location) ?? DEFAULT_LOCATION;
-  const slots = useQuery({
-    queryKey: ['delivery-slots', storeId, coordsKey(location)],
-    queryFn: () =>
-      repositories.grocery.getDeliverySlots(storeId as number, undefined, {
-        latitude: location.latitude,
-        longitude: location.longitude,
-      }),
-    enabled: type === 'grocery' && !!storeId,
-  });
 
   const queryClient = useQueryClient();
 
@@ -147,6 +132,9 @@ export default function CheckoutScreen() {
     onSuccess: async ({ order, checkout }) => {
       if (type === 'food') clearFoodInstructions();
       clearDeliveryNote(type);
+      // The booked slot belongs to the order that was just placed, not to the
+      // next cart.
+      resetGroceryDelivery();
 
       if (!checkout) {
         toast('Order placed successfully!');
@@ -171,22 +159,8 @@ export default function CheckoutScreen() {
     onError: (err) => toast(err instanceof Error ? err.message : 'Could not place order.', 'error'),
   });
 
-  const applyDeliveryMode = useMutation({
-    mutationFn: (mode: 'instant' | 'scheduled') =>
-      setDeliveryAddress.mutateAsync({ addressId: addressId ?? null, type: 'grocery', deliveryMode: mode }),
-    onError: (err) => toast(err instanceof Error ? err.message : 'Could not update delivery charges.', 'error'),
-  });
-
-  const onDeliveryModeChange = (mode: DeliveryMode) => {
-    setDeliveryMode(mode);
-    if (mode === 'asap') setSelectedSlot(undefined);
-    if (type === 'grocery' && addressId) {
-      void applyDeliveryMode.mutate(mode === 'scheduled' ? 'scheduled' : 'instant');
-    }
-  };
-
   const needsSlot = type === 'grocery' && deliveryMode === 'scheduled';
-  const feePending = setDeliveryAddress.isPending || applyDeliveryMode.isPending;
+  const feePending = setDeliveryAddress.isPending;
   const canPlace = !!cart && cart.items.length > 0 && !!addressId && (!needsSlot || !!selectedSlot) && !placeOrder.isPending;
 
   if (cartQuery.isLoading) return <Screen header={<AppHeader variant="dark" title="Checkout" />}><Loader label="Loading checkout…" /></Screen>;
@@ -266,19 +240,6 @@ export default function CheckoutScreen() {
             );
           })}
         </View>
-
-        {type === 'grocery' && (
-          <DeliverySlotPicker
-            mode={deliveryMode}
-            onModeChange={onDeliveryModeChange}
-            slots={slots.data ?? []}
-            selectedSlotId={selectedSlot?.id}
-            onSelectSlot={setSelectedSlot}
-            isLoading={slots.isLoading}
-            onRetry={() => slots.refetch()}
-            scheduledEnabled={!!storeId && (slots.data?.length ?? 0) > 0}
-          />
-        )}
 
         <View>
           <SectionTitle title="Payment method" />
@@ -398,99 +359,6 @@ function SectionTitle({ title, action }: { title: string; action?: React.ReactNo
     <View style={styles.sectionHead}>
       <Text style={styles.sectionTitle}>{title}</Text>
       {action}
-    </View>
-  );
-}
-
-function DeliverySlotPicker({
-  mode,
-  onModeChange,
-  slots,
-  selectedSlotId,
-  onSelectSlot,
-  isLoading,
-  onRetry,
-  scheduledEnabled,
-}: {
-  mode: DeliveryMode;
-  onModeChange: (m: DeliveryMode) => void;
-  slots: DeliverySlot[];
-  selectedSlotId?: number;
-  onSelectSlot: (s: DeliverySlot) => void;
-  isLoading: boolean;
-  onRetry: () => void;
-  scheduledEnabled: boolean;
-}) {
-  const dates = useMemo(() => {
-    const seen = new Map<string, DeliverySlot[]>();
-    for (const slot of slots) {
-      const items = seen.get(slot.slot_date) ?? [];
-      items.push(slot);
-      seen.set(slot.slot_date, items);
-    }
-    return [...seen.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [slots]);
-
-  const formatShort = (iso: string) => {
-    const d = new Date(`${iso}T00:00:00`);
-    if (Number.isNaN(d.getTime())) return iso.slice(5);
-    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-  };
-
-  return (
-    <View>
-      <SectionTitle title="Delivery time" />
-      <View style={styles.modeRow}>
-        <Pressable onPress={() => onModeChange('asap')} style={[styles.modeCard, mode === 'asap' ? styles.modeActive : undefined]}>
-          <View style={styles.modeIconWrap}>
-            <Zap size={18} color={colors.brand[600]} />
-          </View>
-          <Text style={styles.modeTitle}>As soon as possible</Text>
-          <Text style={styles.modeSub}>Delivered in about 45-60 min</Text>
-        </Pressable>
-        <Pressable onPress={() => onModeChange('scheduled')} style={[styles.modeCard, mode === 'scheduled' ? styles.modeActive : undefined, !scheduledEnabled && { opacity: 0.5 }]}>
-          <View style={styles.modeIconWrap}>
-            <CalendarClock size={18} color={colors.brand[600]} />
-          </View>
-          <Text style={styles.modeTitle}>Schedule delivery</Text>
-          <Text style={styles.modeSub}>{scheduledEnabled ? 'Pick a date and time' : 'No slots available'}</Text>
-        </Pressable>
-      </View>
-
-      {mode === 'asap' ? (
-        <View style={styles.asapNote}>
-          <Text style={styles.asapNoteText}>Your order will be delivered as soon as it is ready.</Text>
-        </View>
-      ) : isLoading ? (
-        <Loader label="Loading slots…" />
-      ) : slots.length === 0 ? (
-        <EmptyState title="No delivery slots available" message="This store has no open slots right now." actionLabel="Retry" onAction={onRetry} />
-      ) : (
-        <View>
-          {dates.map(([date, daySlots]) => (
-            <View key={date} style={{ marginBottom: 10 }}>
-              <Text style={styles.slotDate}>{formatShort(date)}</Text>
-              <View style={styles.slotGrid}>
-                {daySlots.map((slot) => {
-                  const active = selectedSlotId === slot.id;
-                  const full = slot.availability <= 0;
-                  return (
-                    <Pressable
-                      key={slot.id}
-                      disabled={!slot.is_active || full}
-                      onPress={() => onSelectSlot(slot)}
-                      style={[styles.slotCell, active ? { borderColor: colors.brand[600], backgroundColor: withAlpha(colors.brand[600], 0.06) } : (!slot.is_active || full) && { opacity: 0.5 }]}
-                    >
-                      <Text style={[styles.slotLabel, active && { color: colors.brand[700] }]}>{slot.label}</Text>
-                      <Text style={styles.slotAvail}>{full ? 'Full' : `${slot.availability} left`}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -628,83 +496,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: colors.brand[700],
-  },
-  modeRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  modeCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    padding: 12,
-    gap: 2,
-  },
-  modeActive: {
-    borderColor: colors.brand[600],
-    backgroundColor: withAlpha(colors.brand[600], 0.06),
-  },
-  modeIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: withAlpha(colors.brand[600], 0.1),
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  modeTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.ink[900],
-  },
-  modeSub: {
-    fontSize: 11,
-    color: colors.neutral[500],
-  },
-  asapNote: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    padding: 14,
-    marginTop: 8,
-  },
-  asapNoteText: {
-    fontSize: 13,
-    color: colors.neutral[500],
-  },
-  slotDate: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: colors.neutral[500],
-    marginBottom: 6,
-  },
-  slotGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  slotCell: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  slotLabel: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.ink[900],
-  },
-  slotAvail: {
-    fontSize: 11,
-    color: colors.neutral[500],
-    marginTop: 2,
   },
   payOption: {
     flexDirection: 'row',

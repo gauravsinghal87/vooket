@@ -8,6 +8,10 @@ import { cn } from '@/lib/utils';
 
 export type DeliveryMode = 'asap' | 'scheduled';
 
+/** Which module accent paints the selected states (checkout's brand blue by
+ *  default, the grocery cart's own green when the section lives there). */
+export type DeliverySlotTone = 'brand' | 'grocery';
+
 interface DeliverySlotPickerProps {
   mode: DeliveryMode;
   onModeChange: (mode: DeliveryMode) => void;
@@ -18,6 +22,9 @@ interface DeliverySlotPickerProps {
   isError: boolean;
   onRetry: () => void;
   scheduledEnabled: boolean;
+  tone?: DeliverySlotTone;
+  /** Heading classes so the section matches the host page's section titles. */
+  headingClassName?: string;
 }
 
 function formatDate(date: string): { day: string; date: string } {
@@ -39,15 +46,21 @@ export function DeliverySlotPicker({
   isError,
   onRetry,
   scheduledEnabled,
+  tone = 'brand',
+  headingClassName = 'text-sm font-bold text-neutral-900',
 }: DeliverySlotPickerProps) {
   const dates = Array.from(new Set(slots.map((slot) => slot.slot_date)));
   const [activeDate, setActiveDate] = useState<string | undefined>(undefined);
   const visibleDate = activeDate && dates.includes(activeDate) ? activeDate : dates[0];
   const visibleSlots = slots.filter((slot) => slot.slot_date === visibleDate);
 
+  const activeCard = tone === 'grocery' ? 'border-grocery-500 bg-grocery-50' : 'border-brand-600 bg-brand-50';
+  const activeText = tone === 'grocery' ? 'text-grocery-700' : 'text-brand-700';
+  const activeIcon = tone === 'grocery' ? 'text-grocery-600' : 'text-brand-600';
+
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-bold text-neutral-900">Delivery time</h2>
+      <h2 className={headingClassName}>Delivery time</h2>
 
       <div className="grid grid-cols-2 gap-3">
         <ModeOption
@@ -55,6 +68,8 @@ export function DeliverySlotPicker({
           icon={Zap}
           title="As soon as possible"
           desc="Delivered in about 45-60 min"
+          activeClassName={activeCard}
+          activeIconClassName={activeIcon}
           onClick={() => onModeChange('asap')}
         />
         <ModeOption
@@ -63,6 +78,8 @@ export function DeliverySlotPicker({
           title="Schedule delivery"
           desc={scheduledEnabled ? 'Pick a date and time' : 'No slots available'}
           disabled={!scheduledEnabled}
+          activeClassName={activeCard}
+          activeIconClassName={activeIcon}
           onClick={() => onModeChange('scheduled')}
         />
       </div>
@@ -102,11 +119,11 @@ export function DeliverySlotPicker({
                       onClick={() => setActiveDate(date)}
                       className={cn(
                         'flex min-w-[84px] flex-col items-center rounded-2xl border px-3 py-2 text-center transition-colors',
-                        active ? 'border-brand-600 bg-brand-50' : 'border-neutral-200 bg-white'
+                        active ? activeCard : 'border-neutral-200 bg-white'
                       )}
                     >
                       <span className="text-[11px] font-semibold uppercase text-neutral-500">{formatted.day}</span>
-                      <span className={cn('text-sm font-bold', active ? 'text-brand-700' : 'text-neutral-900')}>
+                      <span className={cn('text-sm font-bold', active ? activeText : 'text-neutral-900')}>
                         {formatted.date}
                       </span>
                     </button>
@@ -125,10 +142,10 @@ export function DeliverySlotPicker({
                       onClick={() => onSelectSlot(slot)}
                       className={cn(
                         'flex flex-col items-start rounded-2xl border px-3 py-2.5 text-left transition-colors',
-                        active ? 'border-brand-600 bg-brand-50' : 'border-neutral-200 bg-white hover:border-neutral-300'
+                        active ? activeCard : 'border-neutral-200 bg-white hover:border-neutral-300'
                       )}
                     >
-                      <span className={cn('text-sm font-bold', active ? 'text-brand-700' : 'text-neutral-900')}>
+                      <span className={cn('text-sm font-bold', active ? activeText : 'text-neutral-900')}>
                         {slot.label}
                       </span>
                       <span className="text-[11px] text-neutral-500">
@@ -152,6 +169,9 @@ function ModeOption({
   title,
   desc,
   disabled,
+  // The defaults keep the original brand accent for any caller without a tone.
+  activeClassName = 'border-brand-600 bg-brand-50',
+  activeIconClassName = 'text-brand-600',
   onClick,
 }: {
   active: boolean;
@@ -159,6 +179,8 @@ function ModeOption({
   title: string;
   desc: string;
   disabled?: boolean;
+  activeClassName?: string;
+  activeIconClassName?: string;
   onClick: () => void;
 }) {
   return (
@@ -168,11 +190,11 @@ function ModeOption({
       onClick={onClick}
       className={cn(
         'flex items-start gap-2 rounded-2xl border px-3 py-3 text-left transition-colors',
-        active ? 'border-brand-600 bg-brand-50' : 'border-neutral-200 bg-white',
+        active ? activeClassName : 'border-neutral-200 bg-white',
         disabled && 'cursor-not-allowed opacity-50'
       )}
     >
-      <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', active ? 'text-brand-600' : 'text-neutral-400')} />
+      <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', active ? activeIconClassName : 'text-neutral-400')} />
       <span>
         <span className="block text-sm font-bold text-neutral-900">{title}</span>
         <span className="block text-[11px] text-neutral-500">{desc}</span>

@@ -57,21 +57,21 @@ type CategoryTileColor = (typeof CATEGORY_TILE_COLORS)[keyof typeof CATEGORY_TIL
  * `care`, `soft-drink` before `drink`).
  */
 const TILE_COLOR_RULES: { keys: string[]; color: CategoryTileColor }[] = [
-  { keys: ['nut', 'dry-fruit', 'dryfruit'], color: CATEGORY_TILE_COLORS.sand },
+  { keys: ['nut', 'dry-fruit', 'dryfruit'], color: CATEGORY_TILE_COLORS.mint },
   { keys: ['fruit', 'vegetab', 'herb', 'green', 'leafy', 'salad'], color: CATEGORY_TILE_COLORS.mint },
-  { keys: ['dairy', 'milk', 'cheese', 'butter', 'yogurt', 'yoghurt', 'curd', 'egg'], color: CATEGORY_TILE_COLORS.cream },
-  { keys: ['bakery', 'bread', 'bun', 'roll', 'cake', 'pastr'], color: CATEGORY_TILE_COLORS.sand },
-  { keys: ['grain', 'rice', 'atta', 'flour', 'pulse', 'dal', 'spice', 'masala', 'oil', 'ghee', 'staple', 'cereal'], color: CATEGORY_TILE_COLORS.butter },
-  { keys: ['snack', 'chip', 'namkeen', 'biscuit', 'cookie', 'cracker'], color: CATEGORY_TILE_COLORS.peach },
-  { keys: ['chocolat', 'candy', 'sweet', 'dessert', 'ice-cream', 'icecream'], color: CATEGORY_TILE_COLORS.blush },
-  { keys: ['soft-drink', 'softdrink', 'water', 'soda', 'cola', 'drink', 'beverage', 'tea', 'coffee', 'juice', 'shake'], color: CATEGORY_TILE_COLORS.sky },
-  { keys: ['baby', 'infant', 'kid'], color: CATEGORY_TILE_COLORS.lavender },
-  { keys: ['ready', 'instant', 'noodle', 'frozen'], color: CATEGORY_TILE_COLORS.peach },
-  { keys: ['clean', 'detergent', 'laundry', 'disposable', 'house', 'dish', 'home'], color: CATEGORY_TILE_COLORS.aqua },
-  { keys: ['personal', 'bath', 'body', 'hair', 'oral', 'skin', 'beauty', 'cosmetic', 'groom', 'hygiene', 'soap', 'care'], color: CATEGORY_TILE_COLORS.blush },
-  { keys: ['electronic', 'gadget', 'device', 'mobile', 'charger'], color: CATEGORY_TILE_COLORS.sky },
-  { keys: ['pharma', 'medicine', 'medic', 'health', 'wellness'], color: CATEGORY_TILE_COLORS.aqua },
-  { keys: ['decor', 'furniture', 'stationery', 'toy', 'pet'], color: CATEGORY_TILE_COLORS.lavender },
+  { keys: ['dairy', 'milk', 'cheese', 'butter', 'yogurt', 'yoghurt', 'curd', 'egg', 'meat', 'kitchen'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['bakery', 'bread', 'bun', 'roll', 'cake', 'pastr', 'sauces'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['grain', 'rice', 'atta', 'flour', 'pulse', 'dal', 'spice', 'masala', 'oil', 'ghee', 'staple', 'cereal'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['snack', 'chip', 'namkeen', 'biscuit', 'cookie', 'cracker'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['chocolat', 'candy', 'sweet', 'dessert', 'ice-cream', 'icecream'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['soft-drink', 'softdrink', 'water', 'soda', 'cola', 'drink', 'beverage', 'tea', 'coffee', 'juice', 'shake'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['baby', 'infant', 'kid'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['ready', 'instant', 'noodle', 'frozen'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['clean', 'detergent', 'laundry', 'disposable', 'house', 'dish', 'home'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['personal', 'bath', 'body', 'hair', 'oral', 'skin', 'beauty', 'cosmetic', 'groom', 'hygiene', 'soap', 'care'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['electronic', 'gadget', 'device', 'mobile', 'charger'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['pharma', 'medicine', 'medic', 'health', 'wellness'], color: CATEGORY_TILE_COLORS.mint },
+  { keys: ['decor', 'furniture', 'stationery', 'toy', 'pet'], color: CATEGORY_TILE_COLORS.mint },
 ];
 
 /** Deterministic pastel background for a grocery category image tile. */

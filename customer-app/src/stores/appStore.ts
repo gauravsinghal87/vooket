@@ -31,16 +31,18 @@ interface AppState {
   locationSelectorOpen: boolean;
   /**
    * What the shared selector should show when it opens. `default` is the normal
-   * picker list; `food-cart` is the cart's "Choose address" button asking
+   * picker list; `food-cart` is the food cart's "Choose address" button asking
    * straight for the add-address screen, and for the saved address to become
-   * the cart's delivery address. Transient like `locationSelectorOpen`, so it
-   * is never persisted and always starts back at `default`.
+   * the cart's delivery address; `grocery-cart` does the same for the grocery
+   * cart's "Choose address at next step" button. Transient like
+   * `locationSelectorOpen`, so it is never persisted and always starts back at
+   * `default`.
    */
-  locationSelectorContext: 'default' | 'food-cart';
+  locationSelectorContext: 'default' | 'food-cart' | 'grocery-cart';
   setService: (service: ServiceType) => void;
   setLocation: (location: Location, addressId?: number | null) => void;
   setVegMode: (vegMode: boolean) => void;
-  openLocationSelector: (context?: 'default' | 'food-cart') => void;
+  openLocationSelector: (context?: 'default' | 'food-cart' | 'grocery-cart') => void;
   closeLocationSelector: () => void;
 }
 

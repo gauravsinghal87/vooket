@@ -136,6 +136,7 @@ export function LocationSelector({ open, onOpenChange, onSelected }: LocationSel
   useEffect(() => {
     if (open) {
       if (openContext === 'food-cart') setMode('foodAdd');
+      else if (openContext === 'grocery-cart') setMode('groceryAdd');
       return;
     }
     setMode('list');
@@ -559,7 +560,7 @@ export function LocationSelector({ open, onOpenChange, onSelected }: LocationSel
                 // Saved from the cart's "Choose address": make it the delivery
                 // address immediately — `pick` writes it to the header, and the
                 // cart follows it through `useSyncCartAddress`.
-                if (openContext === 'food-cart') {
+                if (openContext === 'food-cart' || openContext === 'grocery-cart') {
                   pick(locationFromAddress(saved), saved.id);
                   return;
                 }

@@ -1,6 +1,10 @@
 import { create } from 'zustand';
+import type { DeliverySlot } from '@/types/slots';
 
 export const FOOD_NOTE_MAX_LENGTH = 500;
+
+/** The grocery delivery timing chosen on the cart, carried into checkout. */
+export type GroceryDeliveryMode = 'asap' | 'scheduled';
 
 /** Delivery instructions are stored per module and sent as `customer_note`. */
 export const DELIVERY_NOTE_MAX_LENGTH = 500;
@@ -27,6 +31,16 @@ interface CartStoreState {
   setDeliveryNote: (type: 'food' | 'grocery', note: string) => void;
   clearDeliveryNote: (type: 'food' | 'grocery') => void;
   clearFoodInstructions: () => void;
+  /**
+   * Grocery delivery timing lives here because it is chosen on the cart but
+   * submitted by checkout: one source of truth, so the two screens can never
+   * disagree about ASAP vs. a booked slot.
+   */
+  groceryDeliveryMode: GroceryDeliveryMode;
+  groceryDeliverySlot: DeliverySlot | null;
+  setGroceryDeliveryMode: (mode: GroceryDeliveryMode) => void;
+  setGroceryDeliverySlot: (slot: DeliverySlot | null) => void;
+  resetGroceryDelivery: () => void;
 }
 
 export const useCartStore = create<CartStoreState>((set) => ({
@@ -49,4 +63,12 @@ export const useCartStore = create<CartStoreState>((set) => ({
   clearDeliveryNote: (type) =>
     set(type === 'food' ? { foodDeliveryNote: '' } : { groceryDeliveryNote: '' }),
   clearFoodInstructions: () => set({ foodRestaurantNote: '', foodNoCutlery: false }),
+  groceryDeliveryMode: 'asap',
+  groceryDeliverySlot: null,
+  setGroceryDeliveryMode: (groceryDeliveryMode) =>
+    // Dropping back to ASAP must not leave a stale slot behind: checkout only
+    // submits `delivery_slot_id` in scheduled mode.
+    set(groceryDeliveryMode === 'asap' ? { groceryDeliveryMode, groceryDeliverySlot: null } : { groceryDeliveryMode }),
+  setGroceryDeliverySlot: (groceryDeliverySlot) => set({ groceryDeliverySlot }),
+  resetGroceryDelivery: () => set({ groceryDeliveryMode: 'asap', groceryDeliverySlot: null }),
 }));

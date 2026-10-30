@@ -56,11 +56,13 @@ import { formatCurrency } from '@/lib/utils';
 import { getBranding } from '@/lib/branding';
 import { Screen } from '@/components/Screen';
 import { AppHeader } from '@/components/AppHeader';
+import { LocationSelector } from '@/components/LocationSelector';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { SelectedOptionsList } from '@/components/product/SelectedOptions';
 import { ProductConfiguratorSheet } from '@/components/product/ProductConfiguratorSheet';
 import { AddToCartControl } from '@/components/product/AddToCart';
 import { FoodPreparationChips } from '@/components/order/FoodPreparationChips';
+import { DeliverySlotPicker } from '@/components/order/DeliverySlotPicker';
 import { AddAddressSheet } from '@/components/address/AddAddressSheet';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { EmptyState, Loader, Stepper } from '@/components/ui/primitives';
@@ -983,6 +985,13 @@ function GroceryCartPage() {
   const removeItem = useRemoveCartItem();
   const setDeliveryAddress = useSetDeliveryAddress();
   const setLocation = useAppStore((st) => st.setLocation);
+  // The grocery cart mounts its own copy of the shared location sheet (this
+  // screen renders a custom header, so AppHeader's copy is not on screen) and
+  // opens it straight on the add-address screen.
+  const openLocationSelector = useAppStore((st) => st.openLocationSelector);
+  const closeLocationSelector = useAppStore((st) => st.closeLocationSelector);
+  const locOpen = useAppStore((st) => st.locationSelectorOpen);
+  const setLocOpen = (open: boolean) => (open ? openLocationSelector('grocery-cart') : closeLocationSelector());
 
   const [addressOpen, setAddressOpen] = useState(false);
   const [addAddressOpen, setAddAddressOpen] = useState(false);
@@ -1038,7 +1047,128 @@ function GroceryCartPage() {
   const etaMin = estimateDeliveryMinutes(distanceKm);
   const isScheduled = cart?.delivery_mode === 'scheduled';
 
-  const feePending = setDeliveryAddress.isPending;
+  /* ---------------------------------------------------------------- */
+  /* Delivery time — ASAP vs. a booked slot, chosen right here         */
+  /* ---------------------------------------------------------------- */
+
+  // One shared source of truth with checkout: whatever the customer picks on
+  // this screen is what the order is placed with on the next one.
+  const deliveryMode = useCartStore((s) => s.groceryDeliveryMode);
+  const selectedSlot = useCartStore((s) => s.groceryDeliverySlot);
+  const setGroceryDeliveryMode = useCartStore((s) => s.setGroceryDeliveryMode);
+  const setGroceryDeliverySlot = useCartStore((s) => s.setGroceryDeliverySlot);
+
+  const slots = useQuery({
+    queryKey: ['delivery-slots', storeId, coordsKey(appLocation)],
+    queryFn: () =>
+      repositories.grocery.getDeliverySlots(storeId as number, undefined, {
+        latitude: appLocation.latitude,
+        longitude: appLocation.longitude,
+      }),
+    enabled: hasItems && storeId !== null,
+  });
+
+  // The backend's own record wins on load: a cart that is already scheduled
+  // opens the section in scheduled mode instead of the store's ASAP default.
+  useEffect(() => {
+    if (cart?.delivery_mode === 'scheduled' && deliveryMode !== 'scheduled') {
+      setGroceryDeliveryMode('scheduled');
+    }
+  }, [cart?.delivery_mode, deliveryMode, setGroceryDeliveryMode]);
+
+  // Grocery prices differently for a booked slot, so the cart is repriced as
+  // soon as the mode changes — the same call checkout used to make.
+  const applyDeliveryMode = useMutation({
+    mutationFn: (mode: 'instant' | 'scheduled') =>
+      setDeliveryAddress.mutateAsync({ addressId: cart?.address_id ?? null, type: 'grocery', deliveryMode: mode }),
+    onError: (err) => toast(err instanceof Error ? err.message : 'Could not update delivery charges.', 'error'),
+  });
+
+  const handleDeliveryModeChange = (mode: 'asap' | 'scheduled') => {
+    setGroceryDeliveryMode(mode);
+    // Without an address on the cart the backend has nothing to reprice yet;
+    // the address mutations below carry the mode instead.
+    if (cart?.address_id) void applyDeliveryMode.mutate(mode === 'scheduled' ? 'scheduled' : 'instant');
+  };
+
+  const feePending = setDeliveryAddress.isPending || applyDeliveryMode.isPending;
+  const modePayload = deliveryMode === 'scheduled' ? 'scheduled' : 'instant';
+
+  /* ---------------------------------------------------------------- */
+  /* Payment + placing the order from the cart (Blinkit's flow)        */
+  /* ---------------------------------------------------------------- */
+
+  // Blinkit has no separate checkout screen: the payment choice and the place
+  // order button live in the cart, so the order is placed right here with the
+  // same payload the checkout screen used to send.
+  const [payMethod, setPayMethod] = useState<FoodPayMethod>('wallet');
+  const [payOpen, setPayOpen] = useState(false);
+  const groceryDeliveryNote = useCartStore((st) => st.groceryDeliveryNote);
+  const clearDeliveryNote = useCartStore((st) => st.clearDeliveryNote);
+  const resetGroceryDelivery = useCartStore((st) => st.resetGroceryDelivery);
+
+  const wallet = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => repositories.wallet.getWallet(),
+    enabled: isAuthenticated && hasItems,
+  });
+
+  const placeOrder = useMutation({
+    mutationFn: async () => {
+      if (!cart) throw new Error('Cart is empty');
+      if (deliveryMode === 'scheduled' && !selectedSlot) throw new Error('Choose a delivery slot');
+      const order = await repositories.orders.createOrder({
+        order_type: 'grocery',
+        address_id: cart.address_id ?? undefined,
+        payment_method: payMethod,
+        customer_note: groceryDeliveryNote.trim() || undefined,
+        ...(deliveryMode === 'scheduled' && selectedSlot ? { delivery_slot_id: selectedSlot.id } : {}),
+      });
+      if (payMethod !== 'online') return { order };
+      const rzp = await createUsableCheckout(
+        (idempotencyKey) =>
+          repositories.payments.initiate({
+            payable_type: 'order',
+            payable_id: order.id,
+            payment_method: 'card',
+            idempotency_key: idempotencyKey,
+          }),
+        `checkout:${order.id}`
+      );
+      return { order, checkout: rzp };
+    },
+    onSuccess: async ({ order, checkout }) => {
+      clearDeliveryNote('grocery');
+      resetGroceryDelivery();
+
+      if (!checkout) {
+        toast('Order placed successfully!');
+        router.replace(`/order-confirmation/${order.id}` as never);
+        return;
+      }
+      try {
+        const result = await completeOrderPayment(checkout);
+        if (result.status === 'paid') {
+          toast('Order placed successfully!');
+          router.replace(`/order-confirmation/${order.id}` as never);
+          return;
+        }
+        toast('Payment cancelled. You can pay again from the order page.', 'error');
+        router.replace(`/order/${order.id}` as never);
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Payment could not be completed.', 'error');
+        router.replace(`/order/${order.id}` as never);
+      }
+    },
+    onError: (err) => toast(err instanceof Error ? err.message : 'Could not place order.', 'error'),
+  });
+
+  const brand = getBranding().name;
+  const needsSlot = deliveryMode === 'scheduled' && !selectedSlot;
+  const canPlace = !!cart?.address_id && !needsSlot && !placeOrder.isPending;
+  const methodLabel =
+    payMethod === 'wallet' ? `${brand} Wallet` : payMethod === 'cash_on_delivery' ? 'Cash on delivery' : 'Card / UPI';
+  const MethodIcon = payMethod === 'wallet' ? WalletIcon : payMethod === 'cash_on_delivery' ? Banknote : CreditCard;
   const busyItem = (id: number) => updateItem.isPending && updateItem.variables?.itemId === id;
 
   const handleAddressError = (err: unknown) => toast(err instanceof Error ? err.message : 'Could not update delivery address.', 'error');
@@ -1100,16 +1230,56 @@ function GroceryCartPage() {
               <Text style={styles.groceryBarTotal}>{formatCurrency(Number(cart.total))}</Text>
             )}
           </View>
-          <Pressable
-            onPress={() => router.push('/checkout?type=grocery' as never)}
-            accessibilityRole="button"
-            style={styles.groceryBarBtn}
-          >
-            <Text style={styles.groceryBarBtnText}>
-              {cart.address_id ? 'Proceed to checkout' : 'Choose address at next step'}
-            </Text>
-            <ChevronRight size={16} color={colors.ink[900]} />
-          </Pressable>
+          {cart.address_id ? (
+            <View style={styles.groceryPayRow}>
+              <Pressable
+                onPress={() => setPayOpen(true)}
+                style={styles.groceryPayUsing}
+                accessibilityLabel="Choose payment method"
+              >
+                <Text style={styles.groceryPayUsingLabel}>
+                  PAY USING <ChevronUp size={12} color={colors.neutral[500]} />
+                </Text>
+                <View style={styles.groceryPayUsingMethod}>
+                  <MethodIcon size={14} color={colors.grocery[700]} />
+                  <Text style={styles.groceryPayUsingText} numberOfLines={1}>
+                    {methodLabel}
+                  </Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                onPress={() => !placeOrder.isPending && placeOrder.mutate()}
+                disabled={!canPlace}
+                style={[styles.groceryBarBtn, styles.groceryPlaceBtn, !canPlace && { opacity: 0.6 }]}
+                accessibilityRole="button"
+                accessibilityLabel="Place Order"
+              >
+                <View style={styles.placeOrderTotalWrap}>
+                  <Text style={styles.groceryPlaceTotal}>{formatCurrency(Number(cart.total))}</Text>
+                  <Text style={styles.groceryPlaceTotalLabel}>TOTAL</Text>
+                </View>
+                <View style={styles.groceryPlaceDivider} />
+                <View style={styles.placeOrderRow}>
+                  {placeOrder.isPending && <ActivityIndicator size="small" color={colors.ink[900]} />}
+                  <Text style={styles.groceryBarBtnText}>Place Order</Text>
+                </View>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => {
+                // No delivery address yet: Blinkit's flow asks for it right
+                // here — open the add-address screen (map + details) directly.
+                openLocationSelector('grocery-cart');
+              }}
+              accessibilityRole="button"
+              style={styles.groceryBarBtn}
+            >
+              <Text style={styles.groceryBarBtnText}>Choose address at next step</Text>
+              <ChevronRight size={16} color={colors.ink[900]} />
+            </Pressable>
+          )}
         </View>
       }
     >
@@ -1126,6 +1296,21 @@ function GroceryCartPage() {
           scheduled={isScheduled}
           itemsCount={cart.items_count}
         />
+
+        <View>
+          <SectionRow title="Delivery time" />
+          <DeliverySlotPicker
+            mode={deliveryMode}
+            onModeChange={handleDeliveryModeChange}
+            slots={slots.data ?? []}
+            selectedSlotId={selectedSlot?.id}
+            onSelectSlot={setGroceryDeliverySlot}
+            isLoading={slots.isLoading}
+            onRetry={() => void slots.refetch()}
+            scheduledEnabled={storeId !== null && (slots.data?.length ?? 0) > 0}
+            tone="grocery"
+          />
+        </View>
 
         <View>
           <SectionRow title={`Shipment of ${cart.items_count} item${cart.items_count === 1 ? '' : 's'}`} />
@@ -1171,7 +1356,7 @@ function GroceryCartPage() {
                 <Pressable
                   onPress={() =>
                     setDeliveryAddress.mutate(
-                      { addressId: null, type: 'grocery' },
+                      { addressId: null, type: 'grocery', deliveryMode: modePayload },
                       {
                         onError: handleAddressError,
                         onSuccess: (updated) => {
@@ -1231,7 +1416,7 @@ function GroceryCartPage() {
           // displays, so both sides move together.
           const picked = (addresses.data ?? []).find((x) => x.id === addressId);
           if (picked) setLocation(locationFromAddress(picked), picked.id);
-          setDeliveryAddress.mutate({ addressId, type: 'grocery' }, { onError: handleAddressError });
+          setDeliveryAddress.mutate({ addressId, type: 'grocery', deliveryMode: modePayload }, { onError: handleAddressError });
         }}
         onAddNew={() => {
           setAddressOpen(false);
@@ -1244,9 +1429,56 @@ function GroceryCartPage() {
         onClose={() => setAddAddressOpen(false)}
         onCreated={(created) => {
           setLocation(locationFromAddress(created), created.id);
-          setDeliveryAddress.mutate({ addressId: created.id, type: 'grocery' }, { onError: handleAddressError });
+          setDeliveryAddress.mutate({ addressId: created.id, type: 'grocery', deliveryMode: modePayload }, { onError: handleAddressError });
         }}
       />
+
+      {/* Grocery's PAY USING sheet — Blinkit's payment options screen. */}
+      <BottomSheet visible={payOpen} onClose={() => setPayOpen(false)} title="Payment options">
+        <View style={{ gap: 8 }}>
+          {[
+            {
+              value: 'wallet' as const,
+              label: `${brand} Wallet`,
+              desc: wallet.data ? `Balance ${formatCurrency(Number(wallet.data.balance))}` : 'Pay from your balance',
+              icon: WalletIcon,
+            },
+            { value: 'online' as const, label: 'Card / UPI', desc: 'Pay securely online', icon: CreditCard },
+            { value: 'cash_on_delivery' as const, label: 'Cash on delivery', desc: 'Pay when you receive', icon: Banknote },
+          ].map((o) => {
+            const Icon = o.icon;
+            const active = payMethod === o.value;
+            return (
+              <Pressable
+                key={o.value}
+                onPress={() => {
+                  setPayMethod(o.value);
+                  setPayOpen(false);
+                }}
+                style={[
+                  styles.payOption,
+                  active
+                    ? [styles.payOptionActive, { borderColor: colors.grocery[500], backgroundColor: withAlpha(colors.grocery[500], 0.06) }]
+                    : styles.payOptionIdle,
+                ]}
+              >
+                <View style={[styles.payOptionIcon, active && { backgroundColor: colors.grocery[600] }]}>
+                  <Icon size={20} color={active ? '#fff' : colors.neutral[500]} />
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={styles.payOptionLabel}>{o.label}</Text>
+                  <Text style={styles.payOptionDesc} numberOfLines={1}>{o.desc}</Text>
+                </View>
+                <View style={[styles.payOptionRadio, active && { borderColor: colors.grocery[600] }]}>
+                  {active && <View style={[styles.payOptionRadioDot, { backgroundColor: colors.grocery[600] }]} />}
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </BottomSheet>
+
+      <LocationSelector open={locOpen} onOpenChange={setLocOpen} />
     </Screen>
   );
 }
@@ -1273,7 +1505,7 @@ function DeliveryGroup({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.deliveryInfoTitle}>
-          {scheduled ? 'Scheduled' : etaMin !== null ? `Delivery in ${etaMin} min` : 'Delivery time shown at checkout'}
+          {scheduled ? 'Scheduled' : etaMin !== null ? `Delivery in ${etaMin} min` : 'As soon as possible'}
         </Text>
         <Text style={styles.deliveryInfoSub}>
           {scheduled ? 'Delivery slot booked' : `Shipment of ${itemsCount} item${itemsCount === 1 ? '' : 's'}`}
@@ -2309,6 +2541,63 @@ const styles = StyleSheet.create({
     fontFamily: 'Outfit_800ExtraBold',
     fontSize: 13,
     color: colors.ink[900],
+  },
+  groceryPayRow: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 8,
+  },
+  groceryPayUsing: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    gap: 2,
+  },
+  groceryPayUsingLabel: {
+    fontFamily: 'Outfit_700Bold',
+    fontSize: 10,
+    color: colors.neutral[500],
+    textTransform: 'uppercase',
+  },
+  groceryPayUsingMethod: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  groceryPayUsingText: {
+    flexShrink: 1,
+    fontFamily: 'Outfit_800ExtraBold',
+    fontSize: 13,
+    color: colors.ink[900],
+  },
+  groceryPlaceBtn: {
+    flexShrink: 0,
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  groceryPlaceTotal: {
+    fontFamily: 'Outfit_800ExtraBold',
+    fontSize: 13,
+    color: colors.ink[900],
+  },
+  groceryPlaceTotalLabel: {
+    fontFamily: 'Outfit_700Bold',
+    fontSize: 9,
+    color: colors.ink[900],
+    opacity: 0.7,
+  },
+  groceryPlaceDivider: {
+    width: 1,
+    backgroundColor: colors.ink[900],
+    opacity: 0.25,
+    marginVertical: 8,
   },
   sectionAction: {
     fontFamily: 'Outfit_700Bold',

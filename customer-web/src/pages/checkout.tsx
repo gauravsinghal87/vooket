@@ -4,9 +4,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Loader2, ChevronRight, MapPin, Plus, Wallet as WalletIcon, Banknote, CreditCard } from 'lucide-react';
 import { repositories } from '@/repositories';
 import { useAppStore } from '@/store/appStore';
-import { DEFAULT_LOCATION, locationFromAddress } from '@/lib/location';
-import { coordsKey } from '@/lib/geo';
-import type { DeliverySlot } from '@/repositories/interfaces';
+import { locationFromAddress } from '@/lib/location';
 import type { OrderType } from '@/types/models';
 import { useApplyCoupon, useRemoveCoupon, useSetDeliveryAddress, useSyncCartAddress } from '@/hooks/useCart';
 import { Card } from '@/components/ui/card';
@@ -16,7 +14,6 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, EmptyState } from '@/components/ui/state';
 import { toast } from '@/components/ui/toast';
-import { DeliverySlotPicker, type DeliveryMode } from '@/components/order/delivery-slot-picker';
 import { completeOrderPayment, createUsableCheckout } from '@/lib/razorpay';
 import { getBranding } from '@/lib/branding';
 import { useCartStore } from '@/store/cartStore';
@@ -33,8 +30,13 @@ export function CheckoutPage() {
   const [payMethod, setPayMethod] = useState<PayMethod>('wallet');
   const [couponOpen, setCouponOpen] = useState(false);
   const [code, setCode] = useState('');
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('asap');
-  const [selectedSlot, setSelectedSlot] = useState<DeliverySlot | undefined>(undefined);
+
+  // The grocery delivery timing is chosen on the cart (see DeliverySlotPicker
+  // on `/cart?type=grocery`) and read here, so checkout can never disagree
+  // with what the customer already picked.
+  const deliveryMode = useCartStore((s) => s.groceryDeliveryMode);
+  const selectedSlot = useCartStore((s) => s.groceryDeliverySlot);
+  const resetGroceryDelivery = useCartStore((s) => s.resetGroceryDelivery);
 
   // Instructions: food's preparation note is collected in the cart; the
   // delivery note is collected per module and travels as `customer_note`.
@@ -53,22 +55,6 @@ export function CheckoutPage() {
   // The checkout pays for the address the home header shows, so the two are
   // reconciled before anything is placed.
   useSyncCartAddress(type, cart.data);
-
-  const storeId = cart.data?.items.find((item) => item.product?.store_id)?.product?.store_id ?? undefined;
-
-  // Delivery slots belong to the store's delivery promise, so they are
-  // requested for the same delivery location the rest of grocery is resolved
-  // against (the backend refuses a store this location cannot reach).
-  const location = useAppStore((s) => s.location) ?? DEFAULT_LOCATION;
-  const slots = useQuery({
-    queryKey: ['delivery-slots', storeId, coordsKey(location)],
-    queryFn: () =>
-      repositories.grocery.getDeliverySlots(storeId as number, undefined, {
-        latitude: location.latitude,
-        longitude: location.longitude,
-      }),
-    enabled: type === 'grocery' && !!storeId,
-  });
 
   const applyCoupon = useApplyCoupon();
   const removeCoupon = useRemoveCoupon();
@@ -111,6 +97,9 @@ export function CheckoutPage() {
     onSuccess: async ({ order, checkout }) => {
       if (type === 'food') clearFoodInstructions();
       clearDeliveryNote(type);
+      // The booked slot belongs to the order that was just placed, not to the
+      // next cart.
+      resetGroceryDelivery();
 
       if (!checkout) {
         toast('Order placed successfully!');
@@ -134,23 +123,6 @@ export function CheckoutPage() {
     },
     onError: (err) => toast(err instanceof Error ? err.message : 'Could not place order.', 'error'),
   });
-
-  // Grocery prices differently for a booked slot, so the cart is repriced as
-  // soon as the mode changes and the order is placed from the same figures.
-  const applyDeliveryMode = useMutation({
-    mutationFn: (mode: 'instant' | 'scheduled') =>
-      setDeliveryAddress.mutateAsync({ addressId: addressId ?? null, type: 'grocery', deliveryMode: mode }),
-    onError: (err) => toast(err instanceof Error ? err.message : 'Could not update delivery charges.', 'error'),
-  });
-
-  const onDeliveryModeChange = (mode: DeliveryMode) => {
-    setDeliveryMode(mode);
-    if (mode === 'asap') setSelectedSlot(undefined);
-
-    if (type === 'grocery' && addressId) {
-      void applyDeliveryMode.mutate(mode === 'scheduled' ? 'scheduled' : 'instant');
-    }
-  };
 
   const needsSlot = type === 'grocery' && deliveryMode === 'scheduled';
   const canPlace =
@@ -263,20 +235,6 @@ export function CheckoutPage() {
             )}
           </section>
 
-          {type === 'grocery' && (
-            <DeliverySlotPicker
-              mode={deliveryMode}
-              onModeChange={onDeliveryModeChange}
-              slots={slots.data ?? []}
-              selectedSlotId={selectedSlot?.id}
-              onSelectSlot={setSelectedSlot}
-              isLoading={slots.isLoading}
-              isError={slots.isError}
-              onRetry={() => slots.refetch()}
-              scheduledEnabled={!!storeId && (slots.data?.length ?? 0) > 0}
-            />
-          )}
-
           <PaymentSelection type={type} payMethod={payMethod} setPayMethod={setPayMethod} walletBalance={wallet.data?.balance} />
 
           <CouponCard
@@ -288,7 +246,7 @@ export function CheckoutPage() {
 
           <BillSummary
             cart={cart.data}
-            feePending={setDeliveryAddress.isPending || applyDeliveryMode.isPending}
+            feePending={setDeliveryAddress.isPending}
             scheduledDelivery={type === 'grocery' && deliveryMode === 'scheduled'}
           />
 
