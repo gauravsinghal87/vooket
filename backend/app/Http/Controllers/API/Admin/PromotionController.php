@@ -227,7 +227,7 @@ class PromotionController extends BaseController
             'poster_image' => 'sometimes|nullable|string',
             'position' => 'sometimes|in:home,food,grocery,rides,promo',
             'service' => 'sometimes|nullable|in:food,grocery,rides,all',
-            'placement' => 'sometimes|nullable|in:food_home_hero,grocery_home_hero,grocery_home_brand_promo,rides_home_hero,rides_promotions,order_tracking,food_home_card,grocery_home_card,food_home_secondary,grocery_home_secondary',
+            'placement' => 'sometimes|nullable|in:food_home_hero,grocery_home_hero,grocery_home_brand_promo,grocery_home_festive_promo,rides_home_hero,rides_promotions,order_tracking,food_home_card,grocery_home_card,food_home_secondary,grocery_home_secondary',
             'target_type' => 'sometimes|in:restaurant,store,product,category,url',
             'target_id' => 'sometimes|nullable|integer',
             'target_url' => 'sometimes|nullable|string|max:255',

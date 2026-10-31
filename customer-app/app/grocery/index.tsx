@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { Screen } from '@/components/Screen';
+import { SearchBar } from '@/components/SearchBar';
 import { ViewCartBar } from '@/components/cards';
 import {
   GroceryBrandPromoRail,
@@ -11,6 +13,7 @@ import {
   GroceryCategoryGridSkeleton,
   GroceryCategoryHeader,
   GroceryCategoryRailSkeleton,
+  GroceryHero,
   GroceryProductShelf,
   GroceryPromoRail,
   GroceryStoreTerms,
@@ -74,21 +77,55 @@ export default function GroceryHomeScreen() {
   // reorder history, all filtered down to the active store below.
   const home = useQuery({
     queryKey: ['grocery-home', coordsKey(origin)],
-    queryFn: () => repositories.grocery.getHome({ latitude: origin.latitude, longitude: origin.longitude }),
+    queryFn: () =>
+      repositories.grocery.getHome({
+        latitude: origin.latitude,
+        longitude: origin.longitude,
+      }),
     staleTime: 1000 * 60 * 5,
   });
+
+  // The Grocery hero is its own placement, fetched through the existing public
+  // banner endpoint so a Food/Rides banner can never be substituted for it.
+  const heroBanner = useQuery({
+    queryKey: ['banners', 'grocery_home_hero'],
+    queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_hero'),
+  });
+  const heroBanners = useMemo(
+    () => (heroBanner.data ?? []).filter((b) => b.placement === 'grocery_home_hero'),
+    [heroBanner.data],
+  );
+  const heroBannerId = heroBanners[0]?.id ?? null;
 
   // The brand-promo carousel uses its own placement, fetched with the dedicated
   // endpoint so a banner for another surface (Food, Rides) can never appear.
   // Strict equality also drops the shared `all`/null banners the endpoint
-  // includes, keeping this rail exactly the Admin-configured grocery promos.
+  // includes, and the active hero id is removed so the festive artwork is never
+  // repeated as an ordinary promo card.
   const brandPromo = useQuery({
     queryKey: ['banners', 'grocery_home_brand_promo'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_brand_promo'),
   });
   const brandPromos = useMemo(
-    () => (brandPromo.data ?? []).filter((b) => b.placement === 'grocery_home_brand_promo'),
-    [brandPromo.data]
+    () => (brandPromo.data ?? []).filter((b) => b.placement === 'grocery_home_brand_promo' && b.id !== heroBannerId),
+    [brandPromo.data, heroBannerId],
+  );
+
+  // The festive promo cards are their own placement, fetched with the dedicated
+  // endpoint so a banner for another surface can never appear in the grid.
+  // Strict equality on the placement also drops the shared `all`/null banners
+  // the public endpoint would otherwise include, and the active hero id is
+  // removed so the festive artwork is never repeated as a promo card.
+  const festivePromo = useQuery({
+    queryKey: ['banners', 'grocery_home_festive_promo'],
+    queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_festive_promo'),
+  });
+  const festivePromos = useMemo(
+    () =>
+      (festivePromo.data ?? []).filter(
+        (b) => b.placement === 'grocery_home_festive_promo' && b.id !== heroBannerId,
+      ),
+    [festivePromo.data, heroBannerId],
   );
 
   const cart = useCart('grocery');
@@ -98,13 +135,25 @@ export default function GroceryHomeScreen() {
 
   const promos = useMemo<Offer[]>(
     () => ((data?.promos ?? []) as Offer[]).filter((o) => o.service === 'grocery'),
-    [data?.promos]
+    [data?.promos],
   );
+
+  /**
+   * Admin promotional carousel. It deliberately lives after every main
+   * category section, not in the hero. The dedicated brand-promo placement
+   * wins; when none is configured the existing grocery offers rail is used.
+   */
+  const promoSection = useMemo(() => {
+    if (inCategory) return null;
+    if (brandPromos.length > 0) return <GroceryBrandPromoRail banners={brandPromos} />;
+    if (promos.length > 0) return <GroceryPromoRail promos={promos} />;
+    return null;
+  }, [brandPromos, inCategory, promos]);
 
   const buyAgain = useMemo(() => productsOfStore(data?.buyAgain, activeStoreId), [data?.buyAgain, activeStoreId]);
   const recentlyViewed = useMemo(
     () => productsOfStore(data?.recentlyViewed, activeStoreId),
-    [data?.recentlyViewed, activeStoreId]
+    [data?.recentlyViewed, activeStoreId],
   );
 
   const {
@@ -122,7 +171,7 @@ export default function GroceryHomeScreen() {
       storeProducts
         .filter((p) => discountPercent(p) !== null)
         .sort((a, b) => (discountPercent(b) ?? 0) - (discountPercent(a) ?? 0)),
-    [storeProducts]
+    [storeProducts],
   );
 
   const featured = useMemo(() => storeProducts.filter((p) => p.is_featured), [storeProducts]);
@@ -137,20 +186,91 @@ export default function GroceryHomeScreen() {
       else map.set(p.category_id, { category: p.category, products: [p] });
     }
     const order = new Map(allCategories.map((c, i) => [c.id, i]));
-    return [...map.values()].sort(
-      (a, b) => (order.get(a.category.id) ?? 1e9) - (order.get(b.category.id) ?? 1e9)
-    );
+    return [...map.values()].sort((a, b) => (order.get(a.category.id) ?? 1e9) - (order.get(b.category.id) ?? 1e9));
   }, [storeProducts, allCategories]);
 
   const selectCategory = (id: number | null) => {
     if (id === null) router.replace('/grocery' as never);
-    else router.push({ pathname: '/grocery', params: { category: String(id) } } as never);
+    else
+      router.push({
+        pathname: '/grocery',
+        params: { category: String(id) },
+      } as never);
   };
 
   const categoryName = useMemo(
-    () => (inCategory ? findGroceryCategory(allCategories, categoryId)?.name ?? 'Grocery' : 'Grocery'),
-    [allCategories, categoryId, inCategory]
+    () => (inCategory ? (findGroceryCategory(allCategories, categoryId)?.name ?? 'Grocery') : 'Grocery'),
+    [allCategories, categoryId, inCategory],
   );
+
+  /* ------------------------------------------------------------------ */
+  /* Pinned search + category navigation (Blinkit's sticky top)          */
+  /* ------------------------------------------------------------------ */
+
+  const insets = useSafeAreaInsets();
+  const [scrollY, setScrollY] = useState(0);
+  const [heroSearchY, setHeroSearchY] = useState<number | null>(null);
+  const [heroSearchH, setHeroSearchH] = useState(0);
+
+  // The hero publishes its own search row's offset and height, so the pinned
+  // copy takes over exactly where the scrolling one sits.
+  const onHeroSearchLayout = useCallback((y: number, height: number) => {
+    setHeroSearchY(y);
+    setHeroSearchH(height);
+  }, []);
+
+  const onScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
+    setScrollY(e.nativeEvent.contentOffset.y);
+  }, []);
+
+  // The search row is at the safe-area edge exactly when the pinned copy
+  // appears; until then it stays hidden so the two never show together.
+  const pinned = !inCategory && heroSearchY !== null && heroSearchH > 0 && scrollY + insets.top + 8 >= heroSearchY;
+
+  /**
+   * The home's category navigation. The hero version is light-on-artwork and
+   * sits immediately under the search; the pinned dock version is the normal
+   * dark-on-cream treatment. Both use the same backend data and callback.
+   */
+  const renderCategoryNav = (tone: 'artwork' | 'surface') => {
+    if (categoriesLoading) {
+      return <GroceryCategoryRailSkeleton />;
+    }
+    if (categoriesError) {
+      return (
+        <EmptyState
+          title="Couldn't load categories"
+          message="Try again in a moment."
+          actionLabel="Retry"
+          onAction={() => refetchCategories()}
+        />
+      );
+    }
+    if (topNavigationCategories.length === 0) {
+      return <EmptyState title="No categories available" message="Products are still listed below." />;
+    }
+    return (
+      <GroceryCategoryCarousel
+        categories={topNavigationCategories}
+        selectedId={null}
+        onSelect={selectCategory}
+        tone={tone}
+      />
+    );
+  };
+
+  const hero = !inCategory ? (
+    <GroceryHero
+      banners={heroBanners}
+      // The festive cards render inside the hero, so the artwork keeps running
+      // behind them — the same continuous festive surface as the web home.
+      festivePromos={festivePromos}
+      // Light-on-artwork only when the Admin hero has an image; the cream
+      // fallback keeps the normal dark tabs so labels remain legible.
+      categoryNav={renderCategoryNav(heroBanners[0]?.image ? 'artwork' : 'surface')}
+      onSearchLayout={onHeroSearchLayout}
+    />
+  ) : null;
 
   /**
    * The backend's verdict for this address. Every grocery query above reports
@@ -165,44 +285,54 @@ export default function GroceryHomeScreen() {
     storesServiceability ?? home.data?.serviceability ?? catalogue.serviceability ?? categoriesServiceability ?? null;
   const notServiceable = serviceability?.is_serviceable === false;
 
+  /**
+   * Shared shell for the home's error / serviceability / no-store states. The
+   * home keeps the Admin hero at the top (so the header, location and search
+   * stay available); the category view keeps its compact category header.
+   */
+  const stateScreen = (children: React.ReactNode) => (
+    <Screen
+      header={
+        inCategory ? (
+          <GroceryCategoryHeader categoryName={categoryName} onOpenLocation={() => setLocOpen(true)} />
+        ) : null
+      }
+      background={colors.grocery[50]}
+    >
+      {hero}
+      <View style={inCategory ? undefined : styles.stateBody}>{children}</View>
+      <LocationSelector open={locOpen} onOpenChange={setLocOpen} />
+    </Screen>
+  );
+
   /* ------------------------------- states ------------------------------- */
 
   if (storeError) {
-    return (
-      <Screen header="auto">
-        <EmptyState
-          title="Couldn't load grocery stores"
-          message="Please check your connection and try again."
-          actionLabel="Retry"
-          onAction={() => refetchStores()}
-        />
-      </Screen>
+    return stateScreen(
+      <EmptyState
+        title="Couldn't load grocery stores"
+        message="Please check your connection and try again."
+        actionLabel="Retry"
+        onAction={() => refetchStores()}
+      />,
     );
   }
 
   // The location is outside Grocery's coverage (or Grocery is switched off in
   // its zone): render the shared unavailable state with a working way out.
   if (!storeLoading && notServiceable) {
-    return (
-      <Screen header="auto">
-        <GroceryServiceabilityNotice serviceability={serviceability} />
-        <LocationSelector open={locOpen} onOpenChange={setLocOpen} />
-      </Screen>
-    );
+    return stateScreen(<GroceryServiceabilityNotice serviceability={serviceability} />);
   }
 
   // No eligible store near the customer: never fall back to a distant store.
   if (!storeLoading && !activeStore) {
-    return (
-      <Screen header="auto">
-        <EmptyState
-          title="No grocery stores available near you"
-          message="Try changing your delivery location."
-          actionLabel="Change location"
-          onAction={() => setLocOpen(true)}
-        />
-        <LocationSelector open={locOpen} onOpenChange={setLocOpen} />
-      </Screen>
+    return stateScreen(
+      <EmptyState
+        title="No grocery stores available near you"
+        message="Try changing your delivery location."
+        actionLabel="Change location"
+        onAction={() => setLocOpen(true)}
+      />,
     );
   }
 
@@ -211,54 +341,49 @@ export default function GroceryHomeScreen() {
       header={
         inCategory ? (
           <GroceryCategoryHeader categoryName={categoryName} onOpenLocation={() => setLocOpen(true)} />
-        ) : (
-          'auto'
-        )
+        ) : null
       }
       bottomBar={cartCount > 0 ? <ViewCartBar type="grocery" /> : undefined}
-      /* The web category page sits on `bg-grocery-50`; the home branch keeps
-         the default surface so its existing layout is untouched. */
-      background={inCategory ? colors.grocery[50] : undefined}
+      /* The home and category both sit on the Grocery cream page surface. */
+      background={colors.grocery[50]}
       /*
        * The category screen owns its own two independently scrolling columns
        * (sidebar + product list), so the Screen must not wrap it in a single
        * page ScrollView, which would move both columns together. The home
-       * branch keeps the default page scroll.
+       * branch keeps the default page scroll so the hero can scroll away.
        */
       scroll={!inCategory}
+      scrollProps={{
+        scrollEventThrottle: 16,
+        onScroll,
+      }}
       /*
-       * The category strip is a coordinated sticky header: it renders in the
-       * Screen's `stickyHeader` slot, outside the page ScrollView and pinned
-       * directly below the fixed themed header (which owns the location, ETA
-       * and search areas). There is always exactly one strip on screen, it
-       * stays swipeable, and scrolled content can never slide beneath it — no
-       * CSS position:sticky, no stickyHeaderIndices.
+       * Pinned top copy: compact search + category navigation, rendered above
+       * the scroll body only after the hero's own rows scroll away. It is not
+       * in flow, so there is never a second visible copy on screen.
        */
-      stickyHeader={
-        activeStore && !inCategory ? (
-          <View style={styles.stickyHeader}>
-            {categoriesLoading ? (
-              <GroceryCategoryRailSkeleton />
-            ) : categoriesError ? (
-              <EmptyState
-                title="Couldn't load categories"
-                message="Try again in a moment."
-                actionLabel="Retry"
-                onAction={() => refetchCategories()}
-              />
-            ) : topNavigationCategories.length === 0 ? (
-              <EmptyState title="No categories available" message="Products are still listed below." />
-            ) : (
+      overlay={
+        pinned ? (
+          <View style={[styles.pinnedTop, { paddingTop: insets.top + 8 }]}>
+            <View style={styles.pinnedSearch}>
+              <SearchBar variant="brand" />
+            </View>
+            {topNavigationCategories.length > 0 && (
               <GroceryCategoryCarousel
                 categories={topNavigationCategories}
                 selectedId={null}
                 onSelect={selectCategory}
+                tone="surface"
               />
             )}
           </View>
-        ) : undefined
+        ) : null
       }
     >
+      {/* The Admin festive hero owns the header, search and category navigation
+          on the home. It is part of the scroll content. */}
+      {hero}
+
       {storeLoading && !activeStore ? (
         <View style={styles.page}>
           <Loader label="Finding the nearest store" />
@@ -303,13 +428,10 @@ export default function GroceryHomeScreen() {
                 ))
               )}
 
-              {/* 2. Brand promotion carousel (own placement); when none is
-                  configured the existing grocery offers rail is shown. */}
-              {brandPromos.length > 0 ? (
-                <GroceryBrandPromoRail banners={brandPromos} />
-              ) : (
-                <GroceryPromoRail promos={promos} />
-              )}
+              {/* 2. Admin promotional carousel, after the hero's festive grid
+                  and before the store's product shelves. It is hidden entirely
+                  when no Grocery promotion is configured. */}
+              {promoSection}
 
               {/* 3. Product sections, all scoped to the active store. */}
               {catalogue.isError ? (
@@ -375,19 +497,31 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     gap: 22,
   },
-  /* The coordinated sticky category strip, docked between the fixed header and
-     the page scroll body. It is painted with `grocery-200` — the exact stop the
-     header band's gradient lands on — so the strip continues the band's pale
-     yellow as one surface instead of breaking to a different colour under it. */
-  stickyHeader: {
-    backgroundColor: colors.grocery[200],
-    paddingTop: 8,
+  /* Pinned search + category rail, overlaid at the top of the screen. */
+  pinnedTop: {
+    backgroundColor: colors.grocery[50],
     paddingBottom: 6,
+    shadowColor: '#100e0a',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
   },
-  /* Everything below the sticky strip. */
+  pinnedSearch: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  /* Home sections below the hero's category navigation. */
   pageBody: {
     paddingTop: 14,
     paddingBottom: 8,
     gap: 22,
+  },
+  /* Insets for the shared error / serviceability / no-store state bodies. */
+  stateBody: {
+    paddingTop: 14,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    gap: 16,
   },
 });

@@ -35,6 +35,12 @@ interface AppHeaderProps {
   tone?: 'brand' | 'food' | 'grocery';
   /** Shown instead of the default themed content on top routes (e.g. grocery category header). */
   customHeader?: React.ReactNode;
+  /**
+   * For `overlay` only: whether the artwork behind the header is dark. The
+   * Grocery festive hero needs white controls; its clean cream fallback (no
+   * uploaded hero banner) needs the dark Grocery treatment instead.
+   */
+  overlayOnDark?: boolean;
 }
 
 /**
@@ -44,7 +50,7 @@ interface AppHeaderProps {
  * module switcher and search — painted from the route's hero theme. Every other
  * route keeps the plain dark header (back + title/actions).
  */
-export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHeaderProps) {
+export function AppHeader({ variant = 'auto', customHeader, title, tone, overlayOnDark = true }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { name } = useBranding();
@@ -70,6 +76,10 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
   const overlay = variant === 'overlay';
   const useDark = variant === 'dark' || (variant === 'auto' && !isTop);
   const isGrocery = pathname === '/grocery';
+  // Grocery normally paints ink on its pale-yellow band. On the festive hero
+  // (overlay over a dark uploaded image) the same controls flip to white; the
+  // clean cream fallback keeps ink.
+  const groceryOnLight = isGrocery && !(overlay && overlayOnDark);
   // The Rides home owns a full-height map + booking sheet and its destination
   // search lives inside that flow (`/rides/destination`), so its band drops the
   // shared search row — location, wallet and avatar stay exactly as they are.
@@ -134,15 +144,24 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
             {isGrocery ? (
               <>
                 {/* Real nearest-store ETA, mounted only on the Grocery route. */}
-                <GroceryEtaRow />
+                <GroceryEtaRow tone={groceryOnLight ? 'onLight' : 'onDark'} />
                 <View style={styles.groceryAddrRow}>
-                  <Text style={styles.groceryAddrLabel} numberOfLines={1}>
+                  <Text
+                    style={[styles.groceryAddrLabel, !groceryOnLight && { color: colors.white }]}
+                    numberOfLines={1}
+                  >
                     {activeLoc.label}
                   </Text>
-                  <Text style={styles.groceryAddrText} numberOfLines={1}>
+                  <Text
+                    style={[styles.groceryAddrText, !groceryOnLight && { color: 'rgba(255,255,255,0.8)' }]}
+                    numberOfLines={1}
+                  >
                     · {activeLoc.address}
                   </Text>
-                  <ChevronDown size={13} color="rgba(23,20,15,0.55)" />
+                  <ChevronDown
+                    size={13}
+                    color={groceryOnLight ? 'rgba(23,20,15,0.55)' : 'rgba(255,255,255,0.6)'}
+                  />
                 </View>
               </>
             ) : (
@@ -169,11 +188,11 @@ export function AppHeader({ variant = 'auto', customHeader, title, tone }: AppHe
             style={styles.iconBtn}
             accessibilityLabel="Wallet"
           >
-            <Wallet size={20} color={isGrocery ? colors.ink[900] : '#fff'} />
+            <Wallet size={20} color={groceryOnLight ? colors.ink[900] : '#fff'} />
           </Pressable>
           <Pressable
             onPress={() => router.push((user ? '/profile' : '/auth/login') as never)}
-            style={[styles.avatarWrap, isGrocery && styles.avatarWrapGrocery]}
+            style={[styles.avatarWrap, groceryOnLight && styles.avatarWrapGrocery]}
             accessibilityLabel="Account"
           >
             <Avatar name={user?.name ?? 'Guest'} size="md" />

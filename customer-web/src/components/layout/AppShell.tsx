@@ -49,6 +49,13 @@ export function AppShell() {
   // the header layered over it), so the shared sticky header is suppressed
   // there — otherwise two headers would stack above the same page.
   const isFoodHero = pathname === '/food';
+  // The Grocery home does the same with its Admin festive hero: the page
+  // renders the shared header inside `GroceryHero`, so `AppShell` drops its own
+  // band and lets the hero run full-bleed. A selected Grocery category
+  // (`/grocery?category=<id>`) keeps the existing sticky header.
+  const groceryCategory = Number(params.get('category'));
+  const hasGroceryCategory = Number.isFinite(groceryCategory) && groceryCategory > 0;
+  const isGroceryHero = pathname === '/grocery' && !hasGroceryCategory;
   // Order tracking paints the shared header and a full-bleed tracking hero as
   // one continuous band, so its `main` also drops the max-width and gutter and
   // the page re-applies them inside its own content blocks.
@@ -71,7 +78,14 @@ export function AppShell() {
   const hideBottomNav = isRidesSelector || isRideConfirmPickup;
   // The rides home owns a full-height map + booking sheet and re-applies its own
   // max-width and gutter, so it drops the shared shell's column.
-  const fullBleedMain = isFoodHero || isOrderTracking || isRestaurantDetail || isRidesHome || isRidesSelector || isRideConfirmPickup;
+  const fullBleedMain =
+    isFoodHero ||
+    isGroceryHero ||
+    isOrderTracking ||
+    isRestaurantDetail ||
+    isRidesHome ||
+    isRidesSelector ||
+    isRideConfirmPickup;
 
   // Single theme source for the top band: every surface in the upper section
   // (header band, hero canvas on `/food`, active module, microphone, promo
@@ -89,7 +103,7 @@ export function AppShell() {
     >
       {/* The food cart paints its own Zomato header (back / restaurant /
           delivery-location row), so the shared band is dropped there too. */}
-      {!isGroceryCheckout && !isFoodCheckout && !isFoodHero && !isRestaurantDetail && !isSearchScreen && !isProfile && !isRidesSelector && !isRideConfirmPickup && <Header />}
+      {!isGroceryCheckout && !isFoodCheckout && !isFoodHero && !isGroceryHero && !isRestaurantDetail && !isSearchScreen && !isProfile && !isRidesSelector && !isRideConfirmPickup && <Header />}
       {/* On `/food` and the order-tracking pages the page owns a full-bleed
           surface, so `main` drops the max-width and gutter there and the page
           re-applies both inside its own content blocks. Every other route keeps

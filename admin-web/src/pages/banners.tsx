@@ -66,6 +66,7 @@ const PLACEMENT_LABELS: Record<string, string> = {
   food_home_hero: 'Food home hero',
   grocery_home_hero: 'Grocery home hero',
   grocery_home_brand_promo: 'Grocery brand promo carousel',
+  grocery_home_festive_promo: 'Grocery festive promo grid',
   order_tracking: 'Order tracking carousel',
   rides_home_hero: 'Rides home hero',
   rides_promotions: 'Rides promo cards (Everything in Minutes)',
@@ -92,7 +93,15 @@ const placementLabel = (placement?: string | null): string | null =>
 const PLACEMENT_GROUPS: { label: string; values: string[] }[] = [
   {
     label: 'Service pages',
-    values: ['food_home_hero', 'grocery_home_hero', 'grocery_home_brand_promo', 'order_tracking', 'rides_home_hero', 'rides_promotions'],
+    values: [
+      'food_home_hero',
+      'grocery_home_hero',
+      'grocery_home_brand_promo',
+      'grocery_home_festive_promo',
+      'order_tracking',
+      'rides_home_hero',
+      'rides_promotions',
+    ],
   },
   { label: 'Legacy', values: ['food_home_card', 'grocery_home_card', 'food_home_secondary', 'grocery_home_secondary'] },
 ];

@@ -18,25 +18,39 @@ import { cn } from '@/lib/utils';
  * there is no hard-coded value. The component is only mounted on `/grocery` so
  * the store-discovery query never fires for the other services.
  *
- * Text is dark so it stays legible on Grocery's pale-yellow band.
+ * `onLight` is the pale-yellow band and the clean cream fallback; `onDark` is
+ * the transparent header sitting on an uploaded festive hero image.
  */
-export function GroceryEtaRow() {
+export function GroceryEtaRow({ tone = 'onLight' }: { tone?: 'onLight' | 'onDark' }) {
   const { activeStore, distanceKm, isLoading } = useActiveGroceryStore();
   const eta = estimateDeliveryMinutes(distanceKm);
   const distance = formatDistanceKm(distanceKm);
+  const onDark = tone === 'onDark';
 
   const etaText = activeStore && eta !== null ? `Delivery in ${eta} min` : 'Delivery times';
 
   return (
-    <span className="flex items-center gap-1 text-[15px] font-extrabold leading-tight text-ink-900">
+    <span
+      className={cn(
+        'flex items-center gap-1 text-[15px] font-extrabold leading-tight',
+        onDark ? 'text-white' : 'text-ink-900'
+      )}
+    >
       {isLoading && !activeStore ? (
-        <span className="h-4 w-28 animate-pulse rounded bg-ink-900/10" />
+        <span className={cn('h-4 w-28 animate-pulse rounded', onDark ? 'bg-white/30' : 'bg-ink-900/10')} />
       ) : (
         <>
-          {activeStore && eta !== null && <Clock className="h-4 w-4 shrink-0 text-grocery-800" />}
+          {activeStore && eta !== null && (
+            <Clock className={cn('h-4 w-4 shrink-0', onDark ? 'text-white/85' : 'text-grocery-800')} />
+          )}
           <span className="truncate">{etaText}</span>
           {distance && (
-            <span className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-bold text-grocery-800">
+            <span
+              className={cn(
+                'inline-flex shrink-0 items-center gap-0.5 text-[12px] font-bold',
+                onDark ? 'text-white/85' : 'text-grocery-800'
+              )}
+            >
               <Navigation className="h-3 w-3" /> {distance}
             </span>
           )}

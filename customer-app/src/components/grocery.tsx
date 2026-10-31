@@ -1,8 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { Dimensions, Pressable, ScrollView, Share, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image as ExpoImage } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import {
   ArrowLeft,
   Car,
@@ -31,8 +34,11 @@ import { bannerRoute } from '@/lib/banner';
 import { getBranding } from '@/lib/branding';
 import { carryProduct } from '@/lib/routeState';
 import { categoryTileColor } from '@/lib/groceryCategories';
+import { imageUrl } from '@/lib/images';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { Avatar } from '@/components/ui/Avatar';
+import { AppHeader } from '@/components/AppHeader';
+import { SearchBar } from '@/components/SearchBar';
 import { RatingStars, VegMark } from '@/components/ui/primitives';
 import { AddToCartControl } from '@/components/product/AddToCart';
 import { useActiveGroceryStore } from '@/hooks/useActiveGroceryStore';
@@ -57,26 +63,157 @@ const GUTTER = 16;
  * distance from `formatDistanceKm`, both fed by the unchanged
  * `useActiveGroceryStore` hook. The hook only mounts where this renders.
  */
-export function GroceryEtaRow() {
+export function GroceryEtaRow({ tone = 'onLight' }: { tone?: 'onLight' | 'onDark' }) {
   const { activeStore, distanceKm, isLoading } = useActiveGroceryStore();
   const eta = estimateDeliveryMinutes(distanceKm);
   const distance = formatDistanceKm(distanceKm);
   const etaText = activeStore && eta !== null ? `Delivery in ${eta} min` : 'Delivery times';
+  const onDark = tone === 'onDark';
+  const secondary = onDark ? 'rgba(255,255,255,0.85)' : colors.grocery[800];
 
   if (isLoading && !activeStore) {
-    return <View style={styles.etaSkeleton} />;
+    return <View style={[styles.etaSkeleton, onDark && { backgroundColor: 'rgba(255,255,255,0.3)' }]} />;
   }
 
   return (
     <View style={styles.etaRow}>
-      {activeStore && eta !== null ? <Clock size={15} color={colors.grocery[800]} /> : null}
-      <Text style={styles.etaText} numberOfLines={1}>
+      {activeStore && eta !== null ? <Clock size={15} color={secondary} /> : null}
+      <Text style={[styles.etaText, onDark && { color: colors.white }]} numberOfLines={1}>
         {etaText}
       </Text>
       {distance ? (
         <View style={styles.etaDistance}>
-          <Navigation size={11} color={colors.grocery[800]} />
-          <Text style={styles.etaDistanceText}>{distance}</Text>
+          <Navigation size={11} color={secondary} />
+          <Text style={[styles.etaDistanceText, onDark && { color: secondary }]}>{distance}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Home hero — Admin festive artwork + overlaid header/search          */
+/* ------------------------------------------------------------------ */
+
+const HERO_MAROON = '#7a1e3b';
+
+/**
+ * The Grocery home hero.
+ *
+ * The Admin-uploaded `grocery_home_hero` banner is the background. `expo-image`
+ * zooms into the artwork's maroon panel, so the compact header, search and
+ * category navigation sit on the same saturated surface as Blinkit instead of
+ * the source's cream lights strip. The view ends immediately after the
+ * navigation. A top scrim guarantees the white header controls stay legible.
+ *
+ * `AppHeader` is rendered here in its overlay variant, so there is exactly one
+ * header on screen and it reads as part of the hero. The category navigation
+ * is the hero's last row, directly under the search; promotional cards are
+ * rendered by the screen after the main category sections. Once those rows
+ * scroll away the screen pins a compact copy over the page. Without an active
+ * banner the same layout falls back to the Grocery cream gradient with dark
+ * controls — no hardcoded image and no other service's artwork.
+ */
+export function GroceryHero({
+  banners,
+  categoryNav,
+  festivePromos,
+  onSearchLayout,
+}: {
+  banners: Banner[];
+  /** The screen's single horizontal Grocery category navigation. */
+  categoryNav?: React.ReactNode;
+  /**
+   * The Admin festive promo cards. They live inside the hero — not in the
+   * page body — so the artwork keeps running behind them and the screen reads
+   * as one continuous festive surface, the same as the reference.
+   */
+  festivePromos?: Banner[];
+  /**
+   * Reports the search row's offset inside the hero and its height, so the
+   * screen can pin its compact copy (search + category navigation) exactly
+   * when this row reaches the safe-area top.
+   */
+  onSearchLayout?: (y: number, height: number) => void;
+}) {
+  const banner = banners[0];
+  const artwork = banner?.image ?? null;
+  const hasArtwork = Boolean(artwork);
+  // Geometry of the search row: the header block's offset inside the hero plus
+  // the row's own offset inside that block (the block sits at the hero's top
+  // edge, so the two simply add up).
+  const [blockY, setBlockY] = useState(0);
+  const [searchY, setSearchY] = useState(0);
+  const [searchH, setSearchH] = useState(0);
+  useEffect(() => {
+    onSearchLayout?.(blockY + searchY, searchH);
+  }, [blockY, searchY, searchH, onSearchLayout]);
+
+  return (
+    <View
+      style={[
+        styles.hero,
+        { backgroundColor: hasArtwork ? HERO_MAROON : colors.grocery[100] },
+        !hasArtwork && { minHeight: 220 },
+      ]}
+    >
+      {hasArtwork ? (
+        <>
+          <ExpoImage
+            source={{ uri: imageUrl(artwork) }}
+            style={StyleSheet.absoluteFillObject}
+            contentFit="cover"
+            // Top-anchored, full-width artwork — the same framing as the web
+            // hero (the old 2× zoom cropped the banner into an unreadable
+            // close-up that no longer matched the reference).
+            contentPosition={{ top: '0%', left: '50%' }}
+            cachePolicy="memory-disk"
+            transition={250}
+            accessibilityIgnoresInvertColors
+          />
+          <LinearGradient
+            // Lighter than before: the old 0.72 wash sat over the whole maroon
+            // band, so the festive artwork read much duller than the web hero,
+            // which keeps its banner bright. Darken only what the white status
+            // bar and header actually sit on and let the artwork show through.
+            colors={['rgba(16,14,10,0.60)', 'rgba(16,14,10,0.18)', 'rgba(16,14,10,0)']}
+            locations={[0, 0.4, 1]}
+            style={styles.heroScrim}
+            // Decorative only: never intercepts taps on the header, search or
+            // category controls underneath its area.
+            pointerEvents="none"
+          />
+        </>
+      ) : (
+        <LinearGradient colors={[colors.grocery[300], colors.grocery[100]]} style={StyleSheet.absoluteFillObject} />
+      )}
+
+      <StatusBar style={hasArtwork ? 'light' : 'dark'} />
+
+      <View
+        onLayout={(e) => {
+          setBlockY(e.nativeEvent.layout.y);
+        }}
+      >
+        <AppHeader variant="overlay" overlayOnDark={hasArtwork} />
+        <View
+          style={styles.heroSearch}
+          onLayout={(e) => {
+            setSearchY(e.nativeEvent.layout.y);
+            setSearchH(e.nativeEvent.layout.height);
+          }}
+        >
+          <SearchBar variant="brand" />
+        </View>
+      </View>
+
+      {categoryNav ? <View style={styles.heroNav}>{categoryNav}</View> : null}
+
+      {/* Festive promo cards, still inside the hero so the artwork continues
+          behind them instead of stopping at the category navigation. */}
+      {festivePromos && festivePromos.length > 0 ? (
+        <View style={styles.heroFestive}>
+          <GroceryFestivePromoGrid banners={festivePromos} />
         </View>
       ) : null}
     </View>
@@ -116,7 +253,9 @@ export function GroceryCategoryHeader({
   };
 
   const onShare = () => {
-    void Share.share({ message: `${categoryName} on ${getBranding().name}` }).catch(() => undefined);
+    void Share.share({
+      message: `${categoryName} on ${getBranding().name}`,
+    }).catch(() => undefined);
   };
 
   return (
@@ -166,11 +305,7 @@ export function GroceryCategoryHeader({
         </Pressable>
       </View>
 
-      <Pressable
-        onPress={onOpenLocation}
-        style={styles.catLocRow}
-        accessibilityLabel="Change delivery location"
-      >
+      <Pressable onPress={onOpenLocation} style={styles.catLocRow} accessibilityLabel="Change delivery location">
         <MapPin size={14} color={colors.grocery[700]} strokeWidth={0} fill={colors.grocery[700]} />
         <Text style={styles.catLocMuted}>Delivering to</Text>
         <Text style={styles.catLocLabel} numberOfLines={1}>
@@ -197,12 +332,19 @@ interface CategoryCarouselProps {
   categories: Category[];
   selectedId: number | null;
   onSelect: (categoryId: number | null) => void;
+  /**
+   * `artwork` paints the tabs light for the dark festive hero. `surface` keeps
+   * the normal dark-on-cream treatment used by the pinned search dock.
+   */
+  tone?: 'surface' | 'artwork';
 }
 
 /**
  * Compact horizontally scrollable category strip — native port of the web
- * `CategoryCarousel`. A single row of icon-plus-label tabs on the same warm
- * off-white as the page, with a thin dark underline marking the active one.
+ * `CategoryCarousel`: a single row of icon-plus-label tabs with a thin
+ * underline marking the active one. On the home it sits directly under the
+ * search over the festive artwork; the pinned dock and category view use the
+ * dark-on-cream treatment.
  *
  * Every tab is a real grocery category from `GET /grocery/categories` in
  * backend order. The leading "All" item only clears the filter; it is UI state,
@@ -212,7 +354,7 @@ interface CategoryCarouselProps {
  * selected tile sits mid-view, and switching categories keeps it in view — the
  * same behaviour as the web strip's `scrollIntoView`.
  */
-export function GroceryCategoryCarousel({ categories, selectedId, onSelect }: CategoryCarouselProps) {
+export function GroceryCategoryCarousel({ categories, selectedId, onSelect, tone = 'surface' }: CategoryCarouselProps) {
   const railRef = useRef<ScrollView>(null);
   const { width: windowW } = useWindowDimensions();
   /** The first content pass jumps without animation; later taps animate. */
@@ -252,7 +394,7 @@ export function GroceryCategoryCarousel({ categories, selectedId, onSelect }: Ca
       contentContainerStyle={styles.catRail}
       onContentSizeChange={onContentSizeChange}
     >
-      <CategoryTab label="All" Icon={LayoutGrid} active={allActive} onPress={() => onSelect(null)} />
+      <CategoryTab label="All" Icon={LayoutGrid} active={allActive} tone={tone} onPress={() => onSelect(null)} />
 
       {categories.map((c) => {
         const active = selectedId === c.id;
@@ -262,6 +404,7 @@ export function GroceryCategoryCarousel({ categories, selectedId, onSelect }: Ca
             label={c.name}
             image={c.navigation_icon}
             active={active}
+            tone={tone}
             onPress={() => onSelect(active ? null : c.id)}
           />
         );
@@ -280,14 +423,19 @@ function CategoryTab({
   Icon,
   image,
   active,
+  tone,
   onPress,
 }: {
   label: string;
   Icon?: LucideIcon | null;
   image?: string | null;
   active: boolean;
+  tone: 'surface' | 'artwork';
   onPress: () => void;
 }) {
+  const onArtwork = tone === 'artwork';
+  const iconColor = onArtwork ? '#fff' : active ? colors.grocery[700] : colors.neutral[500];
+
   return (
     <Pressable
       onPress={onPress}
@@ -296,23 +444,50 @@ function CategoryTab({
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
     >
-      <View style={styles.catIconWrap}>
+      <View style={[styles.catIconWrap, onArtwork && image && styles.catIconPlate]}>
         {Icon ? (
-          <Icon size={22} strokeWidth={1.75} color={active ? colors.grocery[700] : colors.neutral[500]} />
+          <Icon size={22} strokeWidth={1.75} color={iconColor} />
         ) : image ? (
           <ProductImage src={image} style={styles.catImg} rounded={false} resizeMode="contain" />
         ) : (
-          <View style={[styles.catFallback, active && styles.catFallbackActive]}>
-            <Text style={[styles.catFallbackText, active && styles.catFallbackTextActive]}>
+          <View
+            style={[
+              styles.catFallback,
+              active && styles.catFallbackActive,
+              onArtwork && styles.catFallbackOnArtwork,
+              onArtwork && active && styles.catFallbackOnArtworkActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.catFallbackText,
+                active && styles.catFallbackTextActive,
+                onArtwork && styles.catFallbackTextOnArtwork,
+              ]}
+            >
               {label.trim().charAt(0).toUpperCase()}
             </Text>
           </View>
         )}
       </View>
-      <Text style={[styles.catLabel, active && styles.catLabelActive]} numberOfLines={1}>
+      <Text
+        style={[
+          styles.catLabel,
+          active && styles.catLabelActive,
+          onArtwork && styles.catLabelOnArtwork,
+          onArtwork && active && styles.catLabelOnArtworkActive,
+        ]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
-      <View style={[styles.catUnderline, active && styles.catUnderlineActive]} />
+      <View
+        style={[
+          styles.catUnderline,
+          active && styles.catUnderlineActive,
+          onArtwork && active && styles.catUnderlineOnArtwork,
+        ]}
+      />
     </Pressable>
   );
 }
@@ -436,11 +611,7 @@ export function GroceryProductShelf({ title, subtitle, products, action }: Produ
         {action}
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.railContent}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.railContent}>
         {products.map((p) => (
           <GroceryProductRailCard key={p.id} product={p} />
         ))}
@@ -535,11 +706,7 @@ export function GroceryPromoRail({ promos }: { promos: Offer[] }) {
 
   return (
     <View style={styles.section}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.railContent}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.railContent}>
         {promos.map((offer) => (
           <GroceryPromoCard key={offer.id} offer={offer} />
         ))}
@@ -549,8 +716,7 @@ export function GroceryPromoRail({ promos }: { promos: Offer[] }) {
 }
 
 function GroceryPromoCard({ offer }: { offer: Offer }) {
-  const service: ServiceType =
-    offer.service === 'food' || offer.service === 'rides' ? offer.service : 'grocery';
+  const service: ServiceType = offer.service === 'food' || offer.service === 'rides' ? offer.service : 'grocery';
   const theme = SERVICE_THEMES[service];
   const Icon = PROMO_ICONS[service];
 
@@ -559,12 +725,7 @@ function GroceryPromoCard({ offer }: { offer: Offer }) {
   };
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={styles.promoCard}
-      accessibilityRole="button"
-      accessibilityLabel={offer.title}
-    >
+    <Pressable onPress={onPress} style={styles.promoCard} accessibilityRole="button" accessibilityLabel={offer.title}>
       <View style={[styles.promoBar, { backgroundColor: theme.solid }]} />
       <View style={styles.promoTop}>
         <View style={[styles.promoIconPlate, { backgroundColor: theme.soft }]}>
@@ -679,6 +840,45 @@ export function GroceryBrandPromoRail({ banners }: { banners: Banner[] }) {
   const router = useRouter();
   if (banners.length === 0) return null;
 
+  // One active Admin banner gets a full-width featured card in the hero's cream
+  // strip; two or more stay a swipeable rail. The page already removed the
+  // active hero banner id, so the festive artwork is never repeated here.
+  const featured = banners.length === 1;
+
+  const cards = banners.map((b) => (
+    <Pressable
+      key={b.id}
+      onPress={() => router.push(bannerRoute(b) as never)}
+      style={featured ? styles.brandCardFeatured : styles.brandCard}
+      accessibilityRole="button"
+      accessibilityLabel={b.title}
+    >
+      <ProductImage src={b.image} style={styles.brandImg} rounded={false} />
+      <View style={styles.brandShade} />
+      <View style={styles.brandCopy}>
+        {b.cta_text ? (
+          <View style={styles.brandCta}>
+            <Text style={styles.brandCtaText} numberOfLines={1}>
+              {b.cta_text}
+            </Text>
+          </View>
+        ) : null}
+        <Text style={styles.brandTitle} numberOfLines={2}>
+          {b.title}
+        </Text>
+        {b.subtitle ? (
+          <Text style={styles.brandSubtitle} numberOfLines={2}>
+            {b.subtitle}
+          </Text>
+        ) : null}
+      </View>
+    </Pressable>
+  ));
+
+  if (featured) {
+    return <View style={styles.brandSingle}>{cards}</View>;
+  }
+
   return (
     <ScrollView
       horizontal
@@ -687,17 +887,49 @@ export function GroceryBrandPromoRail({ banners }: { banners: Banner[] }) {
       decelerationRate="fast"
       contentContainerStyle={styles.railContent}
     >
+      {cards}
+    </ScrollView>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Festive promo grid (grocery_home_festive_promo placement)           */
+/* ------------------------------------------------------------------ */
+
+/* Two cards per row, exactly like the web grid. The width floors and keeps a
+   1px safety margin: with `Math.round` a fractional half-pixel (odd screen
+   widths such as 393) pushed `2 × width + gap` one pixel past the container,
+   so every card wrapped onto its own row. */
+const FESTIVE_W = Math.floor((SCREEN_WIDTH - GUTTER * 2 - 12) / 2) - 1;
+/* Square, not portrait: the Admin tiles are 330 x 353 and the web grid is
+   square too, so this keeps both platforms identical and stops the cards from
+   growing tall enough to cover the festive artwork behind them. */
+const FESTIVE_H = FESTIVE_W;
+
+/**
+ * Blinkit-style festive promo cards — native port of the web
+ * `GroceryFestivePromoGrid`. A dense two-column grid of tall image cards that
+ * sits directly under the main category sections. Only the Admin-managed
+ * `grocery_home_festive_promo` placement is rendered (the page filters it), so
+ * a banner for another surface can never appear here.
+ */
+export function GroceryFestivePromoGrid({ banners }: { banners: Banner[] }) {
+  const router = useRouter();
+  if (banners.length === 0) return null;
+
+  return (
+    <View style={styles.festiveGrid}>
       {banners.map((b) => (
         <Pressable
           key={b.id}
           onPress={() => router.push(bannerRoute(b) as never)}
-          style={styles.brandCard}
+          style={styles.festiveCard}
           accessibilityRole="button"
           accessibilityLabel={b.title}
         >
           <ProductImage src={b.image} style={styles.brandImg} rounded={false} />
           <View style={styles.brandShade} />
-          <View style={styles.brandCopy}>
+          <View style={styles.festivePromoTop}>
             {b.cta_text ? (
               <View style={styles.brandCta}>
                 <Text style={styles.brandCtaText} numberOfLines={1}>
@@ -705,7 +937,7 @@ export function GroceryBrandPromoRail({ banners }: { banners: Banner[] }) {
                 </Text>
               </View>
             ) : null}
-            <Text style={styles.brandTitle} numberOfLines={2}>
+            <Text style={styles.festivePromoTitle} numberOfLines={2}>
               {b.title}
             </Text>
             {b.subtitle ? (
@@ -716,7 +948,7 @@ export function GroceryBrandPromoRail({ banners }: { banners: Banner[] }) {
           </View>
         </Pressable>
       ))}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -825,6 +1057,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(23,20,15,0.12)',
   },
 
+  /* home hero */
+  hero: {
+    width: '100%',
+    overflow: 'hidden',
+  },
+  /* The scrim only darkens the header / search / category strip. It used to
+     fill the whole hero, which tinted the cream festive surface behind the
+     promo cards grey; on the web it is likewise limited to the top area. */
+  heroScrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    /* Ends with the maroon band of the artwork (≈ 62% of the screen width), so
+       the arch and cream body below it are never tinted. */
+    height: Math.max(230, Math.round(SCREEN_WIDTH * 0.62)),
+  },
+  heroSearch: {
+    paddingHorizontal: GUTTER,
+    paddingTop: 12,
+  },
+  heroNav: {
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  heroFestive: {
+    /* Responsive breathing room between the category strip and the cards:
+       scales with the device width so narrow and wide phones both read like
+       the web's `pt-5`. */
+    paddingTop: Math.max(16, Math.round(SCREEN_WIDTH * 0.20)),
+    paddingBottom: Math.max(20, Math.round(SCREEN_WIDTH * 0.07)),
+  },
+
   /* shared section chrome */
   section: {
     gap: 0,
@@ -864,6 +1129,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  catIconPlate: {
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+  },
   catImg: {
     width: 24,
     height: 24,
@@ -887,6 +1156,15 @@ const styles = StyleSheet.create({
   catFallbackTextActive: {
     color: colors.grocery[700],
   },
+  catFallbackOnArtwork: {
+    backgroundColor: 'rgba(255,255,255,0.16)',
+  },
+  catFallbackOnArtworkActive: {
+    backgroundColor: 'rgba(255,255,255,0.26)',
+  },
+  catFallbackTextOnArtwork: {
+    color: '#fff',
+  },
   catUnderline: {
     position: 'absolute',
     bottom: 0,
@@ -897,6 +1175,9 @@ const styles = StyleSheet.create({
   },
   catUnderlineActive: {
     backgroundColor: colors.ink[900],
+  },
+  catUnderlineOnArtwork: {
+    backgroundColor: '#fff',
   },
   catLabel: {
     fontSize: 11,
@@ -909,6 +1190,12 @@ const styles = StyleSheet.create({
   catLabelActive: {
     fontWeight: '700',
     color: colors.ink[900],
+  },
+  catLabelOnArtwork: {
+    color: 'rgba(255,255,255,0.78)',
+  },
+  catLabelOnArtworkActive: {
+    color: '#fff',
   },
 
   /* category grid */
@@ -1217,6 +1504,17 @@ const styles = StyleSheet.create({
   },
 
   /* brand promo carousel */
+  brandSingle: {
+    paddingHorizontal: GUTTER,
+  },
+  brandCardFeatured: {
+    width: '100%',
+    height: 150,
+    borderRadius: 18,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: colors.grocery[100],
+  },
   brandCard: {
     width: BRAND_W,
     height: BRAND_H,
@@ -1239,6 +1537,15 @@ const styles = StyleSheet.create({
     right: 12,
     bottom: 10,
   },
+  festivePromoTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
   brandCta: {
     alignSelf: 'flex-start',
     borderRadius: 999,
@@ -1260,11 +1567,33 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     color: '#fff',
   },
+  festivePromoTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 17,
+    color: '#fff',
+  },
   brandSubtitle: {
     marginTop: 1,
     fontSize: 11,
     lineHeight: 14,
     color: 'rgba(255,255,255,0.8)',
+  },
+
+  /* festive promo grid */
+  festiveGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    paddingHorizontal: GUTTER,
+  },
+  festiveCard: {
+    width: FESTIVE_W,
+    height: FESTIVE_H,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: colors.grocery[100],
   },
 
   /* store terms */

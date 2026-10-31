@@ -37,9 +37,16 @@ interface HeaderProps {
    * hero video (`FoodHero`) — same controls, no separate solid block.
    */
   variant?: 'default' | 'overlay';
+  /**
+   * For `overlay` only: whether the artwork behind the header is dark. Food's
+   * video hero and an active Grocery festive hero both need white controls;
+   * Grocery's clean fallback (no uploaded hero banner) is a light cream band
+   * and needs dark controls instead.
+   */
+  overlayOnDark?: boolean;
 }
 
-export function Header({ variant = 'default' }: HeaderProps) {
+export function Header({ variant = 'default', overlayOnDark = true }: HeaderProps) {
   const overlay = variant === 'overlay';
   const location = useLocation();
   const { user } = useAuthStore();
@@ -81,9 +88,11 @@ export function Header({ variant = 'default' }: HeaderProps) {
 
   /* Grocery's band is Blinkit's pale yellow, not the dark bronze the other top
      routes use, so every glyph, icon and hover surface on it flips from white to
-     ink. Gated on the route (and on `overlay`, which Grocery never renders) so
-     Food and Rides keep their white-on-dark treatment untouched. */
-  const lightBand = isGrocery && !overlay;
+     ink. The Grocery home can also render the header over the Admin hero
+     artwork: on a dark festive image it keeps white controls, while its clean
+     cream fallback (no uploaded hero) flips back to ink. Food and Rides keep
+     their white-on-dark treatment untouched. */
+  const darkText = overlay ? !overlayOnDark : isGrocery;
 
   if (isGrocery && inCategory) {
     return (
@@ -99,7 +108,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
       <header
         data-app-header
         className={cn(
-          lightBand ? 'text-ink-900' : 'text-white',
+          darkText ? 'text-ink-900' : 'text-white',
           overlay
             ? // Sits on the Food hero media: no band, no shadow, no sticky so the
               // video shows through and the header is part of the hero itself.
@@ -109,7 +118,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 // The dark bands carry a deep drop to separate them from the
                 // page; on Grocery's light band that same shadow reads as a hard
                 // seam, so it is only a soft lift there.
-                lightBand
+                darkText
                   ? 'shadow-[0_2px_12px_rgb(16_14_10/0.10)]'
                   : 'shadow-[0_2px_16px_rgb(0_0_0/0.28)]',
                 // The themed band covers all four top-level routes; every other
@@ -128,7 +137,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
               onClick={() => setLocOpen(true)}
               className={cn(
                 'tap flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1.5 py-1 text-left transition-colors',
-                lightBand ? 'hover:bg-ink-900/5' : 'hover:bg-white/5'
+                darkText ? 'hover:bg-ink-900/5' : 'hover:bg-white/5'
               )}
               aria-label={`Change delivery location. Currently ${activeLoc.label}, ${activeLoc.address}`}
             >
@@ -150,11 +159,20 @@ export function Header({ variant = 'default' }: HeaderProps) {
               {isGrocery ? (
                 <span className="min-w-0 flex-1">
                   {/* Real nearest-store ETA, mounted only on the Grocery route. */}
-                  <GroceryEtaRow />
-                  <span className="mt-0.5 flex items-center gap-1 text-[12px] font-medium leading-tight text-ink-900/70">
-                    <span className="shrink-0 font-bold text-ink-900">{activeLoc.label}</span>
+                  <GroceryEtaRow tone={darkText ? 'onLight' : 'onDark'} />
+                  <span
+                    className={cn(
+                      'mt-0.5 flex items-center gap-1 text-[12px] font-medium leading-tight',
+                      darkText ? 'text-ink-900/70' : 'text-white/80'
+                    )}
+                  >
+                    <span className={cn('shrink-0 font-bold', darkText ? 'text-ink-900' : 'text-white')}>
+                      {activeLoc.label}
+                    </span>
                     <span className="truncate">· {activeLoc.address}</span>
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-900/40" />
+                    <ChevronDown
+                      className={cn('h-3.5 w-3.5 shrink-0', darkText ? 'text-ink-900/40' : 'text-white/60')}
+                    />
                   </span>
                 </span>
               ) : (
@@ -184,7 +202,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 to="/wallet"
                 className={cn(
                   'tap flex h-10 w-10 items-center justify-center rounded-full transition-colors',
-                  lightBand ? 'hover:bg-ink-900/10' : 'hover:bg-white/10'
+                  darkText ? 'hover:bg-ink-900/10' : 'hover:bg-white/10'
                 )}
                 aria-label="Wallet"
               >
@@ -194,7 +212,7 @@ export function Header({ variant = 'default' }: HeaderProps) {
                 to={user ? '/profile' : '/auth/login'}
                 className={cn(
                   'shrink-0 rounded-full ring-2 transition-transform hover:scale-105',
-                  lightBand ? 'ring-ink-900/15' : 'ring-white/20'
+                  darkText ? 'ring-ink-900/15' : 'ring-white/20'
                 )}
                 aria-label="Account"
               >

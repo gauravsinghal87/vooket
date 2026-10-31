@@ -359,6 +359,28 @@
     color: var(--hero-muted-text);
   }
 
+  /* Grocery home hero height.
+     The Admin festive artwork is a 1125 x 2436 portrait with a cream lights
+     strip above its maroon panel. The compact hero zooms into that maroon band
+     and ends immediately after the search + category navigation, exactly like
+     Blinkit's festive top. */
+  /* A floor under the festive section: the promo cards alone are not tall
+     enough to show much of the banner behind them, so the section would end
+     right under the cards and chop the artwork off. This keeps a band of the
+     festive surface visible below the cards (which then fades into the page —
+     see the hand-off in `grocery-hero.tsx`). Content still wins when it is
+     taller: on narrow layouts the two-row card grid sets the height. */
+  .grocery-hero-shell {
+    min-height: min(72vh, 660px);
+  }
+
+  /* No uploaded hero: keep a clean cream band tall enough for the overlaid
+     header, search and category navigation, without borrowing another
+     service's art. */
+  .grocery-hero-shell-fallback {
+    min-height: 220px;
+  }
+
   /* Gentle hand-off into the light content area below the hero, so the change
      of surface never lands as a hard line. Fades to the page colour (`ink-50`)
      rather than to white, because that is what the content area is painted. */

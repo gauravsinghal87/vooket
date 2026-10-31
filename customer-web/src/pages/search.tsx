@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { X, Clock, ChevronLeft, ChevronRight, Mic, Store as StoreIcon, Package } from 'lucide-react';
+import { X, Clock, ChevronLeft, ChevronRight, Mic, Search, Store as StoreIcon, Package } from 'lucide-react';
 import { repositories } from '@/repositories';
 import { useAppStore } from '@/store/appStore';
 import { DEFAULT_LOCATION } from '@/lib/location';
@@ -46,6 +46,14 @@ function writeRecent(q: string) {
   localStorage.setItem('sb-recent-searches', JSON.stringify(next));
 }
 
+function clearRecent() {
+  try {
+    localStorage.removeItem('sb-recent-searches');
+  } catch {
+    // ignore
+  }
+}
+
 export function SearchPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -65,6 +73,10 @@ export function SearchPage() {
   const moduleScoped = typeParam !== 'all';
   const [globalScope, setGlobalScope] = useState<Scope>('all');
   const scope: Scope = moduleScoped ? typeParam : globalScope;
+  // Grocery gets Blinkit's search chrome (neutral pill, grocery placeholder,
+  // recent-search rail with a clear action). Food and the global search keep
+  // the existing Zomato styling untouched.
+  const groceryTheme = scope === 'grocery';
   const [sort, setSort] = useState<'relevance' | 'rating' | 'price_low' | 'price_high'>('relevance');
   const [recent, setRecent] = useState<string[]>([]);
 
@@ -227,7 +239,9 @@ export function SearchPage() {
     <div className="mx-auto max-w-3xl space-y-5">
       {/* Zomato's search pill: back chevron, underline-free input, mic. */}
       <form
-        className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white py-2 pl-2 pr-4 shadow-sm transition-colors focus-within:border-food-400"
+        className={`flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white py-2 pl-2 pr-4 shadow-sm transition-colors ${
+          groceryTheme ? 'focus-within:border-grocery-300' : 'focus-within:border-food-400'
+        }`}
         onSubmit={(e) => {
           e.preventDefault();
           runSearch(query);
@@ -237,7 +251,9 @@ export function SearchPage() {
           type="button"
           onClick={() => navigate(-1)}
           aria-label="Go back"
-          className="tap flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-food-600 transition-colors hover:bg-food-50"
+          className={`tap flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
+            groceryTheme ? 'text-ink-800 hover:bg-grocery-100' : 'text-food-600 hover:bg-food-50'
+          }`}
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
@@ -245,7 +261,7 @@ export function SearchPage() {
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Restaurant name or a dish..."
+          placeholder={groceryTheme ? 'Search for atta, dal, coke and more' : 'Restaurant name or a dish...'}
           aria-label="Search"
           autoFocus
           className="min-w-0 flex-1 bg-transparent py-1.5 text-[15px] font-medium text-neutral-900 outline-none placeholder:font-normal placeholder:text-neutral-400"
@@ -264,14 +280,20 @@ export function SearchPage() {
           </button>
         )}
         {SpeechImpl && (
-          <button
-            type="button"
-            aria-label="Voice search"
-            onClick={startVoice}
-            className="tap flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-food-600 transition-colors hover:bg-food-50"
-          >
-            <Mic className="h-5 w-5" />
-          </button>
+          <>
+            {/* Blinkit separates the query field from the mic with a hairline. */}
+            {groceryTheme && <span aria-hidden className="h-5 w-px shrink-0 bg-neutral-200" />}
+            <button
+              type="button"
+              aria-label="Voice search"
+              onClick={startVoice}
+              className={`tap flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
+                groceryTheme ? 'text-ink-800 hover:bg-grocery-100' : 'text-food-600 hover:bg-food-50'
+              }`}
+            >
+              <Mic className="h-5 w-5" />
+            </button>
+          </>
         )}
       </form>
 
@@ -313,15 +335,31 @@ export function SearchPage() {
           {recent.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-neutral-900">
-                <Clock className="h-4 w-4 text-neutral-400" /> Recent searches
+                {!groceryTheme && <Clock className="h-4 w-4 text-neutral-400" />} Recent searches
+                {groceryTheme && recent.length > 0 && (
+                  <button
+                    onClick={() => {
+                      clearRecent();
+                      setRecent([]);
+                    }}
+                    className="ml-auto text-xs font-semibold text-success transition-colors hover:text-grocery-700"
+                  >
+                    clear
+                  </button>
+                )}
               </h2>
               <div className="flex flex-wrap gap-2">
                 {recent.map((r) => (
                   <button
                     key={r}
                     onClick={() => runSearch(r)}
-                    className="rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-sm text-neutral-700 transition-colors hover:border-food-300 hover:text-food-600"
+                    className={`flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3.5 py-1.5 text-sm transition-colors ${
+                      groceryTheme
+                        ? 'font-medium text-ink-800 hover:border-grocery-300 hover:text-ink-900'
+                        : 'text-neutral-700 hover:border-food-300 hover:text-food-600'
+                    }`}
                   >
+                    {groceryTheme && <Search className="h-3.5 w-3.5 text-neutral-400" />}
                     {r}
                   </button>
                 ))}
@@ -330,9 +368,9 @@ export function SearchPage() {
           )}
 
           <section>
-            <h2 className="mb-4 text-[13px] font-bold uppercase tracking-[0.18em] text-neutral-400">
-              What's on your mind?
-            </h2>
+          <h2 className="mb-4 text-[13px] font-bold uppercase tracking-[0.18em] text-neutral-400">
+            {groceryTheme ? 'Shop by category' : "What's on your mind?"}
+          </h2>
             <WhatsOnYourMind scope={scope} onPick={runSearch} />
           </section>
         </div>

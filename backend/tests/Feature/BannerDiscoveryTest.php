@@ -253,6 +253,65 @@ class BannerDiscoveryTest extends TestCase
         $this->assertSame([], $food);
     }
 
+    public function test_grocery_home_hero_returns_active_banners_in_admin_order_and_stays_isolated(): void
+    {
+        $this->makeBanner([
+            'title' => 'Festive Diwali',
+            'service' => 'grocery',
+            'placement' => 'grocery_home_hero',
+            'sort_order' => 0,
+        ]);
+        $this->makeBanner([
+            'title' => 'Winter Store',
+            'service' => 'grocery',
+            'placement' => 'grocery_home_hero',
+            'sort_order' => 1,
+        ]);
+        $this->makeBanner([
+            'title' => 'Expired Hero',
+            'service' => 'grocery',
+            'placement' => 'grocery_home_hero',
+            'sort_order' => 2,
+            'expires_at' => now()->subDay(),
+        ]);
+        $this->makeBanner([
+            'title' => 'Inactive Hero',
+            'service' => 'grocery',
+            'placement' => 'grocery_home_hero',
+            'sort_order' => 3,
+            'is_active' => false,
+        ]);
+        $this->makeBanner([
+            'title' => 'Fresh Savings',
+            'service' => 'grocery',
+            'placement' => 'grocery_home_brand_promo',
+            'sort_order' => 1,
+        ]);
+        $this->makeBanner(['title' => 'Food Hero', 'service' => 'food', 'placement' => 'food_home_hero']);
+
+        $hero = $this->getJson('/api/v1/banners?service=grocery&placement=grocery_home_hero')
+            ->assertOk()
+            ->json('data');
+
+        // Active grocery hero banners only, in the Admin's sort order.
+        $this->assertSame(['Festive Diwali', 'Winter Store'], collect($hero)->pluck('title')->all());
+        $this->assertCount(2, $hero);
+        $this->assertSame(
+            ['grocery_home_hero'],
+            collect($hero)->pluck('placement')->unique()->values()->all()
+        );
+
+        // The brand-promo placement and the Food hero never leak into the hero.
+        $this->assertNotContains('Fresh Savings', collect($hero)->pluck('title'));
+        $this->assertNotContains('Food Hero', collect($hero)->pluck('title'));
+
+        $promos = $this->getJson('/api/v1/banners?service=grocery&placement=grocery_home_brand_promo')
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame(['Fresh Savings'], collect($promos)->pluck('title')->all());
+    }
+
     public function test_admin_can_create_and_target_an_order_tracking_banner(): void
     {
         $res = $this->postJson('/api/v1/admin/banners', [
