@@ -1,0 +1,5 @@
+/*
+ * RIDES COMPONENTS — reserved for ride-only component rules.
+ * Marker/vehicle colours are driven by the map component and Tailwind; add
+ * new ride-only selectors under `[data-module='rides']`.
+ */

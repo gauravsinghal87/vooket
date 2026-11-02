@@ -1,0 +1,12 @@
+const React = require('react');
+const Noop = () => null;
+module.exports = Noop;
+module.exports.default = Noop;
+module.exports.PROVIDER_GOOGLE = 'google';
+module.exports.PROVIDER_DEFAULT = 'default';
+module.exports.Marker = Noop;
+module.exports.Polyline = Noop;
+module.exports.Polygon = Noop;
+module.exports.Circle = Noop;
+module.exports.Callout = Noop;
+module.exports.Camera = Noop;

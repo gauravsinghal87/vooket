@@ -1,0 +1,9 @@
+/*
+ * RIDES LAYOUT — map + booking sheet geometry.
+ * Rides currently composes Tailwind utilities with the design tokens in
+ * rides-tokens.css. Module-only layout rules belong here, scoped to
+ * `[data-module='rides']`.
+ */
+[data-module='rides'] .ride-map-frame {
+  min-height: var(--ride-map-min-h);
+}

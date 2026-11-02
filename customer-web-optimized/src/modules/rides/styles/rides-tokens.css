@@ -1,0 +1,25 @@
+/*
+ * RIDES MODULE TOKENS — blue mobility identity.
+ * Rides shares the neutral brand ramp; these semantic aliases keep ride
+ * surfaces decoupled from raw palette steps.
+ */
+[data-service-theme='rides'],
+[data-module='rides'] {
+  --ride-accent: var(--color-brand-600);
+  --ride-accent-strong: var(--color-brand-700);
+  --ride-surface: var(--color-white);
+  --ride-map-bg: var(--color-ink-100);
+  --ride-sheet-radius: 1.5rem;
+  --ride-map-min-h: 300px;
+}
+
+[data-service-theme='rides'] {
+  --hero-header-bg: linear-gradient(to bottom, var(--color-brand-800), var(--color-brand-900));
+  --hero-bg: linear-gradient(to bottom, var(--color-brand-900), var(--color-brand-950));
+  --hero-surface: color-mix(in srgb, var(--color-white) 12%, transparent);
+  --hero-active-color: var(--color-brand-600);
+  --hero-active-contrast: var(--color-white);
+  --hero-search-accent: var(--color-brand-600);
+  --hero-muted-text: color-mix(in srgb, var(--color-white) 55%, transparent);
+  --hero-module-dark: var(--color-brand-950);
+}

@@ -1,0 +1,63 @@
+/*
+ * FOOD MODULE TOKENS — only loaded as part of the global stylesheet entry,
+ * but every declaration is scoped to the Food module or its service band.
+ * Do not move these values to shared styles: they are the Food identity.
+ */
+@theme {
+  /* -------------------------------------------------------------------- */
+  /* Zomato palette (food module only).                                    */
+  /* Exact equivalents of the reference app's oklch tokens:               */
+  /*   primary   oklch(0.6 0.21 22)   -> #e23242  Zomato red               */
+  /*   dark      oklch(0.24 0.01 260) -> #1c1f24  nav / dark surface       */
+  /*   veg       oklch(0.55 0.15 150) -> #05893e  veg green                */
+  /*   gold      oklch(0.72 0.11 75)  -> #cd9a50  PRO gold                 */
+  /*   info      oklch(0.55 0.18 260) -> #296cd8  info blue                */
+  /* -------------------------------------------------------------------- */
+  --color-z-red: #e23242;
+  --color-z-red-dark: #c72232;
+  --color-z-red-soft: #fdeaec;
+  --color-z-green: #05893e;
+  --color-z-green-soft: #e7f6ed;
+  --color-z-dark: #1c1f24;
+  --color-z-gold: #cd9a50;
+  --color-z-gold-soft: #fbedd1;
+  --color-z-info: #296cd8;
+  --color-z-info-soft: #e3efff;
+
+  /* Food module palette — Zomato red. Scoped to Food: Grocery and Rides read
+     their own grocery and brand scales, so nothing outside the food module
+     changes when this ramp does. The 600 step is the exact Zomato red. */
+  --color-food-50: #fdecee;
+  --color-food-100: #fbdde0;
+  --color-food-200: #f7bcc1;
+  --color-food-300: #f19aa2;
+  --color-food-400: #ec6b78;
+  --color-food-500: #e64252;
+  --color-food-600: #e23242;
+  --color-food-700: #c72232;
+  --color-food-800: #a81d2b;
+  --color-food-900: #8a1924;
+  --color-food-950: #4e0d11;
+}
+
+/* Restaurant-card "notch" geometry. Scoped so Grocery / Rides cards can never
+   inherit Food's card silhouette. */
+[data-module='food'] {
+  --notch-radius: 18px;
+  --notch-curve: 14px;
+  --notch-aspect: 1.25;
+  --notch-overhang: 6px;
+  --notch-gap: 5px;
+  --notch-surface: var(--color-white);
+}
+
+/* Food top band — Zomato's flat, saturated red. */
+[data-service-theme='food'] {
+  --hero-header-bg: linear-gradient(to bottom, var(--color-z-red), var(--color-z-red));
+  --hero-bg: linear-gradient(to bottom, var(--color-z-red), var(--color-z-red-dark));
+  --hero-active-color: var(--color-z-red);
+  --hero-search-accent: var(--color-z-red);
+  --hero-module-dark: var(--color-z-red-dark);
+  --hero-muted-text: color-mix(in srgb, var(--color-white) 85%, transparent);
+  --hero-surface: color-mix(in srgb, var(--color-white) 18%, transparent);
+}

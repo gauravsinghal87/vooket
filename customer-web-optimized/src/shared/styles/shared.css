@@ -1,0 +1,519 @@
+/*
+ * SHARED COMPONENT STYLES.
+ * These classes belong to shared primitives (hero band, module switcher,
+ * scroll helpers). They must never override a module's own component styles.
+ */
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  .snap-center {
+    scroll-snap-align: center;
+  }
+
+  .tap {
+    @apply cursor-pointer select-none;
+    -webkit-touch-callout: none;
+  }
+
+  .edge-bleed {
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding-inline: var(--page-gutter);
+  }
+
+  /* Recommended rail: bleeds to the viewport edges with a left gutter only, so
+     the last card is clipped at the true right edge while the first card keeps
+     its gutter. Horizontally scrollable, vertically clipped (grid rows still
+}
+
+@layer components {
+  .hero-header-bg {
+    background-image: var(--hero-header-bg);
+  }
+
+  .hero-bg {
+    background-image: var(--hero-bg);
+  }
+
+  /* Translucent panel sitting on the hero: the promo cards' brand surface. */
+  .hero-surface {
+    background-color: var(--hero-surface);
+  }
+
+  /* The two accents that must always be the active service's colour. */
+  .hero-cta {
+    background-color: var(--hero-active-color);
+    color: var(--hero-active-contrast);
+  }
+
+  .hero-cta-dark {
+    background-color: black;
+    color: var(--hero-active-contrast);
+  }
+
+  .hero-search-accent {
+    background-color: var(--hero-search-accent);
+    color: var(--hero-active-contrast);
+  }
+
+  /* Small count badge on the themed band (the cart), so it always matches the
+     active module instead of the stored service. */
+  .hero-badge {
+    background-color: var(--hero-active-color);
+    color: var(--hero-active-contrast);
+  }
+
+  /* Secondary text on the hero, tuned per service so it stays legible on the
+     band it sits on. */
+  .hero-muted {
+    color: var(--hero-muted-text);
+  }
+}
+
+@layer components {
+  .module-tabs {
+    display: grid;
+    /* `minmax(0, 1fr)` rather than a bare `1fr` so a long label can shrink
+       instead of forcing the column wider and overflowing the viewport. */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    /* The tabs deliberately paint past their own columns — that is what makes
+       them touch — but the outermost flare would otherwise push past the page
+       gutter and give the document a horizontal scrollbar. Reserve enough room
+       to absorb it; the padding scales with the column width it has to absorb. */
+    padding-inline: 3%;
+  }
+
+  .module-tab {
+    position: relative;
+    /* Confines the SVG's negative z-index to the button, so the silhouette
+       paints behind the label but never behind the tab's ancestors. */
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.5rem 0.25rem 0.875rem;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    overflow: visible;
+  }
+
+  .module-tab.active {
+    /* Raised: lifted above the strip and reaching lower than its neighbours. */
+    z-index: 2;
+    margin-top: -0.5rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .module-background {
+    position: absolute;
+    /* Paints behind `.module-content`, which has no background of its own. */
+    z-index: -1;
+    /* The paths are inset inside their own viewBox (the idle path spans 110 of
+       124 units), so an SVG sized to exactly one cell leaves a visible gap
+       between modules — measured at ~11% of the cell width. Widen the SVG box
+       beyond the cell so adjacent paths meet edge to edge, and let the active
+       path (which fills 136 of 136 units) sit proud of its neighbours on both
+       sides, which is what makes it read as wider. This is also why
+       `overflow: visible` is required: the box genuinely exceeds its cell. */
+    top: 0;
+    left: -8%;
+    /* Both dimensions are set explicitly. The SVG is a replaced element with an
+       intrinsic aspect ratio from its `viewBox`, so leaving either dimension
+       `auto` makes it resolve from that ratio instead of from the tab — which
+       rendered a 77px silhouette inside a 66px button and spilled the shape
+       below its own tab. `preserveAspectRatio="none"` stretches the path to
+       whatever box these produce, so the proportions are ours to choose. */
+    width: 116%;
+    height: 100%;
+    right: auto;
+    bottom: auto;
+    /* Required so the path that flares outside the viewBox is not clipped. */
+    overflow: visible;
+    pointer-events: none;
+    transition: transform 0.2s ease-out;
+  }
+
+  .module-background path {
+    /* Inactive fill: a shade darker than whichever band the active service
+       paints, so the silhouette always reads as recessed against it. */
+    fill: color-mix(in srgb, var(--hero-module-dark) 55%, transparent);
+    stroke: color-mix(in srgb, var(--color-white) 12%, transparent);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    transition: fill 0.2s ease-out;
+  }
+
+  .module-tab.active .module-background path {
+    /* Selected fill: the active service's colour — Food's #d42021, Grocery's
+       gold, Rides' blue. The same value drives the banner CTA and the search
+       microphone, so the highlighted module always matches its surroundings. */
+    fill: var(--hero-active-color);
+    stroke: color-mix(in srgb, var(--color-white) 22%, transparent);
+  }
+
+  .module-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .module-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: color-mix(in srgb, var(--color-white) 72%, transparent);
+    transition: color 0.2s ease-out, transform 0.2s ease-out;
+  }
+
+  .module-tab.active .module-icon {
+    color: var(--hero-active-contrast);
+    transform: scale(1.06);
+  }
+
+  .module-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: color-mix(in srgb, var(--color-white) 62%, transparent);
+  }
+
+  .module-tab.active .module-label {
+    font-size: 0.75rem;
+    color: var(--hero-active-contrast);
+  }
+
+  .module-tab:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: -2px;
+    border-radius: 0.5rem;
+  }
+
+  /* Applied from JSX (`has-badge`) rather than via a CSS `:has()` selector, so
+     the layout does not depend on `:has()` support. Reserves room above the
+     label so a badge can never overlap it. */
+  .module-tab.has-badge {
+    padding-top: 1.125rem;
+  }
+
+  .time-badge {
+    position: absolute;
+    top: 0.25rem;
+    left: 50%;
+    translate: -50% 0;
+    padding-inline: 0.375rem;
+    border-radius: 9999px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--color-ink-900);
+    background: var(--color-white);
+  }
+}
+
+@layer components {
+  .module-glass {
+    width: 100%;
+    padding: 0;
+  }
+
+  .module-glass-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 24px;
+    /* Light frosted track instead of the old dark pill: 6% ink over the dock's
+       white blur reads as smoked glass, so nothing renders as a black plate
+       and the solid white active chip above it stays clearly raised.
+       The two-stop white wash on top is the sheen — light falling across the
+       glass — layered over that tint, and the backdrop blur is pushed to
+       24px/180% so whatever scrolls beneath smears into a soft field rather
+       than showing through as shapes. */
+    background:
+      linear-gradient(180deg,
+        rgba(255, 255, 255, 0.74) 0%,
+        rgba(255, 255, 255, 0.2) 58%,
+        rgba(255, 255, 255, 0.42) 100%),
+      rgba(23, 20, 15, 0.07);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    box-shadow:
+      0 8px 24px -8px rgba(16, 14, 10, 0.22),
+      0 1px 3px rgba(16, 14, 10, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.38);
+    padding: 4px;
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .module-glass-tab {
+    position: relative;
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #6b675f;
+    cursor: pointer;
+    padding: 6px 8px 10px;
+    border-radius: 20px;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+    text-align: center;
+  }
+
+  .module-glass-tab:focus-visible {
+    outline: 2px solid rgba(244, 123, 53, 0.9);
+    outline-offset: 2px;
+  }
+
+  .module-glass-tab.is-active {
+    /* Slight top-lit gradient so the raised chip reads as the same material as
+       the track, not a flat white sticker. */
+    background: linear-gradient(180deg, #ffffff 0%, #faf9f7 100%);
+    border-color: rgba(16, 14, 10, 0.06);
+    box-shadow:
+      0 6px 14px -6px rgba(16, 14, 10, 0.28),
+      0 1px 3px rgba(16, 14, 10, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    color: #17140f;
+  }
+
+  .module-glass-tab.is-inactive {
+    background: transparent;
+  }
+
+  .module-glass-tab.is-inactive:hover {
+    background: rgba(23, 20, 15, 0.05);
+  }
+
+  .module-glass-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .module-glass-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+    flex: none;
+  }
+
+  .module-glass-label {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .module-glass-tab.is-active .module-glass-label {
+    font-weight: 700;
+  }
+
+  .module-glass-underline {
+    position: absolute;
+    left: 26%;
+    right: 26%;
+    bottom: 4px;
+    height: 2px;
+    border-radius: 9999px;
+    background: #F47B35;
+    box-shadow: 0 0 8px rgba(244, 123, 53, 0.55);
+    pointer-events: none;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .module-glass-inner {
+      background: rgba(240, 238, 235, 0.96);
+    }
+  }
+}
+
+@theme {
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-fade-up: fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-sheet-up: sheet-up 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down: slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-pop: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-wiggle: wiggle 0.4s ease-in-out;
+  --animate-image-in: image-in 0.35s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes sheet-up {
+    from {
+      opacity: 0.4;
+      transform: translateY(100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-soft {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes wiggle {
+
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+
+    30% {
+      transform: rotate(-8deg);
+    }
+
+    60% {
+      transform: rotate(8deg);
+    }
+  }
+
+  @keyframes image-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+}

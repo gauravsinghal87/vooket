@@ -1,0 +1,48 @@
+/*
+ * Shared reset. Global only because it mirrors the pre-refactor base layer;
+ * no module colours, radii or component appearance live here. The notch
+ * geometry that used to sit in this :root block now lives in
+ * modules/food/styles/food-tokens.css.
+ */
+@layer base {
+  :root {
+    --page-gutter: 1rem;
+
+    /* Height of the fixed bottom module dock (`layout/BottomNav`) — the
+       Food / Grocery / Rides switcher that replaces the old five-item page
+       nav. Every fixed or sticky action bar (checkout, view-cart, the
+       restaurant search bar) and every page's bottom padding offsets itself
+       from this single value, so resizing the dock stays a one-line change.
+       Callers add `env(safe-area-inset-bottom)` themselves, because the dock
+       grows by the inset on a notched device. The value is a floor: the dock
+       uses it as `min-height`, so as long as it is >= the switcher's natural
+       height the fixed bars sit flush against the dock's top edge. Measured
+       for the slimmed-down light-glass dock (8px padding + 65px track + 1px
+       border). */
+    --bottom-dock-h: 5.125rem;
+
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --page-gutter: 1.5rem;
+    }
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-50 text-neutral-900 antialiased;
+  }
+
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+
+  img {
+    -webkit-user-drag: none;
+  }
+}

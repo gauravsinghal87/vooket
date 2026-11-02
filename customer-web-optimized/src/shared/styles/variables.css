@@ -1,0 +1,77 @@
+/*
+ * Shared tokens and the default (Rides/neutral) service theme.
+ * Tailwind reads these @theme declarations at build time, so every utility
+ * class keeps working exactly as before the split.
+ */
+@theme {
+  /* Shared design tokens. Brand, accent, ink and neutral are cross-module.
+     Food / Grocery colour ramps live in their module token files. */
+  /* Zomato design system type. */
+  --font-sans: "Outfit", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+
+  --color-brand-50: #eef6ff;
+  --color-brand-100: #d9ecff;
+  --color-brand-200: #bcdeff;
+  --color-brand-300: #8ecaff;
+  --color-brand-400: #59abff;
+  --color-brand-500: #3386ff;
+  --color-brand-600: #1b66f5;
+  --color-brand-700: #1451e1;
+  --color-brand-800: #1743b6;
+  --color-brand-900: #193c8f;
+  --color-brand-950: #142657;
+
+  --color-accent-50: #fff4ed;
+  --color-accent-100: #ffe6d5;
+  --color-accent-200: #fec9aa;
+  --color-accent-300: #fda274;
+  --color-accent-400: #fb703c;
+  --color-accent-500: #f94d16;
+  --color-accent-600: #ea320c;
+  --color-accent-700: #c2230c;
+  --color-accent-800: #9a1e12;
+  --color-accent-900: #7c1c12;
+
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #f59e0b;
+
+  --color-ink-50: #f7f6f4;
+  --color-ink-100: #e9e7e3;
+  --color-ink-500: #6b675f;
+  --color-ink-700: #37332e;
+  --color-ink-800: #211d19;
+  --color-ink-900: #17140f;
+  --color-ink-950: #100e0a;
+
+  --shadow-card: 0 1px 2px rgb(16 14 10 / 0.04), 0 6px 18px -8px rgb(16 14 10 / 0.1);
+  --shadow-float: 0 12px 32px -8px rgb(16 14 10 / 0.22);
+  --shadow-pill: 0 4px 14px -6px rgb(16 14 10 / 0.18);
+}
+
+/* Shared page geometry. */
+:root {
+  --page-gutter: 1rem;
+
+  /* Height of the fixed bottom module dock. Every fixed/sticky action bar
+     offsets itself from this value (callers add the safe-area inset). */
+  --bottom-dock-h: 5.125rem;
+
+  /* Default top-band theme (Rides / neutral). Food and Grocery override these
+     in their own token files, selected by `data-service-theme`. */
+  --hero-header-bg: linear-gradient(to bottom, var(--color-brand-800), var(--color-brand-900));
+  --hero-bg: linear-gradient(to bottom, var(--color-brand-900), var(--color-brand-950));
+  --hero-surface: color-mix(in srgb, var(--color-white) 12%, transparent);
+  --hero-active-color: var(--color-brand-600);
+  --hero-active-contrast: var(--color-white);
+  --hero-search-accent: var(--color-brand-600);
+  --hero-muted-text: color-mix(in srgb, var(--color-white) 55%, transparent);
+  --hero-module-dark: var(--color-brand-950);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-gutter: 1.5rem;
+  }
+}

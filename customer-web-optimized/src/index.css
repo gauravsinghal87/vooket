@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Shared foundation */
+@import "./shared/styles/variables.css";
+@import "./shared/styles/reset.css";
+@import "./shared/styles/typography.css";
+@import "./shared/styles/shared.css";
+
+/* Module ownership — tokens first, then layout, then components */
+@import "./modules/food/styles/food-tokens.css";
+@import "./modules/food/styles/food-layout.css";
+@import "./modules/food/styles/food-components.css";
+
+@import "./modules/grocery/styles/grocery-tokens.css";
+@import "./modules/grocery/styles/grocery-layout.css";
+@import "./modules/grocery/styles/grocery-components.css";
+
+@import "./modules/rides/styles/rides-tokens.css";
+@import "./modules/rides/styles/rides-layout.css";
+@import "./modules/rides/styles/rides-components.css";

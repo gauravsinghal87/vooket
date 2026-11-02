@@ -1,0 +1,229 @@
+/*
+ * FOOD COMPONENTS — restaurant-card notch treatment.
+ * Every selector is scoped to `[data-module='food']`.
+ */
+@layer components {
+  /* Restaurant cards — the "notch" variant                             */
+  /* ------------------------------------------------------------------ */
+
+  /* A card whose image has rounded top corners, an offer chip at the top-left
+     and a green rating pill sitting in a white notch cut into the bottom-left
+     of the image.
+
+     The card itself is NOT a tile: it has no background, no shadow and no
+     border, so the page background shows through around the photo and the
+     info area below it. Only the notch keeps a surface of its own
+     (`--notch-surface`, see `.notch-notch`), which is what makes the cut-out
+     in the photo's bottom-left corner read as a notch. */
+
+  [data-module='food'] .notch-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    background-color: transparent;
+    border-radius: var(--notch-radius);
+    overflow: hidden;
+  }
+
+  /* The image block: rounded at the top only — the bottom-left corner is
+     where the notch is cut. The aspect ratio is a token, so the media keeps
+     its proportion at every card width. */
+  [data-module='food'] .notch-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--notch-aspect);
+    overflow: hidden;
+    background-color: var(--color-neutral-100);
+    border-radius: var(--notch-radius) var(--notch-radius) 0 0;
+  }
+
+  /* Offer chip, top-left. It keeps the same inset from the media's edges, so
+     it never runs into the closed overlay. */
+  [data-module='food'] .notch-offer {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 3;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background-color: rgb(23 20 15 / 0.72);
+    color: var(--color-white);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 5px 7px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+  }
+
+  [data-module='food'] .notch-closed {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(23 20 15 / 0.55);
+    color: var(--color-white);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* The notch itself.
+
+     It is anchored to the top edge of the info area (`bottom: 100%`), so it
+     always sits exactly on the image/info boundary no matter how tall the
+     image is — nothing here depends on a hardcoded offset. The
+     `translateY` lets the rating pill dip a few pixels below the image, which
+     is what makes it read as "on the boundary" rather than "floating over
+     the photo".
+
+     The shape is the reference one: a flat-topped block whose top-right
+     corner is rounded, plus the two inward curves (`::before` above-left,
+     `::after` to the right). The curves are painted with a radial gradient
+     whose transparent centre is the quarter-disc that lets the photo show
+     through.
+
+     The block hugs the rating pill: its height is the pill's height plus the
+     `--notch-gap` breathing room, so the pill sits exactly `--notch-gap`
+     below the top edge of the white cutout and `--notch-gap` left of its
+     right edge. Because the block still overlaps the info area by
+     `--notch-overhang`, the cut-out never shows a seam where it meets the
+     details below it. The notch keeps its own white surface — it is the one
+     piece of the card that is not the page background. */
+  [data-module='food'] .notch-notch {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    width: max-content;
+    padding: var(--notch-gap) var(--notch-gap) 0 0;
+    background-color: var(--notch-surface);
+    border-top-right-radius: var(--notch-curve);
+    line-height: 0;
+    transform: translateY(var(--notch-overhang));
+  }
+
+  [data-module='food'] .notch-notch::before ,
+  [data-module='food'] .notch-notch::after {
+    content: '';
+    position: absolute;
+    width: var(--notch-curve);
+    height: var(--notch-curve);
+    background: radial-gradient(circle at 100% 0,
+        transparent var(--notch-curve),
+        var(--notch-surface) calc(var(--notch-curve) + 0.5px));
+  }
+
+  /* The curve above the notch: a concave bite out of the photo's
+     bottom-left corner. */
+  [data-module='food'] .notch-notch::before {
+    left: 0;
+    top: calc(-1 * var(--notch-curve));
+  }
+
+  /* The curve to the right of the notch, closing the sweep. */
+  [data-module='food'] .notch-notch::after {
+    right: calc(-1 * var(--notch-curve));
+    bottom: 0;
+  }
+
+  /* Compact green rating badge: white star + bold rating, one decimal.
+     Zomato's badge is a solid green tile rather than a full pill. */
+  [data-module='food'] .notch-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background-color: var(--color-z-green);
+    color: var(--color-white);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 5px 8px;
+    border-radius: 6px;
+    box-shadow: var(--shadow-pill);
+  }
+
+  /* The info area under the image. It is transparent: the page background
+     shows through it, just like around the photo. */
+  [data-module='food'] .notch-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 12px 12px;
+  }
+
+  [data-module='food'] .notch-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  [data-module='food'] .notch-name {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--color-neutral-900);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  [data-module='food'] .notch-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
+    color: var(--color-neutral-500);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  [data-module='food'] .notch-meta-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Compact variant for the narrow recommendation rail. */
+  [data-module='food'] .notch-card-sm .notch-body {
+    padding: 12px 10px 10px;
+  }
+
+  [data-module='food'] .notch-card-sm .notch-name {
+    font-size: 13px;
+  }
+
+  [data-module='food'] .notch-card-sm .notch-meta {
+    font-size: 11px;
+  }
+
+  [data-module='food'] .notch-card-sm .notch-rating {
+    font-size: 11px;
+    padding: 4px 7px;
+  }
+
+  [data-module='food'] .notch-card-sm .notch-offer {
+    left: 6px;
+    top: 6px;
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+}

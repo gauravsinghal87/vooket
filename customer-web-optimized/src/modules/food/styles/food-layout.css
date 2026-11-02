@@ -1,0 +1,43 @@
+/*
+ * FOOD LAYOUT — Food-only rails and grids. Scoped to the Food module root,
+ * so the recommendation rail geometry cannot affect Grocery shelves or the
+ * Rides booking sheet.
+ */
+@layer utilities {
+  [data-module='food'] .rec-rail {
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding-inline-start: var(--page-gutter);
+    /* Bottom padding clears the rating badge that overhangs the card image. */
+    padding-block: 4px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+  }
+
+  /* Two fixed rows, filled column-by-column (1&2 → column 1, 3&4 → column 2,
+     …) so the rail is a horizontally scrollable pair of rows. Card width is
+     derived from the container, never fixed; exactly 3 columns are visible on
+     phones, rising on wider content. `auto` rows mean an odd restaurant count
+     simply leaves the last column half-full — never a third row. */
+  [data-module='food'] .rec-grid {
+    --rec-gap: 0.75rem;
+    display: grid;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 2 * var(--rec-gap)) / 3);
+    column-gap: var(--rec-gap);
+    row-gap: var(--rec-gap);
+  }
+
+  @media (min-width: 640px) {
+    [data-module='food'] .rec-grid {
+      grid-auto-columns: calc((100% - 3 * var(--rec-gap)) / 4);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    [data-module='food'] .rec-grid {
+      grid-auto-columns: calc((100% - 4 * var(--rec-gap)) / 5);
+    }
+  }
+}

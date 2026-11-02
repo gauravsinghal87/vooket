@@ -1,0 +1,6 @@
+/*
+ * GROCERY COMPONENTS — reserved for Grocery-only component rules.
+ * The current Grocery UI is built from Tailwind utilities and shared
+ * primitives, so there are no standalone Grocery selectors to move here.
+ * Add new rules under `[data-module='grocery']` only.
+ */

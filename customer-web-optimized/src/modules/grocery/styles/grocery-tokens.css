@@ -1,0 +1,29 @@
+/*
+ * GROCERY MODULE TOKENS — warm yellow / cream quick-commerce palette.
+ * Scoped to the Grocery service, never shared with Food or Rides.
+ */
+@theme {
+  /* Grocery quick-commerce: warm yellow / cream palette.
+     Scoped to the Grocery service only; Food and Ride keep their own themes. */
+  --color-grocery-50: #fffdf5;
+  --color-grocery-100: #fff8e1;
+  --color-grocery-200: #fdf0c8;
+  --color-grocery-300: #fae39a;
+  --color-grocery-400: #f7cf4f;
+  --color-grocery-500: #f5b921;
+  --color-grocery-600: #e0a008;
+  --color-grocery-700: #b87f06;
+  --color-grocery-800: #94620f;
+  --color-grocery-900: #7a5212;
+}
+
+[data-service-theme='grocery'] {
+  --hero-header-bg: linear-gradient(to bottom, var(--color-grocery-300), var(--color-grocery-200));
+  --hero-bg: linear-gradient(to bottom, var(--color-grocery-200), var(--color-grocery-100));
+  --hero-surface: color-mix(in srgb, var(--color-grocery-100) 14%, transparent);
+  --hero-active-color: var(--color-grocery-500);
+  --hero-active-contrast: var(--color-ink-900);
+  --hero-search-accent: var(--color-grocery-600);
+  --hero-muted-text: color-mix(in srgb, var(--color-ink-900) 70%, transparent);
+  --hero-module-dark: var(--color-grocery-900);
+}
