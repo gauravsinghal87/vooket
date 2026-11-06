@@ -1,4 +1,5 @@
 import { ServiceModuleSwitcher } from '@/shared/components/service/service-module-switcher';
+import { prefetchModule } from '@/app/routes/prefetch';
 
 /**
  * The bar fixed to the bottom of every screen: the Food / Grocery / Rides
@@ -24,7 +25,7 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-40 min-h-[var(--bottom-dock-h)] border-t border-ink-100/80 bg-white/60 pb-safe backdrop-blur-2xl"
     >
       <div className="w-full p-2">
-        <ServiceModuleSwitcher />
+        <ServiceModuleSwitcher onModuleIntent={prefetchModule} />
       </div>
     </nav>
   );

@@ -62,6 +62,8 @@ export function useStoreCatalogue(
       return { ...page, data: page.data.filter((p) => p.store_id === storeId) };
     },
     enabled: storeId !== null && enabled,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   return {

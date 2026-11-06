@@ -361,10 +361,14 @@ export default function RidesDestinationScreen() {
         {showingResults ? (
           <FlatList
             data={results}
-            keyExtractor={(item) => String(item.id ?? item.main ?? Math.random())}
+            keyExtractor={(item, index) => item.id || item.place_id || item.main || String(index)}
             renderItem={renderResult}
             contentContainerStyle={styles.listContent}
             keyboardShouldPersistTaps="handled"
+            initialNumToRender={8}
+            maxToRenderPerBatch={10}
+            windowSize={7}
+            removeClippedSubviews
             ListEmptyComponent={
               !searching && searched && query.trim().length >= 2 ? (
                 <View style={styles.empty}>

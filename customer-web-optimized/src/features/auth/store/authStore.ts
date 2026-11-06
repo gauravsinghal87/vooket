@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User } from '@/shared/types/catalog';
 import { apiClient, setToken } from '@/shared/services/apiClient';
+import { resetQueryCache } from '@/shared/query/queryClient';
 import { IS_MOCK } from '@/shared/config/dataSource';
 
 const MOCK_USER: User = {
@@ -76,6 +77,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await apiClient.post<{ token: string; user: User }>('/auth/login/email', { email, password });
     setToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -88,6 +90,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await apiClient.post<{ token: string; user: User }>('/auth/login', { phone, password, country_code: '+91' });
     setToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -104,6 +107,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await apiClient.post<{ token: string; user: User }>('/auth/otp/verify', { phone, otp, token: state.otpToken, country_code: '+91' });
     setToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true, otpToken: null });
   },
 
@@ -116,6 +120,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await apiClient.post<{ token: string; user: User }>('/auth/google', { credential });
     setToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -128,6 +133,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await apiClient.post<{ token: string; user: User }>('/auth/register', payload);
     setToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -159,6 +165,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     }
     setToken(null);
+    resetQueryCache();
     set({ user: null, isAuthenticated: false, initialized: true });
   },
 
@@ -189,6 +196,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user, isAuthenticated: true, initialized: true });
     } catch {
       setToken(null);
+      resetQueryCache();
       set({ user: null, isAuthenticated: false, initialized: true });
     }
   },

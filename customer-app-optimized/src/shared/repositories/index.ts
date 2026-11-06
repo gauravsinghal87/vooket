@@ -12,6 +12,7 @@ import type {
 } from '@/shared/types/models';
 import type { DeliverySlot } from '@/shared/types/slots';
 import type { SupportFormOptions } from '@/shared/utils/support';
+import { fetchDiscoveryHome, mapFoodDiscovery, mapGroceryDiscovery } from './discovery';
 
 const unwrapCart = (result: unknown): Cart | { cart: null; items: [] } => {
   if (Array.isArray(result)) return { cart: null, items: [] };
@@ -47,27 +48,8 @@ export type ServiceablePage<T> = Paginated<T> & {
 
 export const food = {
   async getHome(location?: { latitude?: number; longitude?: number }) {
-    const qs = new URLSearchParams();
-    if (location?.latitude != null) qs.set('latitude', String(location.latitude));
-    if (location?.longitude != null) qs.set('longitude', String(location.longitude));
-    const query = qs.toString();
-    const { data, meta } = await apiClient.getWithMeta<Record<string, any>, MetaWithServiceability>(
-      `/discovery/home${query ? `?${query}` : ''}`
-    );
-    return {
-      recommended: data.recommended_restaurants ?? data.food?.recommended ?? [],
-      popular: data.food?.popular ?? [],
-      top: data.food?.top ?? [],
-      fast: data.food?.fast ?? [],
-      offers: data.food?.offers ?? [],
-      recentlyOrdered: data.food?.recently_ordered ?? [],
-      products: (data.food?.products ?? data.food?.recommended_products ?? []) as Product[],
-      deals: (data.food?.deals ?? data.food?.recommended ?? []) as Product[],
-      banners: data.food?.banners ?? data.banners ?? [],
-      categories: data.categories ?? [],
-      promos: data.offers ?? (data.food?.offers ?? []),
-      serviceability: meta?.serviceability ?? null,
-    };
+    const { data, meta } = await fetchDiscoveryHome(location);
+    return mapFoodDiscovery(data, meta);
   },
   async getRestaurants(params?: {
     cuisine?: string; search?: string; page?: number; sort?: string;
@@ -127,24 +109,8 @@ function withCoordinates(location?: DeliveryLocation): URLSearchParams {
  */
 export const grocery = {
   async getHome(location?: DeliveryLocation) {
-    const query = withCoordinates(location).toString();
-    const { data, meta } = await apiClient.getWithMeta<Record<string, any>, MetaWithServiceability>(
-      `/discovery/home${query ? `?${query}` : ''}`
-    );
-    return {
-      buyAgain: data.grocery?.buy_again ?? [],
-      monthlyEssentials: data.grocery?.monthly_essentials ?? [],
-      recommended: data.grocery?.recommended ?? [],
-      deals: data.grocery?.deals ?? [],
-      stores: data.grocery?.stores ?? data.stores ?? [],
-      categories: data.grocery?.categories ?? [],
-      recentlyViewed: data.grocery?.recently_viewed ?? [],
-      banners: data.grocery?.banners ?? data.banners ?? [],
-      promos: data.offers ?? (data.grocery?.offers ?? []),
-      // Shared endpoint: `meta.serviceability` belongs to Food, so the Grocery
-      // verdict is read from its own key.
-      serviceability: meta?.grocery_serviceability ?? null,
-    };
+    const { data, meta } = await fetchDiscoveryHome(location);
+    return mapGroceryDiscovery(data, meta);
   },
   async getStores(params?: {
     search?: string; page?: number; per_page?: number; latitude?: number; longitude?: number;

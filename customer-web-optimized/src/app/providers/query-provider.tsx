@@ -1,16 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import { queryClient } from '@/shared/query/queryClient';
 
 /**
- * One QueryClient per browser session. Server state stays in TanStack Query;
- * the defaults are unchanged from the pre-refactor app.
+ * Server state stays in TanStack Query. The client itself lives in
+ * `shared/query` so auth transitions can clear it as well.
  */
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 1000 * 60, retry: 1 },
-  },
-});
-
 export function QueryProvider({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

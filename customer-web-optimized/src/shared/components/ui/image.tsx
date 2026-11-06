@@ -17,6 +17,7 @@ export function Image({ src, eager = false, className, alt, ...rest }: ImageProp
       src={href}
       alt={alt ?? ''}
       loading={eager ? 'eager' : 'lazy'}
+      decoding={eager ? 'auto' : 'async'}
       onLoad={() => setLoaded(true)}
       onError={() => setErrored(true)}
       aria-hidden={alt ? undefined : true}

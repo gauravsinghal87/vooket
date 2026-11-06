@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -17,18 +17,9 @@ import {
 import { ToastProvider } from '@/shared/components/ui/ToastProvider';
 import { CartConflictDialog } from '@/features/cart/components/CartConflictDialog';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { queryClient } from '@/shared/query/queryClient';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({

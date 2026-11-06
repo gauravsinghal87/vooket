@@ -192,3 +192,121 @@ assets at 288, 432, 576, 864 and 1152 px densities. `expo-doctor` passed 18/18
 and EAS `assembleRelease` completed without build errors.
 
 The APK was not installed on a physical device or emulator in this pass.
+
+## 8. Android preview rebuild — customer-app-optimized (build 3, 2026-11-02)
+
+Rebuilt from the current optimized mobile source so the APK carries the latest
+refactor (feature + module architecture) plus the shared discovery caching. The
+original `customer-app`, production credentials and environment files, the
+backend and the database were left untouched, and nothing was deployed.
+
+| Item | Result |
+| --- | --- |
+| EAS build ID | `53d42bee-7807-4d22-bf40-2a245eb4d852` (`preview`, `autoIncrement`) |
+| Build URL | https://expo.dev/accounts/gaurav87/projects/superbasket-customer/builds/53d42bee-7807-4d22-bf40-2a245eb4d852 |
+| Artifact URL | https://expo.dev/artifacts/eas/gBPga9POitPfBisnd9wr1DHA0uSLImKY7fmtl5IPAiY.apk |
+| Build result | `FINISHED`, command exit 0 — commit `64d1f88`, SDK 54.0.0 |
+| APK | `customer-app-optimized/builds/vooket-customer-v1.0.0-build3.apk` (95,360,979 bytes) |
+| Package / app name | `com.superbasket.customer` / `SuperBasket` |
+| Version | `1.0.0`, versionCode `3` (auto-incremented from 2) |
+| minSdk / targetSdk | 24 / 36, `android:debuggable=false` |
+| API base URL | `https://vooketapi.expertshub.in/api/v1` (EAS `preview` profile env + `.env`) |
+| SHA-256 | `005f8ca76f0eea00f9dbc0c90af0e1c2c08cee9067ad8888046a07332402e6b8` |
+| Checksum file | `customer-app-optimized/builds/vooket-customer-v1.0.0-build3.apk.sha256` |
+
+### 8.1 Pre-build gates
+
+| Check | Result |
+| --- | --- |
+| `npx tsc --noEmit` | exit 0, 0 errors |
+| `npx expo lint --no-cache` | exit 0, no findings |
+| `npx expo-doctor` | 18/18 checks passed |
+| `eas-cli whoami` | authenticated as `gaurav87` (eas-cli 21.6.0) |
+
+### 8.2 Post-build artifact verification (static)
+
+- **Identity:** `apkanalyzer` reports application id `com.superbasket.customer`,
+  versionName `1.0.0`, versionCode `3`; the packaged `assets/app.config` confirms
+  the same package, `SuperBasket` and version `1.0.0`.
+- **API URL:** `assets/index.android.bundle` contains
+  `https://vooketapi.expertshub.in/api/v1` (1 occurrence). The single
+  `http://localhost:8000` occurrence is the inert `??` fallback literal in
+  `src/shared/services/client.ts`, not a configured value.
+- **Optimized source / caching:** the same bundle contains the shared
+  `discovery-home` query key, the `discovery/home` endpoint and the
+  store-scoped `grocery-products` / `/grocery/stores` keys — i.e. the
+  `src/features` + `src/modules` architecture and the single shared discovery
+  cache are in the shipped code.
+- **Splash and assets:** packaged `app.config` carries the `expo-splash-screen`
+  config (`assets/images/splash-icon.png`, 256 px, contain, `#D72022`);
+  `resources.arsc` contains `SuperBasket`, `windowSplashScreenAnimatedIcon`,
+  `windowSplashScreenBackground` and `splashscreen_logo`; the launcher icon
+  resolves in the manifest with its adaptive-icon layers.
+- **Integrity:** APK downloaded from the artifact URL, size 95,360,979 bytes,
+  SHA-256 above, stored under `builds/`.
+
+### 8.3 Not verified in this pass
+
+The APK was **not installed or run on a device or emulator**, so no claim is
+made about runtime performance, launch/splash behaviour, navigation or live API
+calls — only that the artifact built, packaged and contains the expected
+configuration and code. On-device install and QA remain outstanding.
+
+## 8. Android preview rebuild — customer-app-optimized (build 3, 2026-11-02)
+
+Rebuilt from the current optimized mobile source so the APK contains the latest
+refactor (feature + module architecture) and the shared discovery caching. The
+original `customer-app`, production credentials, environment files, the backend
+and the database were left untouched; nothing was deployed.
+
+| Item | Result |
+| --- | --- |
+| EAS build ID | `53d42bee-7807-4d22-bf40-2a245eb4d852` (`preview` profile, `autoIncrement`) |
+| Build URL | https://expo.dev/accounts/gaurav87/projects/superbasket-customer/builds/53d42bee-7807-4d22-bf40-2a245eb4d852 |
+| Artifact URL | https://expo.dev/artifacts/eas/gBPga9POitPfBisnd9wr1DHA0uSLImKY7fmtl5IPAiY.apk |
+| Build result | `FINISHED`, exit 0 (commit `64d1f88`, SDK 54.0.0) |
+| APK | `customer-app-optimized/builds/vooket-customer-v1.0.0-build3.apk` (95,360,979 bytes) |
+| Package / app name | `com.superbasket.customer` / `SuperBasket` |
+| Version | `1.0.0`, versionCode `3` (auto-incremented from 2) |
+| minSdk / targetSdk | 24 / 36, `android:debuggable=false` |
+| API base URL | `https://vooketapi.expertshub.in/api/v1` (EAS `preview` env + `.env`) |
+| SHA-256 | `005f8ca76f0eea00f9dbc0c90af0e1c2c08cee9067ad8888046a07332402e6b8` (`.sha256` sidecar written next to the APK) |
+
+### 8.1 Pre-build gates
+
+| Check | Result |
+| --- | --- |
+| `npx tsc --noEmit` | exit 0, 0 errors |
+| `npx expo lint --no-cache` | exit 0, no findings |
+| `npx expo-doctor` | 18/18 checks passed |
+| `eas-cli whoami` | authenticated as `gaurav87` |
+
+### 8.2 Post-build artifact verification (static)
+
+- **Identity:** `apkanalyzer` reports application id `com.superbasket.customer`,
+  versionName `1.0.0`, versionCode `3`; the packaged `assets/app.config`
+  confirms `SuperBasket` / `com.superbasket.customer` and the same version.
+- **API URL:** the packaged `assets/index.android.bundle` contains
+  `https://vooketapi.expertshub.in/api/v1`. The single `http://localhost:8000`
+  occurrence is the inert `??` fallback literal in `shared/services/client.ts`;
+  the production URL is the configured value.
+- **Optimized source / caching:** the same bundle contains the shared
+  `discovery-home` query key, the `discovery/home` endpoint, and the
+  store-scoped `grocery-products` / `/grocery/stores` keys, proving the build
+  shipped the `src/features` + `src/modules` architecture and the shared
+  discovery cache rather than the pre-refactor app.
+- **Splash and assets:** packaged `app.config` carries the `expo-splash-screen`
+  plugin (`splash-icon.png`, 256 px, contain, `#D72022`), `resources.arsc`
+  contains `SuperBasket`, `windowSplashScreenAnimatedIcon`,
+  `windowSplashScreenBackground` and `splashscreen_logo`, and the launcher icon
+  reference plus adaptive-icon layers resolve in the manifest.
+- **Integrity:** SHA-256 recorded above; artifact downloaded from the EAS build
+  page and stored in `builds/`.
+
+### 8.3 Not verified
+
+The APK was **not installed or run on a device or emulator in this pass**, so no
+runtime performance, launch, splash-display, navigation or API behaviour claim
+is made here — only that the artifact builds, packages and contains the expected
+configuration and code. On-device QA (install, splash → home, module switch,
+discovery cache hit, checkout) remains outstanding.

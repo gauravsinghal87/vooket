@@ -132,6 +132,9 @@ export function RidesPage() {
   const promos = useQuery({
     queryKey: ['ride-promos'],
     queryFn: () => ridesService.getPromos(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // The Rides "Everything in Minutes" mosaic is its own placement, fetched with
@@ -141,6 +144,9 @@ export function RidesPage() {
   const ridePromoQuery = useQuery({
     queryKey: ['banners', 'rides_promotions'],
     queryFn: () => repositories.banners.getByPlacement('rides', 'rides_promotions'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const ridePromoCards = useMemo(
     () => (ridePromoQuery.data ?? []).filter((b) => b.placement === 'rides_promotions'),
@@ -150,6 +156,8 @@ export function RidesPage() {
   const savedPlaces = useQuery({
     queryKey: ['saved-places'],
     queryFn: () => ridesService.getSavedPlaces().catch(() => [] as SavedPlace[]),
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const locate = useCallback(

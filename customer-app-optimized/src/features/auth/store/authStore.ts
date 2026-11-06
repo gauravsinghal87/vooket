@@ -4,6 +4,7 @@ import { IS_MOCK } from '@/shared/config/dataSource';
 import { onUnauthorized } from '@/shared/services/client';
 import { auth, user } from '@/shared/repositories';
 import { loadToken, persistToken } from '@/shared/services/token';
+import { resetQueryCache } from '@/shared/query/queryClient';
 
 const MOCK_USER: User = {
   id: 1,
@@ -78,6 +79,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await auth.loginWithEmail(email, password);
     await persistToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -90,6 +92,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await auth.loginWithPhone(phone, password);
     await persistToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -106,6 +109,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await auth.loginWithOtp(phone, otp, state.otpToken);
     await persistToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true, otpToken: null });
   },
 
@@ -118,6 +122,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await auth.loginWithGoogle(credential);
     await persistToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -134,6 +139,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     const data = await auth.register(payload);
     await persistToken(data.token);
+    resetQueryCache();
     set({ user: data.user, isAuthenticated: true, initialized: true });
   },
 
@@ -163,6 +169,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     }
     await persistToken(null);
+    resetQueryCache();
     set({ user: null, isAuthenticated: false, initialized: true });
   },
 
@@ -193,11 +200,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: profile, isAuthenticated: true, initialized: true });
     } catch {
       await persistToken(null);
+      resetQueryCache();
       set({ user: null, isAuthenticated: false, initialized: true });
     }
   },
 }));
 
 onUnauthorized(() => {
+  // A guest cart request can 401 legitimately; only clear when an authenticated
+  // session is actually being ended.
+  if (!useAuthStore.getState().isAuthenticated) return;
+  resetQueryCache();
   useAuthStore.setState({ user: null, isAuthenticated: false, initialized: true });
 });

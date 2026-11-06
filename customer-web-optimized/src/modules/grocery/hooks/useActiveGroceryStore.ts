@@ -32,6 +32,7 @@ export function useActiveGroceryStore() {
         per_page: 50,
       }),
     staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   const ranked: RankedStore | null = nearestEligibleStore(query.data?.data ?? [], origin);

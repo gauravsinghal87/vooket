@@ -3,10 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PackageOpen, Store as StoreIcon, Tag as TagIcon, Tags, Truck } from 'lucide-react';
 import { repositories } from '@/shared/repositories';
-import { groceryService } from '@/modules/grocery/services';
+import { useDiscoveryHome } from '@/shared/hooks/useDiscoveryHome';
 import { useAppStore } from '@/shared/stores/appStore';
 import { DEFAULT_LOCATION } from '@/shared/utils/location';
-import { coordsKey, formatDistanceKm } from '@/shared/utils/geo';
+import { formatDistanceKm } from '@/shared/utils/geo';
 import { useActiveGroceryStore } from '@/modules/grocery/hooks/useActiveGroceryStore';
 import { productsOfStore, useStoreCatalogue } from '@/modules/grocery/hooks/useStoreCatalogue';
 import { PromoRail } from '@/shared/components/home/promo-rail';
@@ -68,17 +68,11 @@ export function GroceryPage() {
   const catalogue = useStoreCatalogue(activeStoreId, { perPage: 60 });
   const storeProducts = catalogue.products;
 
-  // Discovery payload is only used for non-catalogue content (banners, offers)
-  // and recently viewed, which is filtered down to the active store below.
-  const home = useQuery({
-    queryKey: ['grocery-home', coordsKey(origin)],
-    queryFn: () =>
-      groceryService.getHome({
-        latitude: origin.latitude,
-        longitude: origin.longitude,
-      }),
-    staleTime: 1000 * 60 * 5,
-  });
+  // Discovery payload is shared with Food: one cached `/discovery/home`
+  // request serves both modules, so switching between them reuses the same
+  // envelope instead of downloading it again.
+  const discovery = useDiscoveryHome(origin);
+  const home = { ...discovery, data: discovery.grocery };
 
   // The Grocery hero is its own placement, fetched through the existing public
   // banner endpoint. Using the dedicated query key means a Food/Rides banner
@@ -86,6 +80,9 @@ export function GroceryPage() {
   const heroQuery = useQuery({
     queryKey: ['banners', 'grocery_home_hero'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_hero'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const heroBanners = useMemo(
     () => (heroQuery.data ?? []).filter((b) => b.placement === 'grocery_home_hero'),
@@ -101,6 +98,9 @@ export function GroceryPage() {
   const brandPromoQuery = useQuery({
     queryKey: ['banners', 'grocery_home_brand_promo'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_brand_promo'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const brandPromos = (brandPromoQuery.data ?? []).filter(
     (b) => b.placement === 'grocery_home_brand_promo' && b.id !== heroBannerId,
@@ -113,6 +113,9 @@ export function GroceryPage() {
   const festivePromoQuery = useQuery({
     queryKey: ['banners', 'grocery_home_festive_promo'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_festive_promo'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const festivePromos = useMemo(
     () =>

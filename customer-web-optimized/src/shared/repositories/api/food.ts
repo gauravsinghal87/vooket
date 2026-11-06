@@ -1,31 +1,13 @@
 import type { FoodRepository, ServiceablePage } from '../interfaces';
 import { apiClient } from '@/shared/services/apiClient';
-import type { Restaurant, ProductCategory, Category, Product } from '@/shared/types/catalog';
+import { fetchDiscoveryHome, mapFoodDiscovery } from '@/shared/services/discovery';
+import type { Restaurant, ProductCategory, Category } from '@/shared/types/catalog';
 import type { MetaWithServiceability } from '@/shared/types/api';
 
 export class ApiFoodRepository implements FoodRepository {
   async getHome(location?: { latitude?: number; longitude?: number }) {
-    const qs = new URLSearchParams();
-    if (location?.latitude != null) qs.set('latitude', String(location.latitude));
-    if (location?.longitude != null) qs.set('longitude', String(location.longitude));
-    const query = qs.toString();
-    const { data, meta } = await apiClient.getWithMeta<any, MetaWithServiceability>(
-      `/discovery/home${query ? `?${query}` : ''}`
-    );
-    return {
-      recommended: data.recommended_restaurants ?? data.food?.recommended ?? [],
-      popular: data.food?.popular ?? [],
-      top: data.food?.top ?? [],
-      fast: data.food?.fast ?? [],
-      offers: data.food?.offers ?? [],
-      recentlyOrdered: data.food?.recently_ordered ?? [],
-      products: (data.food?.products ?? data.food?.recommended_products ?? []) as Product[],
-      deals: (data.food?.deals ?? data.food?.recommended ?? []) as Product[],
-      banners: data.food?.banners ?? data.banners ?? [],
-      categories: data.categories ?? [],
-      promos: data.offers ?? (data.food?.offers ?? []),
-      serviceability: meta?.serviceability ?? null,
-    };
+    const { data, meta } = await fetchDiscoveryHome(location);
+    return mapFoodDiscovery(data, meta);
   }
 
   async getRestaurants(params?: { cuisine?: string; search?: string; page?: number; sort?: string; latitude?: number; longitude?: number; category?: number | string }): Promise<ServiceablePage<Restaurant>> {

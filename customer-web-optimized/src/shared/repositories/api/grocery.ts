@@ -1,5 +1,6 @@
 import type { GroceryRepository, MonthlySuggestion, DeliverySlot, ServiceablePage } from '../interfaces';
 import { apiClient } from '@/shared/services/apiClient';
+import { fetchDiscoveryHome, mapGroceryDiscovery } from '@/shared/services/discovery';
 import type { Store, Product, Category } from '@/shared/types/catalog';
 import type { MetaWithServiceability, Serviceability } from '@/shared/types/api';
 
@@ -21,24 +22,8 @@ function withCoordinates(location?: Location): URLSearchParams {
  */
 export class ApiGroceryRepository implements GroceryRepository {
   async getHome(location?: Location) {
-    const query = withCoordinates(location).toString();
-    const { data, meta } = await apiClient.getWithMeta<any, MetaWithServiceability>(
-      `/discovery/home${query ? `?${query}` : ''}`
-    );
-    return {
-      buyAgain: data.grocery?.buy_again ?? [],
-      monthlyEssentials: data.grocery?.monthly_essentials ?? [],
-      recommended: data.grocery?.recommended ?? [],
-      deals: data.grocery?.deals ?? [],
-      stores: data.grocery?.stores ?? data.stores ?? [],
-      categories: data.grocery?.categories ?? [],
-      recentlyViewed: data.grocery?.recently_viewed ?? [],
-      banners: data.grocery?.banners ?? data.banners ?? [],
-      promos: data.offers ?? (data.grocery?.offers ?? []),
-      // Shared endpoint: `meta.serviceability` belongs to Food, so the Grocery
-      // verdict is read from its own key.
-      serviceability: meta?.grocery_serviceability ?? null,
-    };
+    const { data, meta } = await fetchDiscoveryHome(location);
+    return mapGroceryDiscovery(data, meta);
   }
 
   async getStores(params?: {

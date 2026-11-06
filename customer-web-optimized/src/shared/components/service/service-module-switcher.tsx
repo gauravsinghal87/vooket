@@ -7,9 +7,15 @@ import type { ServiceType } from '@/shared/types/models';
 interface ServiceModuleSwitcherProps {
   activeService?: ServiceType | null;
   className?: string;
+  /** Warm the destination module chunk on pointer/focus intent. */
+  onModuleIntent?: (value: ServiceType) => void;
 }
 
-export function ServiceModuleSwitcher({ activeService: activeProp, className }: ServiceModuleSwitcherProps) {
+export function ServiceModuleSwitcher({
+  activeService: activeProp,
+  className,
+  onModuleIntent,
+}: ServiceModuleSwitcherProps) {
   const navigate = useNavigate();
   // `search` resolves the shared screens (/cart, /checkout, /search) and
   // `state.type` the product page (its links pass the module via router state),
@@ -51,6 +57,8 @@ export function ServiceModuleSwitcher({ activeService: activeProp, className }: 
               aria-label={`Open ${theme.label}`}
               className={cn('module-glass-tab', isActive ? 'is-active' : 'is-inactive')}
               onClick={() => go(value)}
+              onPointerEnter={() => onModuleIntent?.(value)}
+              onFocus={() => onModuleIntent?.(value)}
             >
               <span className="module-glass-tab-content">
                 <Icon className="module-glass-icon" strokeWidth={2.1} />

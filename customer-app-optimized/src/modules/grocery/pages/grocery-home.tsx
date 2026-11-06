@@ -23,12 +23,12 @@ import { EmptyState, Loader } from '@/shared/components/ui/primitives';
 import { LocationSelector } from '@/shared/components/LocationSelector';
 import { GroceryServiceabilityNotice } from '@/shared/components/GroceryServiceabilityNotice';
 import { repositories } from '@/shared/repositories';
+import { useDiscoveryHome } from '@/shared/hooks/useDiscoveryHome';
 import { useActiveGroceryStore } from '@/modules/grocery/hooks/useActiveGroceryStore';
 import { productsOfStore, useStoreCatalogue } from '@/modules/grocery/hooks/useStoreCatalogue';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { useGroceryCategories } from '@/modules/grocery/hooks/useGroceryCategories';
 import { findGroceryCategory } from '@/modules/grocery/utils/groceryCategories';
-import { coordsKey } from '@/shared/utils/geo';
 import { discountPercent } from '@/shared/utils/utils';
 import { colors } from '@/modules/grocery/styles/theme';
 import type { Category, Offer, Product } from '@/shared/types/catalog';
@@ -73,23 +73,20 @@ export default function GroceryHomeScreen() {
   const catalogue = useStoreCatalogue(activeStoreId, { perPage: 60 });
   const storeProducts = catalogue.products;
 
-  // Discovery payload is only used for site-wide content (banners, offers) and
-  // reorder history, all filtered down to the active store below.
-  const home = useQuery({
-    queryKey: ['grocery-home', coordsKey(origin)],
-    queryFn: () =>
-      repositories.grocery.getHome({
-        latitude: origin.latitude,
-        longitude: origin.longitude,
-      }),
-    staleTime: 1000 * 60 * 5,
-  });
+  // Discovery is shared with Food: both homes read one cached
+  // `/discovery/home` envelope for the same coordinates. Only the Grocery
+  // slice is used here (banners, offers and store-scoped reorder history).
+  const discovery = useDiscoveryHome({ latitude: origin.latitude, longitude: origin.longitude });
+  const home = { ...discovery, data: discovery.data?.grocery };
 
   // The Grocery hero is its own placement, fetched through the existing public
   // banner endpoint so a Food/Rides banner can never be substituted for it.
   const heroBanner = useQuery({
     queryKey: ['banners', 'grocery_home_hero'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_hero'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const heroBanners = useMemo(
     () => (heroBanner.data ?? []).filter((b) => b.placement === 'grocery_home_hero'),
@@ -105,6 +102,9 @@ export default function GroceryHomeScreen() {
   const brandPromo = useQuery({
     queryKey: ['banners', 'grocery_home_brand_promo'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_brand_promo'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const brandPromos = useMemo(
     () => (brandPromo.data ?? []).filter((b) => b.placement === 'grocery_home_brand_promo' && b.id !== heroBannerId),
@@ -119,6 +119,9 @@ export default function GroceryHomeScreen() {
   const festivePromo = useQuery({
     queryKey: ['banners', 'grocery_home_festive_promo'],
     queryFn: () => repositories.banners.getByPlacement('grocery', 'grocery_home_festive_promo'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const festivePromos = useMemo(
     () =>

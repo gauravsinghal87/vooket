@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Flame } from 'lucide-react';
 import { repositories } from '@/shared/repositories';
 import { foodService } from '@/modules/food/services';
+import { useDiscoveryHome } from '@/shared/hooks/useDiscoveryHome';
 import { useAppStore } from '@/shared/stores/appStore';
 import { DEFAULT_LOCATION } from '@/shared/utils/location';
 import { FoodHero } from '@/modules/food/components/food-hero';
@@ -66,19 +67,25 @@ export function FoodPage() {
   // header shows and never silently becomes unavailable.
   const origin = location ?? DEFAULT_LOCATION;
 
-  const home = useQuery({
-    queryKey: ['food-home', origin.latitude, origin.longitude],
-    queryFn: () => foodService.getHome({ latitude: origin.latitude, longitude: origin.longitude }),
-  });
+  // Food and Grocery share one cached `/discovery/home` request for this
+  // location, so switching modules does not download the same envelope twice.
+  const discovery = useDiscoveryHome(origin);
+  const home = { ...discovery, data: discovery.food };
   const categories = useQuery({
     queryKey: ['food-categories'],
     queryFn: () => foodService.getCategories(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   // The food hero is its own placement, so it is fetched with the dedicated
   // endpoint+key and can never be substituted with a generic Home banner.
   const heroBanners = useQuery({
     queryKey: ['banners', 'food_home_hero'],
     queryFn: () => repositories.banners.getByPlacement('food', 'food_home_hero'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Food "Veg Mode" — a persisted preference that narrows the home to pure-veg

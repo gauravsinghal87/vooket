@@ -33,6 +33,7 @@ import { ServiceabilityNotice } from '@/shared/components/ServiceabilityNotice';
 import { SearchBar } from '@/shared/components/SearchBar';
 import { FoodHero } from '@/modules/food/components/foodHero';
 import { repositories } from '@/shared/repositories';
+import { useDiscoveryHome } from '@/shared/hooks/useDiscoveryHome';
 import { useAppStore } from '@/shared/stores/appStore';
 import { haversineKm } from '@/shared/utils/geo';
 import { DEFAULT_LOCATION } from '@/shared/utils/location';
@@ -61,17 +62,23 @@ export default function FoodHomeScreen() {
   // header shows and never silently becomes unavailable.
   const origin = location ?? DEFAULT_LOCATION;
 
-  const home = useQuery({
-    queryKey: ['food-home', origin.latitude, origin.longitude],
-    queryFn: () => repositories.food.getHome({ latitude: origin.latitude, longitude: origin.longitude }),
-  });
+  // Food and Grocery share one cached `/discovery/home` request per location,
+  // so switching modules never downloads the same envelope twice.
+  const discovery = useDiscoveryHome({ latitude: origin.latitude, longitude: origin.longitude });
+  const home = { ...discovery, data: discovery.data?.food };
   const categories = useQuery({
     queryKey: ['food-categories'],
     queryFn: () => repositories.food.getCategories(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
   const heroBanners = useQuery({
     queryKey: ['banners', 'food_home_hero'],
     queryFn: () => repositories.banners.getByPlacement('food', 'food_home_hero'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Food "Veg Mode" — a persisted preference that narrows the home to pure-veg

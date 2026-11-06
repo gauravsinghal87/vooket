@@ -44,6 +44,8 @@ export function useGroceryCategories() {
     queryFn: () =>
       groceryService.getCategories({ latitude: origin.latitude, longitude: origin.longitude }),
     staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
   });
 
   const categories: Category[] = query.data?.categories ?? [];
